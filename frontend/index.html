@@ -257,7 +257,10 @@
       <p class="sub">Open an existing investigation or start a new one.</p>
     </header>
 
-    <button id="new-case-btn" class="primary-btn" style="margin-bottom:24px">+ New Investigation</button>
+    <div class="cases-actions">
+      <button id="new-case-btn" class="primary-btn">+ New Investigation</button>
+      <input type="text" id="case-search" class="case-search-input" placeholder="Search cases by title, ID or officer…" />
+    </div>
 
     <div class="case-grid" id="case-grid"></div>
   </div>

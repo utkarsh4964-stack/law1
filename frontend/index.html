@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Case Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="folder-nav">
+    <div class="case-mark">
+      <span class="case-mark-glyph">§</span>
+      <div>
+        <div class="case-mark-title">CASE FILE</div>
+        <div class="case-mark-id" id="case-id">NO. — </div>
+      </div>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="documents"><span class="tab-num">01</span>Documents</button>
+      <button class="tab" data-tab="summary"><span class="tab-num">02</span>Case Summary</button>
+      <button class="tab" data-tab="timeline"><span class="tab-num">03</span>Timeline</button>
+      <button class="tab" data-tab="graph"><span class="tab-num">04</span>Connections</button>
+      <button class="tab" data-tab="contradictions"><span class="tab-num">05</span>Contradictions</button>
+      <button class="tab" data-tab="chat"><span class="tab-num">06</span>Case Chat</button>
+      <button class="tab" data-tab="report"><span class="tab-num">07</span>Report</button>
+    </nav>
+
+    <div class="nav-footer">
+      <button id="reset-btn" class="ghost-btn">Clear case</button>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- DOCUMENTS -->
+    <section class="panel active" id="panel-documents">
+      <header class="panel-head">
+        <h1>Documents</h1>
+        <p class="sub">Upload the case file. Each document is read and organized automatically.</p>
+      </header>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="file-input" multiple hidden accept=".txt,.md,.pdf" />
+        <div class="dropzone-inner">
+          <span class="dropzone-glyph">＋</span>
+          <div>
+            <strong>Add documents</strong>
+            <div class="muted">.txt, .md or .pdf &middot; drop files or click to browse</div>
+          </div>
+        </div>
+      </label>
+
+      <div id="upload-status"></div>
+
+      <div class="exhibit-grid" id="doc-list"></div>
+    </section>
+
+    <!-- CASE SUMMARY -->
+    <section class="panel" id="panel-summary">
+      <header class="panel-head">
+        <h1>Case Summary</h1>
+        <p class="sub">Synthesized from every document currently on file.</p>
+      </header>
+      <div class="card prose" id="summary-body"><p class="placeholder">Upload documents, then open this tab to generate a summary.</p></div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="panel" id="panel-timeline">
+      <header class="panel-head">
+        <h1>Case Timeline</h1>
+        <p class="sub">Events extracted from documents, arranged chronologically.</p>
+      </header>
+      <div id="timeline-body"><p class="placeholder">No timeline yet.</p></div>
+    </section>
+
+    <!-- GRAPH -->
+    <section class="panel" id="panel-graph">
+      <header class="panel-head">
+        <h1>Evidence &amp; Connection Graph</h1>
+        <p class="sub">People, organizations and locations, and how they connect.</p>
+      </header>
+      <div id="graph-canvas" class="graph-canvas"></div>
+      <div id="graph-legend" class="graph-legend"></div>
+    </section>
+
+    <!-- CONTRADICTIONS -->
+    <section class="panel" id="panel-contradictions">
+      <header class="panel-head">
+        <h1>Contradiction &amp; Evidence Analysis</h1>
+        <p class="sub">Conflicting claims found across documents.</p>
+      </header>
+      <div id="contradiction-body"><p class="placeholder">No analysis yet.</p></div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="panel" id="panel-chat">
+      <header class="panel-head">
+        <h1>Case Chat</h1>
+        <p class="sub">Ask anything about the case. Answers are grounded in the uploaded documents.</p>
+      </header>
+      <div class="chat-window" id="chat-window"></div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" placeholder="How is Person A connected to Person B?" autocomplete="off" />
+        <button type="submit">Ask</button>
+      </form>
+    </section>
+
+    <!-- REPORT -->
+    <section class="panel" id="panel-report">
+      <header class="panel-head">
+        <h1>AI Case Report</h1>
+        <p class="sub">A structured, exportable summary of the entire case.</p>
+      </header>
+      <div class="report-actions">
+        <button id="generate-report-btn" class="primary-btn">Generate report</button>
+        <button id="download-report-btn" class="ghost-btn" disabled>Download .md</button>
+      </div>
+      <div class="card prose" id="report-body"><p class="placeholder">Not generated yet.</p></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

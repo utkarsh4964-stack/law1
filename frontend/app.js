@@ -12,17 +12,70 @@ let chatMode = "case";
 function showView(name) {
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById(`view-${name}`).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ---------------------------------------------------------------------------
+// toasts
+// ---------------------------------------------------------------------------
+
+let toastStack = document.querySelector(".toast-stack");
+if (!toastStack) {
+  toastStack = document.createElement("div");
+  toastStack.className = "toast-stack";
+  document.body.appendChild(toastStack);
+}
+
+function showToast(message, type = "info", timeoutMs = 4000) {
+  const el = document.createElement("div");
+  el.className = `toast toast-${type}`;
+  el.textContent = message;
+  toastStack.appendChild(el);
+  setTimeout(() => {
+    el.classList.add("toast-leaving");
+    setTimeout(() => el.remove(), 200);
+  }, timeoutMs);
+}
+
+// Render's free tier sleeps after 15 min idle; the first request after that
+// can take 30-60s to wake up and may bounce with a 502/503/504 (or just
+// fail to connect) before the app is actually ready. Previously ANY failure
+// here — including that wake-up blip — was treated as "your session is
+// invalid" and silently logged the user out, which is what made the app
+// feel like it kept kicking back to the login screen. Only a genuine 401
+// from the server (bad/expired token) should ever log the user out; a cold
+// server gets retried instead.
 async function apiFetch(path, options = {}) {
   const headers = options.headers || {};
   if (TOKEN) headers["Authorization"] = `Bearer ${TOKEN}`;
-  const res = await fetch(`${API}${path}`, { ...options, headers });
-  if (res.status === 401) {
-    logout();
-    throw new Error("Session expired. Please log in again.");
+  const method = (options.method || "GET").toUpperCase();
+  const maxRetries = method === "GET" ? 4 : 1; // idempotent reads retry harder
+  let lastErr = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let res;
+    try {
+      res = await fetch(`${API}${path}`, { ...options, headers });
+    } catch (networkErr) {
+      lastErr = networkErr;
+      if (attempt < maxRetries) { await sleep(1200 * (attempt + 1)); continue; }
+      throw new Error("SERVER_UNREACHABLE");
+    }
+
+    if (res.status === 401) {
+      logout();
+      throw new Error("SESSION_EXPIRED");
+    }
+    if ([502, 503, 504].includes(res.status) && attempt < maxRetries) {
+      lastErr = new Error(`HTTP ${res.status}`);
+      await sleep(1200 * (attempt + 1));
+      continue;
+    }
+    return res;
   }
-  return res;
+  throw new Error("SERVER_UNREACHABLE");
 }
 
 function escapeHtml(str) {
@@ -38,6 +91,23 @@ function fmtTime(iso) {
 }
 
 // ---------------------------------------------------------------------------
+// landing
+// ---------------------------------------------------------------------------
+
+document.getElementById("landing-nav-signin").addEventListener("click", () => showView("login"));
+document.getElementById("landing-get-started").addEventListener("click", () => showView("login"));
+document.getElementById("landing-cta-signin").addEventListener("click", () => showView("login"));
+document.getElementById("login-back").addEventListener("click", () => showView("landing"));
+
+document.querySelectorAll(".demo-cred-row").forEach(row => {
+  row.addEventListener("click", () => {
+    document.getElementById("login-username").value = row.dataset.user;
+    document.getElementById("login-password").value = row.dataset.pass;
+    document.getElementById("login-error").textContent = "";
+  });
+});
+
+// ---------------------------------------------------------------------------
 // auth
 // ---------------------------------------------------------------------------
 
@@ -46,21 +116,42 @@ document.getElementById("login-form").addEventListener("submit", async e => {
   const username = document.getElementById("login-username").value.trim();
   const password = document.getElementById("login-password").value;
   const errEl = document.getElementById("login-error");
+  const submitBtn = document.querySelector("#login-form button[type='submit']");
   errEl.textContent = "";
-  try {
-    const res = await fetch(`${API}/auth/login`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) { errEl.textContent = data.detail || "Login failed."; return; }
-    TOKEN = data.token;
-    localStorage.setItem("case_ai_token", TOKEN);
-    ME = { username: data.username, role: data.role, name: data.display_name };
-    enterApp();
-  } catch {
-    errEl.textContent = "Could not reach the server.";
+  submitBtn.disabled = true;
+
+  const maxAttempts = 6; // covers Render's ~30-60s cold-start window
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if ([502, 503, 504].includes(res.status) && attempt < maxAttempts) {
+        errEl.textContent = `Server is waking up (Render free tier)… retrying (${attempt}/${maxAttempts})`;
+        await sleep(1500 * attempt);
+        continue;
+      }
+
+      const data = await res.json();
+      if (!res.ok) { errEl.textContent = data.detail || "Login failed."; break; }
+      TOKEN = data.token;
+      localStorage.setItem("case_ai_token", TOKEN);
+      ME = { username: data.username, role: data.role, name: data.display_name };
+      errEl.textContent = "";
+      enterApp();
+      break;
+    } catch {
+      if (attempt < maxAttempts) {
+        errEl.textContent = `Server is waking up (Render free tier)… retrying (${attempt}/${maxAttempts})`;
+        await sleep(1500 * attempt);
+        continue;
+      }
+      errEl.textContent = "Could not reach the server after several tries. Check your connection, or the Render service may be down — try again shortly.";
+    }
   }
+  submitBtn.disabled = false;
 });
 
 function logout() {
@@ -76,11 +167,21 @@ document.getElementById("logout-btn").addEventListener("click", logout);
 document.getElementById("back-to-cases").addEventListener("click", () => { CURRENT_CASE_ID = null; showView("cases"); loadCases(); });
 
 async function enterApp() {
+  const errEl = document.getElementById("login-error");
   try {
     const res = await apiFetch("/auth/me");
-    if (!res.ok) throw new Error();
+    if (!res.ok) { logout(); return; }
     ME = await res.json();
-  } catch { logout(); return; }
+  } catch (err) {
+    // apiFetch already called logout() itself for a real 401 (SESSION_EXPIRED).
+    // For anything else (server still waking up / unreachable), stay put and
+    // tell the user what's actually happening instead of silently dumping
+    // them back to a blank login form.
+    if (err.message !== "SESSION_EXPIRED" && errEl) {
+      errEl.textContent = "Server is waking up (Render free tier can take up to a minute after being idle). Please try signing in again.";
+    }
+    return;
+  }
   document.getElementById("whoami").textContent = `${ME.name} · ${ME.role}`;
   document.getElementById("whoami-workspace").textContent = `${ME.name} · ${ME.role}`;
   showView("cases");
@@ -91,17 +192,58 @@ async function enterApp() {
 // my cases
 // ---------------------------------------------------------------------------
 
+let ALL_CASES = [];
+
 async function loadCases() {
-  const res = await apiFetch("/cases");
-  const cases = await res.json();
+  const grid = document.getElementById("case-grid");
+  grid.innerHTML = Array.from({ length: 3 }, () => '<div class="case-tile-skeleton"></div>').join("");
+  let cases;
+  try {
+    const res = await apiFetch("/cases");
+    cases = await res.json();
+  } catch (err) {
+    grid.innerHTML = "";
+    renderEmptyState(grid, "icon-alert", "Couldn't load cases",
+      err.message === "SERVER_UNREACHABLE" ? "The server may still be waking up — try again in a moment." : "Something went wrong loading your cases.");
+    return;
+  }
+  ALL_CASES = cases;
+  renderCaseGrid(cases);
+}
+
+function renderCaseGrid(cases) {
   const grid = document.getElementById("case-grid");
   grid.innerHTML = "";
   if (cases.length === 0) {
-    grid.innerHTML = '<p class="placeholder">No investigations yet. Create one to get started.</p>';
+    const isFiltered = document.getElementById("case-search").value.trim().length > 0;
+    renderEmptyState(grid, isFiltered ? "icon-list" : "icon-folder",
+      isFiltered ? "No matching cases" : "No investigations yet",
+      isFiltered ? "Try a different search term." : "Create your first case to start uploading documents.");
     return;
   }
   cases.forEach(c => grid.appendChild(caseTile(c)));
 }
+
+function renderEmptyState(container, icon, title, sub) {
+  container.innerHTML = `
+    <div class="empty-state" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24"><use href="#${icon}"/></svg>
+      <div class="empty-state-title">${escapeHtml(title)}</div>
+      <div class="empty-state-sub">${escapeHtml(sub)}</div>
+    </div>`;
+}
+
+document.getElementById("case-search").addEventListener("input", debounce(e => {
+  const q = e.target.value.trim().toLowerCase();
+  if (!q) { renderCaseGrid(ALL_CASES); return; }
+  const filtered = ALL_CASES.filter(c =>
+    (c.title || "").toLowerCase().includes(q) ||
+    (c.id || "").toLowerCase().includes(q) ||
+    (c.investigating_officer || "").toLowerCase().includes(q) ||
+    (c.case_type || "").toLowerCase().includes(q)
+  );
+  renderCaseGrid(filtered);
+}, 200));
 
 function caseTile(c) {
   const el = document.createElement("div");
@@ -127,6 +269,15 @@ const newCaseModal = document.getElementById("new-case-modal");
 document.getElementById("new-case-btn").addEventListener("click", () => newCaseModal.classList.add("active"));
 document.getElementById("nc-cancel").addEventListener("click", () => newCaseModal.classList.remove("active"));
 
+// Close modals on backdrop click or Escape — applies to every .modal-backdrop in the app.
+document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+  backdrop.addEventListener("click", e => { if (e.target === backdrop) backdrop.classList.remove("active"); });
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  document.querySelectorAll(".modal-backdrop.active").forEach(m => m.classList.remove("active"));
+});
+
 document.getElementById("new-case-form").addEventListener("submit", async e => {
   e.preventDefault();
   const payload = {
@@ -137,11 +288,26 @@ document.getElementById("new-case-form").addEventListener("submit", async e => {
     status: document.getElementById("nc-status").value,
     priority: document.getElementById("nc-priority").value,
   };
-  const res = await apiFetch("/cases", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
-  });
-  const data = await res.json();
-  if (!res.ok) { alert(data.detail || "Could not create case."); return; }
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Creating…";
+  let res, data;
+  try {
+    res = await apiFetch("/cases", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+    });
+    data = await res.json();
+  } catch (err) {
+    showToast(err.message === "SERVER_UNREACHABLE" ? "Could not reach the server — try again in a moment." : "Something went wrong. Please try again.", "error");
+    submitBtn.disabled = false; submitBtn.textContent = "Create Case";
+    return;
+  }
+  if (!res.ok) {
+    showToast(data.detail || "Could not create case.", "error");
+    submitBtn.disabled = false; submitBtn.textContent = "Create Case";
+    return;
+  }
+  submitBtn.disabled = false; submitBtn.textContent = "Create Case";
   newCaseModal.classList.remove("active");
   e.target.reset();
   openCase(data.id);
@@ -161,26 +327,47 @@ tabs.forEach(tab => {
     panels.forEach(p => p.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "auto" });
     onTabShown(tab.dataset.tab);
   });
 });
 
 function onTabShown(name) {
   if (name === "dashboard") return loadDashboard();
+  if (name === "intelligence") return onIntelSubtabShown(currentIntelSubtab);
   if (loadedTabs.has(name)) return;
-  if (name === "intelligence") {
-    loadedTabs.add("intelligence");
-    loadSummary();
-    loadContradictions();
-    loadArguments();
-    return;
-  }
   if (name === "timeline") loadTimeline();
   if (name === "graph") loadGraph();
   if (name === "similar") loadSimilar();
   if (name === "audit") loadAudit();
 }
 
+// ---------------------------------------------------------------------------
+// case intelligence (merged: summary, contradictions, arguments, chat)
+// ---------------------------------------------------------------------------
+
+let currentIntelSubtab = "summary";
+const intelSubtabs = document.querySelectorAll(".subtab-btn");
+const intelSubpanels = document.querySelectorAll(".intel-subpanel");
+
+intelSubtabs.forEach(btn => {
+  btn.addEventListener("click", () => {
+    intelSubtabs.forEach(b => b.classList.remove("active"));
+    intelSubpanels.forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`intel-${btn.dataset.subtab}`).classList.add("active");
+    currentIntelSubtab = btn.dataset.subtab;
+    onIntelSubtabShown(currentIntelSubtab);
+  });
+});
+
+function onIntelSubtabShown(name) {
+  if (loadedTabs.has(`intel-${name}`)) return;
+  if (name === "summary") loadSummary();
+  if (name === "contradictions") loadContradictions();
+  if (name === "arguments") loadArguments();
+  // "chat" needs no preload — the chat window loads its own history lazily.
+}
 async function openCase(caseId) {
   CURRENT_CASE_ID = caseId;
   loadedTabs.clear();
@@ -189,6 +376,11 @@ async function openCase(caseId) {
   panels.forEach(p => p.classList.remove("active"));
   document.querySelector('.tab[data-tab="dashboard"]').classList.add("active");
   document.getElementById("panel-dashboard").classList.add("active");
+  intelSubtabs.forEach(b => b.classList.remove("active"));
+  intelSubpanels.forEach(p => p.classList.remove("active"));
+  document.querySelector('.subtab-btn[data-subtab="summary"]').classList.add("active");
+  document.getElementById("intel-summary").classList.add("active");
+  currentIntelSubtab = "summary";
   showView("workspace");
   await refreshDocuments();
   await loadDashboard();
@@ -207,15 +399,14 @@ async function loadDashboard() {
   document.getElementById("dash-sub").textContent =
     `${data.case.id} · ${data.case.case_type} · ${data.case.status} · Priority: ${data.case.priority}`;
 
-  document.getElementById("stat-grid").innerHTML = [
-    ["Documents", data.document_count], ["Persons", data.person_count],
-    ["Events", data.event_count], ["Contradictions", data.contradiction_count],
-    ["Evidence Links", data.evidence_link_count],
-  ].map(([label, num]) => `<div class="stat-tile"><div class="stat-num">${num}</div><div class="stat-label">${label}</div></div>`).join("");
-
+    document.getElementById("stat-grid").innerHTML = [
+    ["Documents", data.document_count, "icon-folder", "gold"], ["Persons", data.person_count, "icon-person", "info"],
+    ["Events", data.event_count, "icon-calendar", "ok"], ["Contradictions", data.contradiction_count, "icon-alert", "rose"],
+    ["Evidence Links", data.evidence_link_count, "icon-link", "gold-dim"],
+  ].map(([label, num, icon, tone]) => `<div class="stat-tile tone-${tone}"><svg class="stat-icon"><use href="#${icon}"/></svg><div class="stat-num">${num}</div><div class="stat-label">${label}</div></div>`).join("");
   const activity = document.getElementById("dash-activity");
   if (!data.recent_activity.length) {
-    activity.innerHTML = '<p class="placeholder">No activity yet.</p>';
+    renderEmptyState(activity, "icon-list", "No activity yet", "Upload a document or run an analysis to start the audit trail.");
   } else {
     activity.innerHTML = data.recent_activity.map(a => `
       <div class="activity-row">
@@ -249,26 +440,24 @@ dropzone.addEventListener("drop", e => uploadFiles(e.dataTransfer.files));
 
 async function uploadFiles(files) {
   for (const file of files) {
-    uploadStatus.textContent = `Uploading ${file.name} …`;
+    uploadStatus.innerHTML = `<span class="loading-line"><span class="spinner"></span>Uploading ${escapeHtml(file.name)} …</span>`;
     pipelineEl.innerHTML = "";
     const form = new FormData();
     form.append("file", file);
     try {
       const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`, { method: "POST", body: form });
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = { detail: `Server error (${res.status}). Check the server logs for details.` };
-      }
+      const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Upload failed");
       uploadStatus.textContent = `${file.name} processed.`;
       pipelineEl.innerHTML = data.processing_steps.map(s => `<div class="step-done">${PIPELINE_LABELS[s] || s}</div>`).join("");
+      showToast(`${file.name} uploaded and processed.`, "success");
       invalidateCase();
       await refreshDocuments();
       await loadDashboard();
     } catch (err) {
-      uploadStatus.innerHTML = `<span class="err">${file.name}: ${err.message}</span>`;
+      const msg = err.message === "SERVER_UNREACHABLE" ? "Could not reach the server." : err.message;
+      uploadStatus.innerHTML = `<span class="err">${escapeHtml(file.name)}: ${escapeHtml(msg)}</span>`;
+      showToast(`Failed to upload ${file.name}.`, "error");
     }
   }
   fileInput.value = "";
@@ -291,7 +480,14 @@ async function refreshDocuments() {
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents?${params}`);
   const docs = await res.json();
   docList.innerHTML = "";
-  docs.forEach((doc, i) => docList.appendChild(exhibitCard(doc, i + 1)));
+  if (docs.length === 0) {
+    const isFiltered = q || (filter && filter !== "All");
+    renderEmptyState(docList, isFiltered ? "icon-folder" : "icon-upload",
+      isFiltered ? "No matching documents" : "No documents yet",
+      isFiltered ? "Try a different search term or filter." : "Drop a file above or click the upload area to add the first document.");
+  } else {
+    docs.forEach((doc, i) => docList.appendChild(exhibitCard(doc, i + 1)));
+  }
 
   const filterSel = document.getElementById("vault-filter");
   const current = filterSel.value;
@@ -304,8 +500,10 @@ function exhibitCard(doc, index) {
   el.className = "exhibit-card";
   const entityCount = (doc.entities || []).length;
   const eventCount = (doc.events || []).length;
+  const ext = (doc.filename.split(".").pop() || "").toLowerCase();
   el.innerHTML = `
     <div class="exhibit-tag">EXHIBIT ${String(index).padStart(3, "0")}</div>
+    <span class="file-badge file-badge-${ext}">${escapeHtml(ext || "file")}</span>
     <div class="exhibit-name">${escapeHtml(doc.filename)}</div>
     <div class="exhibit-type">${escapeHtml(doc.doc_type || "document")}</div>
     <p class="exhibit-summary">${escapeHtml(doc.summary || "")}</p>
@@ -322,7 +520,8 @@ function exhibitCard(doc, index) {
     e.stopPropagation();
     if (!confirm(`Remove ${doc.filename}?`)) return;
     const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents/${doc.id}`, { method: "DELETE" });
-    if (!res.ok) { const d = await res.json(); alert(d.detail); return; }
+    if (!res.ok) { const d = await res.json(); showToast(d.detail || "Could not remove document.", "error"); return; }
+    showToast(`${doc.filename} removed.`, "success");
     invalidateCase();
     refreshDocuments();
     loadDashboard();
@@ -368,12 +567,12 @@ async function loadSummary() {
   const body = document.getElementById("summary-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  body.innerHTML = '<p class="placeholder">Synthesizing case summary…</p>';
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Synthesizing case summary…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/summary`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
   body.innerHTML = data.summary.split("\n\n").map(p => `<p>${escapeHtml(p)}</p>`).join("");
-  loadedTabs.add("summary");
+  loadedTabs.add("intel-summary");
 }
 
 // ---------------------------------------------------------------------------
@@ -384,7 +583,7 @@ async function loadTimeline() {
   const body = document.getElementById("timeline-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  body.innerHTML = '<p class="placeholder">Extracting timeline…</p>';
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Extracting timeline…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/timeline`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
@@ -420,50 +619,94 @@ async function loadTimeline() {
 // graph
 // ---------------------------------------------------------------------------
 
-const typeColors = { person: "#c99a2e", organization: "#6f9270", location: "#7791b5", other: "#9c9583" };
+// Muted, desaturated accents so entity types stay distinguishable at a
+// glance without fighting the app's otherwise black/white/gray theme.
+const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
+let GRAPH_DATA = null;
+let GRAPH_NETWORK = null;
 
 async function loadGraph() {
   const canvas = document.getElementById("graph-canvas");
   const legend = document.getElementById("graph-legend");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  canvas.innerHTML = '<p class="placeholder" style="padding:20px">Mapping connections…</p>';
+  canvas.innerHTML = '<p class="loading-line" style="padding:20px"><span class="spinner"></span>Mapping connections…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/graph`);
   const data = await res.json();
   if (!res.ok) { canvas.innerHTML = `<p class="err">${data.detail}</p>`; return; }
 
+  GRAPH_DATA = data;
+  legend.innerHTML = Object.entries(typeColors)
+    .map(([type, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${type}</span>`).join("") +
+    `<span><span class="legend-dot" style="background:transparent;box-shadow:0 0 0 1px var(--text-faint)"></span>unconnected</span>`;
+  renderGraph();
+  loadedTabs.add("graph");
+}
+
+function renderGraph() {
+  const canvas = document.getElementById("graph-canvas");
+  const data = GRAPH_DATA;
+  if (!data) return;
+
+  const showIsolated = document.getElementById("graph-show-isolated").checked;
+  const connectedIds = new Set();
+  data.edges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
+  const visibleNodes = showIsolated ? data.nodes : data.nodes.filter(n => connectedIds.has(n.id));
+  const hiddenCount = data.nodes.length - visibleNodes.length;
+
   canvas.innerHTML = "";
-  const nodes = new vis.DataSet(data.nodes.map(n => ({
+  if (visibleNodes.length === 0) {
+    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections found yet — check "Show unconnected entities" or upload more documents.</p>';
+    return;
+  }
+
+  const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label,
-    color: { background: typeColors[n.type] || typeColors.other, border: "#17160f" },
-    font: { color: "#17160f", face: "Inter", size: 13 }, shape: "dot", size: 16,
+    color: { background: typeColors[n.type] || typeColors.other, border: "#2a2313", highlight: { background: "#a1402f", border: "#2a2313" } },
+    font: { color: "#2a2313", face: "Inter", size: 13, strokeWidth: 3, strokeColor: "#fffcf2", vadjust: -18 },
+    shape: "dot", size: 15, borderWidth: 2,
   })));
-  const edges = new vis.DataSet(data.edges.map((e, i) => ({
-    id: i, from: e.source, to: e.target, label: e.relation, evidence: e.evidence,
-    color: { color: "#3c3826", highlight: "#c99a2e" },
-    font: { color: "#9c9583", size: 10, strokeWidth: 0, background: "#17160f" }, arrows: "to",
-  })));
+  const edges = new vis.DataSet(data.edges
+    .filter(e => visibleNodes.some(n => n.id === e.source) && visibleNodes.some(n => n.id === e.target))
+    .map((e, i) => ({
+      id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
+      color: { color: "#a89a72", highlight: "#a1402f", hover: "#2b4864" },
+      width: 1.4, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
+    })));
 
   const network = new vis.Network(canvas, { nodes, edges }, {
-    physics: { solver: "forceAtlas2Based", forceAtlas2Based: { springLength: 140 } },
-    interaction: { hover: true },
+    physics: {
+      solver: "forceAtlas2Based",
+      forceAtlas2Based: { springLength: 190, avoidOverlap: 0.8, gravitationalConstant: -60 },
+      stabilization: { iterations: 150 },
+    },
+    interaction: { hover: true, tooltipDelay: 120 },
+    edges: { font: { size: 0 } }, // relation text lives in the hover tooltip + click panel, not always-on canvas text
   });
+  GRAPH_NETWORK = network;
+  network.once("stabilizationIterationsDone", () => network.fit({ animation: { duration: 400 } }));
 
   const evidencePanel = document.getElementById("edge-evidence");
+  evidencePanel.style.display = "none";
   network.on("click", params => {
     if (params.edges.length) {
       const edge = edges.get(params.edges[0]);
       evidencePanel.style.display = "block";
-      evidencePanel.innerHTML = `<strong>${escapeHtml(edge.label || "")}</strong><p style="margin-top:8px;color:var(--text-muted);font-size:13px">Evidence: ${escapeHtml(edge.evidence || "—")}</p>`;
+      evidencePanel.innerHTML = `<strong>${escapeHtml(edge.relation || "")}</strong><p style="margin-top:8px;color:var(--text-muted);font-size:13px">Evidence: ${escapeHtml(edge.evidence || "—")}</p>`;
     } else {
       evidencePanel.style.display = "none";
     }
   });
 
-  legend.innerHTML = Object.entries(typeColors)
-    .map(([type, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${type}</span>`).join("");
-  loadedTabs.add("graph");
+  const hintEl = document.querySelector(".graph-hint");
+  if (hintEl && hiddenCount > 0) {
+    hintEl.textContent = `Scroll to zoom · drag to pan · ${hiddenCount} unconnected ${hiddenCount === 1 ? "entity" : "entities"} hidden`;
+  } else if (hintEl) {
+    hintEl.textContent = "Scroll to zoom · drag to pan · drag a dot to reposition it";
+  }
 }
+
+document.getElementById("graph-show-isolated").addEventListener("change", () => { if (GRAPH_DATA) renderGraph(); });
 
 // ---------------------------------------------------------------------------
 // contradictions
@@ -473,7 +716,7 @@ async function loadContradictions() {
   const body = document.getElementById("contradiction-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  body.innerHTML = '<p class="placeholder">Comparing evidence across documents…</p>';
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Comparing evidence across documents…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/contradictions`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
@@ -496,7 +739,7 @@ async function loadContradictions() {
       </div>
     `).join("");
   }
-  loadedTabs.add("contradictions");
+  loadedTabs.add("intel-contradictions");
 }
 
 // ---------------------------------------------------------------------------
@@ -507,7 +750,7 @@ async function loadSimilar() {
   const body = document.getElementById("similar-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  body.innerHTML = '<p class="placeholder">Comparing against the case library…</p>';
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Comparing against the case library…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/similar-cases`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
@@ -538,7 +781,7 @@ async function loadArguments() {
   const body = document.getElementById("arguments-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  body.innerHTML = '<p class="placeholder">Analyzing evidence for potential arguments…</p>';
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Analyzing evidence for potential arguments…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/arguments`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
@@ -557,7 +800,7 @@ async function loadArguments() {
       </div>
     `).join("");
   }
-  loadedTabs.add("arguments");
+  loadedTabs.add("intel-arguments");
 }
 
 // ---------------------------------------------------------------------------
@@ -582,7 +825,7 @@ chatForm.addEventListener("submit", async e => {
   if (!message) return;
   appendChat("user", message);
   chatInput.value = "";
-  const thinking = appendChat("assistant", "…thinking…");
+  const thinking = appendChat("assistant", null, true);
   const lang = document.getElementById("chat-lang").value;
   try {
     const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/chat`, {
@@ -590,19 +833,28 @@ chatForm.addEventListener("submit", async e => {
       body: JSON.stringify({ message, mode: chatMode, lang }),
     });
     const data = await res.json();
-    thinking.textContent = res.ok ? data.answer : (data.detail || "Something went wrong.");
+    setChatBubbleText(thinking, res.ok ? data.answer : (data.detail || "Something went wrong."));
   } catch {
-    thinking.textContent = "Could not reach the server.";
+    setChatBubbleText(thinking, "Could not reach the server — it may be waking up, please try again.");
   }
 });
 
-function appendChat(role, text) {
+function appendChat(role, text, thinking = false) {
   const el = document.createElement("div");
   el.className = `chat-msg ${role}`;
-  el.textContent = text;
+  const label = role === "user" ? "You" : "Case AI";
+  el.innerHTML = `
+    <div class="chat-msg-head"><span class="chat-msg-role">${label}</span><span class="chat-msg-time">${fmtTime(new Date().toISOString())}</span></div>
+    <div class="chat-msg-body">${thinking ? '<span class="typing-dots"><span></span><span></span><span></span></span>' : escapeHtml(text)}</div>
+  `;
   chatWindow.appendChild(el);
   chatWindow.scrollTop = chatWindow.scrollHeight;
   return el;
+}
+
+function setChatBubbleText(el, text) {
+  el.querySelector(".chat-msg-body").textContent = text;
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 // voice input (Web Speech API - Chrome/Edge only, gracefully degrades elsewhere)
@@ -625,7 +877,7 @@ if (SpeechRecognition) {
   });
 } else {
   micBtn.title = "Voice input not supported in this browser";
-  micBtn.addEventListener("click", () => alert("Voice input isn't supported in this browser — try Chrome or Edge."));
+  micBtn.addEventListener("click", () => showToast("Voice input isn't supported in this browser — try Chrome or Edge.", "error"));
 }
 
 // ---------------------------------------------------------------------------
@@ -639,18 +891,27 @@ let lastReport = "";
 
 generateBtn.addEventListener("click", async () => {
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) { reportBody.innerHTML = '<p class="placeholder">Upload documents first.</p>'; return; }
-  reportBody.innerHTML = '<p class="placeholder">Assembling structured case report…</p>';
+  if (docs.length === 0) {
+    renderEmptyState(reportBody, "icon-doc-check", "No documents yet", "Upload case documents in the Document Vault before generating a report.");
+    return;
+  }
+  reportBody.innerHTML = '<p class="loading-line"><span class="spinner"></span>Assembling structured case report…</p>';
   generateBtn.disabled = true;
+  const originalLabel = generateBtn.textContent;
+  generateBtn.textContent = "Generating…";
   try {
     const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/report`);
     const text = await res.text();
-    if (!res.ok) { reportBody.innerHTML = `<p class="err">${text}</p>`; return; }
+    if (!res.ok) { reportBody.innerHTML = `<p class="err">${escapeHtml(text)}</p>`; showToast("Could not generate the report.", "error"); return; }
     lastReport = text;
     reportBody.innerHTML = markdownToHtml(text);
     downloadBtn.disabled = false;
+    showToast("Case report generated.", "success");
+  } catch (err) {
+    reportBody.innerHTML = `<p class="err">${err.message === "SERVER_UNREACHABLE" ? "Could not reach the server." : "Something went wrong."}</p>`;
   } finally {
     generateBtn.disabled = false;
+    generateBtn.textContent = originalLabel;
   }
 });
 
@@ -697,7 +958,7 @@ async function loadAudit() {
   const body = document.getElementById("audit-body");
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/audit-log`);
   const data = await res.json();
-  if (!data.log.length) { body.innerHTML = '<p class="placeholder">No activity yet.</p>'; return; }
+  if (!data.log.length) { renderEmptyState(body, "icon-list", "No activity yet", "Every upload, deletion and analysis on this case will show up here."); return; }
   body.innerHTML = `
     <table class="audit-table">
       <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th></tr></thead>
@@ -716,25 +977,11 @@ async function loadAudit() {
 }
 
 // ---------------------------------------------------------------------------
-// demo credential quick-fill
-// ---------------------------------------------------------------------------
-
-const demoTable = document.getElementById("demo-creds-table");
-if (demoTable) {
-  demoTable.addEventListener("click", e => {
-    const row = e.target.closest("tr[data-user]");
-    if (!row) return;
-    document.getElementById("login-username").value = row.dataset.user;
-    document.getElementById("login-password").value = row.dataset.pass;
-  });
-}
-
-// ---------------------------------------------------------------------------
 // init
 // ---------------------------------------------------------------------------
 
 if (TOKEN) {
   enterApp();
 } else {
-  showView("login");
+  showView("landing");
 }

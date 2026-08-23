@@ -585,6 +585,34 @@ async function loadSummary() {
 // timeline
 // ---------------------------------------------------------------------------
 
+let TIMELINE_DATA = null;
+let tlView = "cards";
+let tlVisibleCount = 8;
+const TL_PAGE_SIZE = 8;
+
+// Lightweight keyword heuristic — no event "type" comes back from the API,
+// so we infer one from the description to give each entry a distinct badge.
+const TL_TYPES = [
+  { key: "communication", label: "Communication", icon: "icon-mail", cls: "tl-badge-info", test: /\bemail(ed)?|mail(ed)?|repl(y|ied)|wrote|message(d)?|call(ed)?\b/i },
+  { key: "logistics", label: "Logistics", icon: "icon-truck", cls: "tl-badge-thread", test: /\bdeliver(y|ed)?|shipment|warehouse|goods|dispatch(ed)?\b/i },
+  { key: "financial", label: "Financial / vendor", icon: "icon-bank", cls: "tl-badge-ok", test: /\bvendor|approved|invoice|payment|account|bank|audit\b/i },
+  { key: "employment", label: "Employment", icon: "icon-briefcase", cls: "tl-badge-teal", test: /\bbegan working|joined|hired|employ(ed|ment)|started at\b/i },
+  { key: "meeting", label: "Meeting / statement", icon: "icon-person", cls: "tl-badge-amber", test: /\bmeeting|discussed|statement|interview(ed)?|asked\b/i },
+];
+function classifyEvent(desc) {
+  const hit = TL_TYPES.find(t => t.test.test(desc));
+  return hit || { key: "other", label: "Other", icon: "icon-calendar", cls: "tl-badge-teal" };
+}
+
+// Parses "2025-10-13" into a stacked date block; falls back to the raw
+// string for partial dates like "2022" or "early 2025".
+function tlDateParts(dateStr) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (!m) return { year: dateStr, day: null, month: null };
+  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  return { year: m[1], day: m[2], month: months[parseInt(m[2], 10) - 1] };
+}
+
 async function loadTimeline() {
   const body = document.getElementById("timeline-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
@@ -594,32 +622,125 @@ async function loadTimeline() {
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
 
+  TIMELINE_DATA = data;
+  tlVisibleCount = TL_PAGE_SIZE;
+  populateTimelineFilters(data);
+  renderTimeline();
+  loadedTabs.add("timeline");
+}
+
+function populateTimelineFilters(data) {
+  const typeSel = document.getElementById("tl-type-filter");
+  const timeSel = document.getElementById("tl-time-filter");
+  const typesSeen = new Map();
+  const yearsSeen = new Set();
+  data.events.forEach(ev => {
+    const t = classifyEvent(ev.description);
+    typesSeen.set(t.key, t.label);
+    const y = /^\d{4}/.exec(ev.date);
+    if (y) yearsSeen.add(y[0]);
+  });
+  typeSel.innerHTML = '<option value="all">All events</option>' +
+    [...typesSeen.entries()].map(([key, label]) => `<option value="${key}">${escapeHtml(label)}</option>`).join("");
+  timeSel.innerHTML = '<option value="all">All time</option>' +
+    [...yearsSeen].sort().map(y => `<option value="${y}">${y}</option>`).join("");
+}
+
+function renderTimeline() {
+  const body = document.getElementById("timeline-body");
+  const loadMoreBtn = document.getElementById("tl-load-more");
+  const data = TIMELINE_DATA;
+  if (!data) return;
+
+  const typeFilter = document.getElementById("tl-type-filter").value;
+  const timeFilter = document.getElementById("tl-time-filter").value;
+
+  let events = data.events.filter(ev => {
+    const t = classifyEvent(ev.description);
+    if (typeFilter !== "all" && t.key !== typeFilter) return false;
+    if (timeFilter !== "all" && !ev.date.startsWith(timeFilter)) return false;
+    return true;
+  });
+
   let html = "";
-  if (data.events.length) {
-    html += '<div class="timeline-list">';
-    data.events.forEach(ev => {
-      html += `
-        <div class="timeline-item" data-doc="${ev.doc_id}">
-          <div class="timeline-date">${escapeHtml(ev.date)}</div>
-          <div class="timeline-desc">${escapeHtml(ev.description)}</div>
-          <div class="timeline-source">${escapeHtml(ev.source)}</div>
-        </div>`;
+  if (events.length) {
+    const shown = events.slice(0, tlVisibleCount);
+    html += `<div class="tl-list tl-list-${tlView}">`;
+    shown.forEach(ev => {
+      const t = classifyEvent(ev.description);
+      const dp = tlDateParts(ev.date);
       const gap = data.gaps.find(g => g.after === ev.date);
+
+      if (tlView === "list") {
+        html += `
+          <div class="tl-row" data-doc="${ev.doc_id}">
+            <span class="tl-row-badge ${t.cls}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#${t.icon}"/></svg></span>
+            <span class="tl-row-date">${escapeHtml(ev.date)}</span>
+            <span class="tl-row-desc">${escapeHtml(ev.description)}</span>
+            <span class="tl-row-source">${escapeHtml(ev.source)}</span>
+          </div>`;
+      } else {
+        html += `
+          <div class="tl-card" data-doc="${ev.doc_id}">
+            <div class="tl-badge ${t.cls}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#${t.icon}"/></svg></div>
+            <div class="tl-card-body">
+              <div class="tl-card-top">
+                <div class="tl-dateblock">
+                  ${dp.day ? `<span class="tl-year">${dp.year}</span><span class="tl-day">${dp.day}</span><span class="tl-month">${dp.month}</span>` : `<span class="tl-year">${escapeHtml(dp.year)}</span>`}
+                </div>
+                <div class="tl-card-main">
+                  <div class="tl-desc">${escapeHtml(ev.description)}</div>
+                  <div class="tl-source"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-folder"/></svg>${escapeHtml(ev.source)}</div>
+                </div>
+                <span class="evidence-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-check-circle"/></svg>Evidence-backed</span>
+              </div>
+            </div>
+          </div>`;
+      }
       if (gap) html += `<div class="gap-marker">Gap of ~${gap.days} days before the next event</div>`;
     });
     html += "</div>";
   } else {
-    html += '<p class="placeholder">No dated events were found.</p>';
+    html += '<p class="placeholder">No dated events match this filter.</p>';
   }
-  if (data.undated.length) {
+  if (data.undated.length && typeFilter === "all" && timeFilter === "all") {
     html += '<div class="section-label">Undated events</div><ul>';
     data.undated.forEach(ev => { html += `<li>${escapeHtml(ev.description)} <span class="timeline-source">— ${escapeHtml(ev.source)}</span></li>`; });
     html += "</ul>";
   }
   body.innerHTML = html;
-  body.querySelectorAll(".timeline-item").forEach(el => el.addEventListener("click", () => openDocModal(el.dataset.doc)));
-  loadedTabs.add("timeline");
+  body.querySelectorAll("[data-doc]").forEach(el => el.addEventListener("click", () => openDocModal(el.dataset.doc)));
+
+  loadMoreBtn.style.display = events.length > tlVisibleCount ? "" : "none";
 }
+
+function exportTimelineText() {
+  if (!TIMELINE_DATA || !TIMELINE_DATA.events.length) { showToast("No timeline to export yet", "info"); return; }
+  let out = `Investigation Timeline — Case ${CURRENT_CASE_ID}\n\n`;
+  TIMELINE_DATA.events.forEach(ev => { out += `${ev.date}\t${ev.description}\t(${ev.source})\n`; });
+  if (TIMELINE_DATA.undated.length) {
+    out += `\nUndated events\n`;
+    TIMELINE_DATA.undated.forEach(ev => { out += `- ${ev.description} (${ev.source})\n`; });
+  }
+  const blob = new Blob([out], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${CURRENT_CASE_ID}-timeline.txt`;
+  a.click();
+}
+
+document.querySelectorAll(".view-toggle-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".view-toggle-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    tlView = btn.dataset.view;
+    renderTimeline();
+  });
+});
+document.getElementById("tl-type-filter")?.addEventListener("change", () => { tlVisibleCount = TL_PAGE_SIZE; renderTimeline(); });
+document.getElementById("tl-time-filter")?.addEventListener("change", () => { tlVisibleCount = TL_PAGE_SIZE; renderTimeline(); });
+document.getElementById("tl-load-more")?.addEventListener("click", () => { tlVisibleCount += TL_PAGE_SIZE; renderTimeline(); });
+document.getElementById("export-timeline-btn")?.addEventListener("click", exportTimelineText);
 
 // ---------------------------------------------------------------------------
 // graph

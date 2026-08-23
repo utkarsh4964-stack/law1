@@ -813,7 +813,7 @@ function renderRelLegend() {
   document.getElementById("graph-rel-legend").innerHTML =
     '<span class="legend-title">Relationships</span>' +
     REL_CATEGORIES.concat([{ key: "other", label: "Other", color: "#9c9070" }])
-      .map(c => `<span><span class="legend-dot" style="background:${c.color}"></span>${c.label}</span>`).join("");
+      .map(c => `<span><span class="legend-line" style="background:${c.color}"></span>${c.label}</span>`).join("");
 }
 
 function populateGraphFilters(data) {

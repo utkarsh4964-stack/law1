@@ -342,6 +342,12 @@ function onTabShown(name) {
   if (name === "audit") loadAudit();
 }
 
+document.querySelectorAll(".quick-action").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(`.tab[data-tab="${btn.dataset.goto}"]`)?.click();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // case intelligence (merged: summary, contradictions, arguments, chat)
 // ---------------------------------------------------------------------------
@@ -902,7 +908,13 @@ generateBtn.addEventListener("click", async () => {
   try {
     const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/report`);
     const text = await res.text();
-    if (!res.ok) { reportBody.innerHTML = `<p class="err">${escapeHtml(text)}</p>`; showToast("Could not generate the report.", "error"); return; }
+    if (!res.ok) {
+      let message = text;
+      try { message = JSON.parse(text).detail || text; } catch { /* not JSON, use raw text */ }
+      reportBody.innerHTML = `<p class="err">${escapeHtml(message)}</p>`;
+      showToast("Could not generate the report.", "error");
+      return;
+    }
     lastReport = text;
     reportBody.innerHTML = markdownToHtml(text);
     downloadBtn.disabled = false;

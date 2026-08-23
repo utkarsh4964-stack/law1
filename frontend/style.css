@@ -582,10 +582,14 @@ img { max-width: 100%; display: block; }
 
 /* ---------------- graph ---------------- */
 
-.graph-canvas { height: 500px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
-.graph-legend { display: flex; gap: 18px; margin-top: 12px; font-size: 11.5px; color: var(--text-muted); }
+.graph-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
+.graph-hint { font-size: 11.5px; color: var(--text-faint); }
+.graph-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none; }
+.graph-toggle input { accent-color: var(--teal); cursor: pointer; }
+.graph-canvas { height: 560px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); position: relative; }
+.graph-legend { display: flex; gap: 18px; margin-top: 12px; font-size: 11.5px; color: var(--text-muted); flex-wrap: wrap; }
 .graph-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(255,255,255,0.25); }
 
 /* ---------------- contradictions ---------------- */
 

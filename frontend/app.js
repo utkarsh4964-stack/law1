@@ -626,10 +626,27 @@ async function loadTimeline() {
 // ---------------------------------------------------------------------------
 
 // Muted, desaturated accents so entity types stay distinguishable at a
-// glance without fighting the app's otherwise black/white/gray theme.
+// glance without fighting the app's otherwise beige/navy/red theme.
 const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
 let GRAPH_DATA = null;
 let GRAPH_NETWORK = null;
+
+// A small white silhouette per entity type, baked onto a colored medallion,
+// rendered as a single flat SVG data-URI so vis-network can drop it straight
+// in as a node image — a person icon for people, a building for
+// organizations, a map pin for locations.
+const typeGlyphs = {
+  person: '<circle cx="30" cy="23" r="9"/><path d="M12 50c2-11 9-17 18-17s16 6 18 17" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>',
+  organization: '<rect x="16" y="12" width="28" height="34" rx="2"/><rect x="21" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="21" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="26" y="38" width="8" height="8" fill="TYPECOLOR"/>',
+  location: '<path d="M30 12c-7.7 0-14 6.1-14 13.6C16 35.5 30 50 30 50s14-14.5 14-24.4C44 18.1 37.7 12 30 12z"/><circle cx="30" cy="25" r="5.5" fill="TYPECOLOR"/>',
+  other: '<circle cx="30" cy="30" r="8"/><circle cx="30" cy="14" r="3.2"/><circle cx="30" cy="46" r="3.2"/><circle cx="14" cy="30" r="3.2"/><circle cx="46" cy="30" r="3.2"/>',
+};
+function nodeIcon(type) {
+  const color = typeColors[type] || typeColors.other;
+  const glyph = (typeGlyphs[type] || typeGlyphs.other).replaceAll("TYPECOLOR", color);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="${color}" stroke="#2a2313" stroke-width="2"/><g fill="#fffcf2">${glyph}</g></svg>`;
+  return "data:image/svg+xml;base64," + btoa(svg);
+}
 
 async function loadGraph() {
   const canvas = document.getElementById("graph-canvas");
@@ -643,7 +660,7 @@ async function loadGraph() {
 
   GRAPH_DATA = data;
   legend.innerHTML = Object.entries(typeColors)
-    .map(([type, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${type}</span>`).join("") +
+    .map(([type, color]) => `<span><img class="legend-icon" src="${nodeIcon(type)}" alt=""/>${type}</span>`).join("") +
     `<span><span class="legend-dot" style="background:transparent;box-shadow:0 0 0 1px var(--text-faint)"></span>unconnected</span>`;
   renderGraph();
   loadedTabs.add("graph");
@@ -668,16 +685,16 @@ function renderGraph() {
 
   const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label,
-    color: { background: typeColors[n.type] || typeColors.other, border: "#2a2313", highlight: { background: "#a1402f", border: "#2a2313" } },
-    font: { color: "#2a2313", face: "Inter", size: 13, strokeWidth: 3, strokeColor: "#fffcf2", vadjust: -18 },
-    shape: "dot", size: 15, borderWidth: 2,
+    shape: "image", image: nodeIcon(n.type), size: 26,
+    font: { color: "#fdf9ee", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#2a2313", vadjust: -30 },
   })));
   const edges = new vis.DataSet(data.edges
     .filter(e => visibleNodes.some(n => n.id === e.source) && visibleNodes.some(n => n.id === e.target))
     .map((e, i) => ({
       id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: "#a89a72", highlight: "#a1402f", hover: "#2b4864" },
-      width: 1.4, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
+      color: { color: "#a1402f", highlight: "#fdf9ee", hover: "#c25a45" }, opacity: 0.75,
+      width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
+      shadow: { enabled: true, color: "rgba(20,15,5,0.35)", size: 4, x: 1, y: 2 },
     })));
 
   const network = new vis.Network(canvas, { nodes, edges }, {

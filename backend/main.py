@@ -22,7 +22,24 @@ import auth
 import store
 import llm
 
+from groq import APIError as GroqAPIError
+
 app = FastAPI(title="AI Case Report")
+
+
+def call_llm(fn, *args, **kwargs):
+    """Run an llm.* call and turn any failure into a clear HTTPException
+    instead of an opaque 500. AI calls are the most likely thing to break in
+    this app (model deprecations, rate limits, provider outages) and an
+    unhandled exception here used to surface as a bare "Internal Server
+    Error" with no indication of what actually went wrong."""
+    try:
+        return fn(*args, **kwargs)
+    except GroqAPIError as e:
+        raise HTTPException(502, f"AI provider error: {e}")
+    except RuntimeError as e:
+        # e.g. llm.client() raising because GROQ_API_KEY isn't set
+        raise HTTPException(502, str(e))
 
 app.add_middleware(
     CORSMiddleware,
@@ -237,13 +254,7 @@ async def upload_document(case_id: str, file: UploadFile = File(...),
         raise HTTPException(400, f"File exceeds the {MAX_FILE_BYTES // (1024*1024)}MB limit.")
 
     safe_name = sanitize_filename(file.filename)
-    try:
-        text, page_count = read_upload(safe_name, raw)
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(400, f"Could not read {safe_name}: {e}")
-
+    text, page_count = read_upload(safe_name, raw)
     if not text.strip():
         raise HTTPException(400, f"Could not extract any text from {safe_name}.")
 
@@ -253,8 +264,6 @@ async def upload_document(case_id: str, file: UploadFile = File(...),
         extracted = llm.extract_document(safe_name, text)
     except RuntimeError as e:
         raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(400, f"AI extraction failed for {safe_name}: {e}")
 
     doc_id = str(uuid.uuid4())[:8]
     from datetime import datetime, timezone
@@ -371,7 +380,7 @@ def case_summary(case_id: str, user: dict = Depends(get_current_user)):
     cached = store.get_cache(case_id, "case_summary")
     if cached:
         return {"summary": cached}
-    summary = llm.build_case_summary(docs)
+    summary = call_llm(llm.build_case_summary, docs)
     store.set_cache(case_id, "case_summary", summary)
     return {"summary": summary}
 
@@ -393,7 +402,7 @@ def case_graph(case_id: str, user: dict = Depends(get_current_user)):
     cached = store.get_cache(case_id, "graph")
     if cached:
         return cached
-    graph = llm.build_graph(docs)
+    graph = call_llm(llm.build_graph, docs)
     store.set_cache(case_id, "graph", graph)
     return graph
 
@@ -404,7 +413,7 @@ def case_contradictions(case_id: str, user: dict = Depends(get_current_user)):
     cached = store.get_cache(case_id, "contradictions")
     if cached is not None:
         return {"contradictions": cached}
-    contradictions = llm.detect_contradictions(docs)
+    contradictions = call_llm(llm.detect_contradictions, docs)
     store.set_cache(case_id, "contradictions", contradictions)
     return {"contradictions": contradictions}
 
@@ -415,9 +424,9 @@ def similar_cases(case_id: str, user: dict = Depends(get_current_user)):
     cached = store.get_cache(case_id, "similar_cases")
     if cached is not None:
         return {"matches": cached}
-    summary = store.get_cache(case_id, "case_summary") or llm.build_case_summary(docs)
+    summary = store.get_cache(case_id, "case_summary") or call_llm(llm.build_case_summary, docs)
     store.set_cache(case_id, "case_summary", summary)
-    matches = llm.find_similar_cases(summary)
+    matches = call_llm(llm.find_similar_cases, summary)
     store.set_cache(case_id, "similar_cases", matches)
     return {"matches": matches}
 
@@ -428,9 +437,9 @@ def case_arguments(case_id: str, user: dict = Depends(get_current_user)):
     cached = store.get_cache(case_id, "arguments")
     if cached is not None:
         return {"arguments": cached}
-    summary = store.get_cache(case_id, "case_summary") or llm.build_case_summary(docs)
+    summary = store.get_cache(case_id, "case_summary") or call_llm(llm.build_case_summary, docs)
     store.set_cache(case_id, "case_summary", summary)
-    arguments = llm.generate_arguments(summary, docs)
+    arguments = call_llm(llm.generate_arguments, summary, docs)
     store.set_cache(case_id, "arguments", arguments)
     return {"arguments": arguments}
 
@@ -446,7 +455,7 @@ def case_chat(case_id: str, req: ChatRequest, user: dict = Depends(get_current_u
     docs = require_documents(case_id)
     history = store.get_chat_history(case_id)
     graph = store.get_cache(case_id, "graph") if req.mode == "evidence" else None
-    answer = llm.chat_answer(req.message, docs, history, mode=req.mode, graph=graph, lang=req.lang)
+    answer = call_llm(llm.chat_answer, req.message, docs, history, mode=req.mode, graph=graph, lang=req.lang)
     store.append_chat(case_id, "user", req.message, req.mode)
     store.append_chat(case_id, "assistant", answer, req.mode)
     store.append_audit(case_id, user["username"], "chat_query", f"Asked ({req.mode}): {req.message[:80]}")
@@ -462,23 +471,23 @@ def case_chat_history(case_id: str, user: dict = Depends(get_current_user)):
 def case_report(case_id: str, user: dict = Depends(get_current_user)):
     case = get_case_or_404(case_id)
     docs = require_documents(case_id)
-    summary = store.get_cache(case_id, "case_summary") or llm.build_case_summary(docs)
+    summary = store.get_cache(case_id, "case_summary") or call_llm(llm.build_case_summary, docs)
     store.set_cache(case_id, "case_summary", summary)
     case["cache"]["case_summary"] = summary
     timeline = store.get_cache(case_id, "timeline") or build_timeline(docs)
     store.set_cache(case_id, "timeline", timeline)
-    graph = store.get_cache(case_id, "graph") or llm.build_graph(docs)
+    graph = store.get_cache(case_id, "graph") or call_llm(llm.build_graph, docs)
     store.set_cache(case_id, "graph", graph)
     contradictions = store.get_cache(case_id, "contradictions")
     if contradictions is None:
-        contradictions = llm.detect_contradictions(docs)
+        contradictions = call_llm(llm.detect_contradictions, docs)
         store.set_cache(case_id, "contradictions", contradictions)
     similar = store.get_cache(case_id, "similar_cases")
     if similar is None:
-        similar = llm.find_similar_cases(summary)
+        similar = call_llm(llm.find_similar_cases, summary)
         store.set_cache(case_id, "similar_cases", similar)
     audit_log = store.get_audit_log(case_id)
-    report = llm.generate_report(case, docs, timeline["events"], graph, contradictions, similar, audit_log)
+    report = call_llm(llm.generate_report, case, docs, timeline["events"], graph, contradictions, similar, audit_log)
     store.append_audit(case_id, user["username"], "report_generated", "AI case report generated")
     return report
 

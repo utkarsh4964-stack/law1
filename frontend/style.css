@@ -524,7 +524,7 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius); padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text);
   cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.quick-action svg { width: 16px; height: 16px; color: var(--teal); fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.qa-icon, .quick-action svg { width: 16px !important; height: 16px !important; color: var(--teal); fill: none !important; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .quick-action:hover { border-color: var(--teal-dim); background: var(--panel-raised); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(42,35,19,0.14); }
 .quick-action:active { transform: translateY(0) scale(0.98); }
 
@@ -639,7 +639,20 @@ img { max-width: 100%; display: block; }
 .graph-hint { font-size: 11.5px; color: var(--text-faint); }
 .graph-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none; }
 .graph-toggle input { accent-color: var(--teal); cursor: pointer; }
-.graph-canvas { height: 560px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); position: relative; }
+.graph-canvas {
+  height: 560px; border-radius: var(--radius); position: relative;
+  border: 8px solid #6b4a30;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 12px 28px rgba(42,35,19,0.3);
+  background-color: #b98a5e;
+  background-image:
+    radial-gradient(rgba(74,48,26,0.25) 1.5px, transparent 1.6px),
+    radial-gradient(rgba(74,48,26,0.18) 1px, transparent 1.2px),
+    radial-gradient(ellipse at 30% 20%, rgba(255,235,200,0.12), transparent 60%),
+    radial-gradient(ellipse at 75% 80%, rgba(0,0,0,0.18), transparent 60%);
+  background-size: 9px 9px, 5px 5px, 100% 100%, 100% 100%;
+  background-position: 0 0, 3px 3px, 0 0, 0 0;
+}
+.legend-icon { width: 15px; height: 15px; border-radius: 50%; display: inline-block; vertical-align: middle; box-shadow: 0 0 0 1px rgba(42,35,19,0.3); }
 .graph-legend { display: flex; gap: 18px; margin-top: 12px; font-size: 11.5px; color: var(--text-muted); flex-wrap: wrap; }
 .graph-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(42,35,19,0.3); }

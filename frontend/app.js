@@ -116,21 +116,42 @@ document.getElementById("login-form").addEventListener("submit", async e => {
   const username = document.getElementById("login-username").value.trim();
   const password = document.getElementById("login-password").value;
   const errEl = document.getElementById("login-error");
+  const submitBtn = document.querySelector("#login-form button[type='submit']");
   errEl.textContent = "";
-  try {
-    const res = await fetch(`${API}/auth/login`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) { errEl.textContent = data.detail || "Login failed."; return; }
-    TOKEN = data.token;
-    localStorage.setItem("case_ai_token", TOKEN);
-    ME = { username: data.username, role: data.role, name: data.display_name };
-    enterApp();
-  } catch {
-    errEl.textContent = "Could not reach the server — it may be waking up (Render free tier). Please try again in a few seconds.";
+  submitBtn.disabled = true;
+
+  const maxAttempts = 6; // covers Render's ~30-60s cold-start window
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if ([502, 503, 504].includes(res.status) && attempt < maxAttempts) {
+        errEl.textContent = `Server is waking up (Render free tier)… retrying (${attempt}/${maxAttempts})`;
+        await sleep(1500 * attempt);
+        continue;
+      }
+
+      const data = await res.json();
+      if (!res.ok) { errEl.textContent = data.detail || "Login failed."; break; }
+      TOKEN = data.token;
+      localStorage.setItem("case_ai_token", TOKEN);
+      ME = { username: data.username, role: data.role, name: data.display_name };
+      errEl.textContent = "";
+      enterApp();
+      break;
+    } catch {
+      if (attempt < maxAttempts) {
+        errEl.textContent = `Server is waking up (Render free tier)… retrying (${attempt}/${maxAttempts})`;
+        await sleep(1500 * attempt);
+        continue;
+      }
+      errEl.textContent = "Could not reach the server after several tries. Check your connection, or the Render service may be down — try again shortly.";
+    }
   }
+  submitBtn.disabled = false;
 });
 
 function logout() {

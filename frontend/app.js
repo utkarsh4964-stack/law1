@@ -619,7 +619,11 @@ async function loadTimeline() {
 // graph
 // ---------------------------------------------------------------------------
 
-const typeColors = { person: "#c9a13b", organization: "#6fa384", location: "#8489c9", other: "#9498ac" };
+// Muted, desaturated accents so entity types stay distinguishable at a
+// glance without fighting the app's otherwise black/white/gray theme.
+const typeColors = { person: "#d9b969", organization: "#7fae95", location: "#9295c9", other: "#8a8a90" };
+let GRAPH_DATA = null;
+let GRAPH_NETWORK = null;
 
 async function loadGraph() {
   const canvas = document.getElementById("graph-canvas");
@@ -631,38 +635,78 @@ async function loadGraph() {
   const data = await res.json();
   if (!res.ok) { canvas.innerHTML = `<p class="err">${data.detail}</p>`; return; }
 
+  GRAPH_DATA = data;
+  legend.innerHTML = Object.entries(typeColors)
+    .map(([type, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${type}</span>`).join("") +
+    `<span><span class="legend-dot" style="background:transparent;box-shadow:0 0 0 1px var(--text-faint)"></span>unconnected</span>`;
+  renderGraph();
+  loadedTabs.add("graph");
+}
+
+function renderGraph() {
+  const canvas = document.getElementById("graph-canvas");
+  const data = GRAPH_DATA;
+  if (!data) return;
+
+  const showIsolated = document.getElementById("graph-show-isolated").checked;
+  const connectedIds = new Set();
+  data.edges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
+  const visibleNodes = showIsolated ? data.nodes : data.nodes.filter(n => connectedIds.has(n.id));
+  const hiddenCount = data.nodes.length - visibleNodes.length;
+
   canvas.innerHTML = "";
-  const nodes = new vis.DataSet(data.nodes.map(n => ({
+  if (visibleNodes.length === 0) {
+    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections found yet — check "Show unconnected entities" or upload more documents.</p>';
+    return;
+  }
+
+  const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label,
-    color: { background: typeColors[n.type] || typeColors.other, border: "#12141c" },
-    font: { color: "#12141c", face: "Inter", size: 13 }, shape: "dot", size: 16,
+    color: { background: typeColors[n.type] || typeColors.other, border: "#0a0a0b", highlight: { background: "#ffffff", border: "#0a0a0b" } },
+    font: { color: "#f4f4f2", face: "Inter", size: 13, strokeWidth: 3, strokeColor: "#0a0a0b", vadjust: -18 },
+    shape: "dot", size: 15, borderWidth: 2,
   })));
-  const edges = new vis.DataSet(data.edges.map((e, i) => ({
-    id: i, from: e.source, to: e.target, label: e.relation, evidence: e.evidence,
-    color: { color: "#34394c", highlight: "#b5495b" },
-    font: { color: "#9498ac", size: 10, strokeWidth: 0, background: "#1b1e2a" }, arrows: "to",
-  })));
+  const edges = new vis.DataSet(data.edges
+    .filter(e => visibleNodes.some(n => n.id === e.source) && visibleNodes.some(n => n.id === e.target))
+    .map((e, i) => ({
+      id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
+      color: { color: "#4a4a52", highlight: "#ffffff", hover: "#9a9a9e" },
+      width: 1.4, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
+    })));
 
   const network = new vis.Network(canvas, { nodes, edges }, {
-    physics: { solver: "forceAtlas2Based", forceAtlas2Based: { springLength: 140 } },
-    interaction: { hover: true },
+    physics: {
+      solver: "forceAtlas2Based",
+      forceAtlas2Based: { springLength: 190, avoidOverlap: 0.8, gravitationalConstant: -60 },
+      stabilization: { iterations: 150 },
+    },
+    interaction: { hover: true, tooltipDelay: 120 },
+    edges: { font: { size: 0 } }, // relation text lives in the hover tooltip + click panel, not always-on canvas text
   });
+  GRAPH_NETWORK = network;
+  network.once("stabilizationIterationsDone", () => network.fit({ animation: { duration: 400 } }));
 
   const evidencePanel = document.getElementById("edge-evidence");
+  evidencePanel.style.display = "none";
   network.on("click", params => {
     if (params.edges.length) {
       const edge = edges.get(params.edges[0]);
       evidencePanel.style.display = "block";
-      evidencePanel.innerHTML = `<strong>${escapeHtml(edge.label || "")}</strong><p style="margin-top:8px;color:var(--text-muted);font-size:13px">Evidence: ${escapeHtml(edge.evidence || "—")}</p>`;
+      evidencePanel.innerHTML = `<strong>${escapeHtml(edge.relation || "")}</strong><p style="margin-top:8px;color:var(--text-muted);font-size:13px">Evidence: ${escapeHtml(edge.evidence || "—")}</p>`;
     } else {
       evidencePanel.style.display = "none";
     }
   });
 
-  legend.innerHTML = Object.entries(typeColors)
-    .map(([type, color]) => `<span><span class="legend-dot" style="background:${color}"></span>${type}</span>`).join("");
-  loadedTabs.add("graph");
+  const hintEl = document.querySelector(".graph-hint");
+  if (hintEl && hiddenCount > 0) {
+    hintEl.textContent = `Scroll to zoom · drag to pan · ${hiddenCount} unconnected ${hiddenCount === 1 ? "entity" : "entities"} hidden`;
+  } else if (hintEl) {
+    hintEl.textContent = "Scroll to zoom · drag to pan · drag a dot to reposition it";
+  }
 }
+
+document.getElementById("graph-show-isolated").addEventListener("change", () => { if (GRAPH_DATA) renderGraph(); });
 
 // ---------------------------------------------------------------------------
 // contradictions

@@ -444,8 +444,12 @@
     <section class="panel" id="panel-graph">
       <header class="panel-head">
         <h1>Evidence &amp; Connection Graph</h1>
-        <p class="sub">People, organizations and locations, and how they connect. Click a connection to see its evidence.</p>
+        <p class="sub">People, organizations and locations found in the case, and how they connect. Hover a line for the relationship, click it for the evidence behind it.</p>
       </header>
+      <div class="graph-toolbar">
+        <span class="graph-hint">Scroll to zoom · drag to pan · drag a dot to reposition it</span>
+        <label class="graph-toggle"><input type="checkbox" id="graph-show-isolated"> Show unconnected entities</label>
+      </div>
       <div id="graph-canvas" class="graph-canvas"></div>
       <div id="graph-legend" class="graph-legend"></div>
       <div class="card" id="edge-evidence" style="display:none;margin-top:14px"></div>

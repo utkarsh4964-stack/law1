@@ -873,30 +873,50 @@ function renderGraph() {
   const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label, entityType: n.type,
     shape: "image", image: nodeIcon(n.type), size: 26,
-    font: { color: "#fdf9ee", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#2a2313", vadjust: -30 },
+    font: { color: "#2a2313", face: "Inter", size: 13, weight: 700, strokeWidth: 3, strokeColor: "#fffcf2", vadjust: -32 },
   })));
+  // Group edges by node-pair so parallel relationships between the same two
+  // entities fan out instead of stacking directly on top of one another.
+  const pairIndex = new Map();
   const edges = new vis.DataSet(visibleEdges.map((e, i) => {
     const cat = relCategory(e.relation);
+    const pairKey = [e.source, e.target].sort().join("::");
+    const n = pairIndex.get(pairKey) || 0;
+    pairIndex.set(pairKey, n + 1);
+    const roundness = 0.2 + (n % 3) * 0.15;
     return {
       id: i, from: e.source, to: e.target, label: e.relation, title: e.relation,
       relation: e.relation, evidence: e.evidence, category: cat.label,
-      color: { color: cat.color, highlight: "#2a2313", hover: cat.color },
-      opacity: 0.8, width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
-      font: { size: 10, color: "#2a2313", strokeWidth: 4, strokeColor: "#fffcf2", align: "middle" },
-      shadow: { enabled: true, color: "rgba(20,15,5,0.3)", size: 3, x: 1, y: 1 },
+      color: { color: cat.color, highlight: cat.color, hover: cat.color, opacity: 0.85 },
+      width: 1.75, hoverWidth: 0.5, selectionWidth: 0.5,
+      arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+      smooth: { type: n % 2 === 0 ? "curvedCW" : "curvedCCW", roundness },
+      font: {
+        size: 11, color: "#2a2313", face: "Inter", align: "horizontal",
+        background: "#fffcf2", strokeWidth: 0,
+      },
     };
   }));
 
   const network = new vis.Network(canvas, { nodes, edges }, {
+    nodes: { shadow: { enabled: true, color: "rgba(42,35,19,0.18)", size: 6, x: 1, y: 2 } },
     physics: {
       solver: "forceAtlas2Based",
-      forceAtlas2Based: { springLength: 190, avoidOverlap: 0.8, gravitationalConstant: -60 },
-      stabilization: { iterations: 150 },
+      forceAtlas2Based: { springLength: 230, springConstant: 0.045, avoidOverlap: 1, gravitationalConstant: -85, damping: 0.42 },
+      stabilization: { iterations: 400, fit: true },
+      minVelocity: 0.75,
     },
-    interaction: { hover: true, tooltipDelay: 120 },
+    layout: { improvedLayout: true },
+    interaction: { hover: true, tooltipDelay: 120, dragNodes: true },
   });
   GRAPH_NETWORK = network;
-  network.once("stabilizationIterationsDone", () => network.fit({ animation: { duration: 400 } }));
+  network.once("stabilizationIterationsDone", () => {
+    // Freeze the force layout once it settles so the graph reads as a
+    // clean, static diagram rather than a constantly-jittering simulation —
+    // individual nodes can still be dragged to reposition them by hand.
+    network.setOptions({ physics: false });
+    network.fit({ animation: { duration: 400 } });
+  });
 
   network.on("click", params => {
     if (params.nodes.length) {

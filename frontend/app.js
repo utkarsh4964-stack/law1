@@ -743,7 +743,7 @@ document.getElementById("tl-load-more")?.addEventListener("click", () => { tlVis
 document.getElementById("export-timeline-btn")?.addEventListener("click", exportTimelineText);
 
 // ---------------------------------------------------------------------------
-// graph
+// graph / connections
 // ---------------------------------------------------------------------------
 
 // Muted, desaturated accents so entity types stay distinguishable at a
@@ -751,6 +751,9 @@ document.getElementById("export-timeline-btn")?.addEventListener("click", export
 const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
 let GRAPH_DATA = null;
 let GRAPH_NETWORK = null;
+let GRAPH_DOC_MAP = [];       // [{filename, doc_id}]
+let graphView = "graph";
+let graphSelectedNodeId = null;
 
 // A small white silhouette per entity type, baked onto a colored medallion,
 // rendered as a single flat SVG data-URI so vis-network can drop it straight
@@ -769,22 +772,73 @@ function nodeIcon(type) {
   return "data:image/svg+xml;base64," + btoa(svg);
 }
 
+// Relationship-category heuristic (edges only carry a free-text "relation"
+// phrase, no category) — buckets it for coloring, the legend, and the filter.
+const REL_CATEGORIES = [
+  { key: "employment", label: "Employment", color: "#3f6b4a", test: /work(s|ed)? at|employ(ee|ed|ment)|joined|hired/i },
+  { key: "business", label: "Business", color: "#2b4864", test: /vendor|client|supplier|contract|business|partner|associated with/i },
+  { key: "communication", label: "Communication", color: "#a1402f", test: /email|call|repl(y|ied)|request(ed)?|communicat(ed|ion)|shared info|ask(ed)?|wrote|message/i },
+  { key: "consultation", label: "Consultation", color: "#5c5490", test: /consult/i },
+];
+function relCategory(relation) {
+  const hit = REL_CATEGORIES.find(c => c.test.test(relation || ""));
+  return hit || { key: "other", label: "Other", color: "#9c9070" };
+}
+
 async function loadGraph() {
   const canvas = document.getElementById("graph-canvas");
-  const legend = document.getElementById("graph-legend");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
+  GRAPH_DOC_MAP = docs.map(d => ({ filename: d.filename, doc_id: d.id }));
   canvas.innerHTML = '<p class="loading-line" style="padding:20px"><span class="spinner"></span>Mapping connections…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/graph`);
   const data = await res.json();
   if (!res.ok) { canvas.innerHTML = `<p class="err">${data.detail}</p>`; return; }
 
   GRAPH_DATA = data;
-  legend.innerHTML = Object.entries(typeColors)
-    .map(([type, color]) => `<span><img class="legend-icon" src="${nodeIcon(type)}" alt=""/>${type}</span>`).join("") +
-    `<span><span class="legend-dot" style="background:transparent;box-shadow:0 0 0 1px var(--text-faint)"></span>unconnected</span>`;
+  populateGraphFilters(data);
+  renderRelLegend();
+  renderEntityLegend();
   renderGraph();
   loadedTabs.add("graph");
+}
+
+function renderEntityLegend() {
+  document.getElementById("graph-legend").innerHTML =
+    '<span class="legend-title">Entities</span>' +
+    Object.entries(typeColors).map(([type, color]) => `<span><img class="legend-icon" src="${nodeIcon(type)}" alt=""/>${type}</span>`).join("") +
+    `<span><span class="legend-dot" style="background:transparent;box-shadow:0 0 0 1px var(--text-faint)"></span>unconnected</span>`;
+}
+function renderRelLegend() {
+  document.getElementById("graph-rel-legend").innerHTML =
+    '<span class="legend-title">Relationships</span>' +
+    REL_CATEGORIES.concat([{ key: "other", label: "Other", color: "#9c9070" }])
+      .map(c => `<span><span class="legend-dot" style="background:${c.color}"></span>${c.label}</span>`).join("");
+}
+
+function populateGraphFilters(data) {
+  const entitySel = document.getElementById("graph-entity-filter");
+  const relSel = document.getElementById("graph-rel-filter");
+  const types = [...new Set(data.nodes.map(n => n.type || "other"))];
+  entitySel.innerHTML = '<option value="all">All entities</option>' +
+    types.map(t => `<option value="${t}">${t[0].toUpperCase()}${t.slice(1)}</option>`).join("");
+  const catsSeen = new Map();
+  data.edges.forEach(e => { const c = relCategory(e.relation); catsSeen.set(c.key, c.label); });
+  relSel.innerHTML = '<option value="all">All relationship types</option>' +
+    [...catsSeen.entries()].map(([key, label]) => `<option value="${key}">${escapeHtml(label)}</option>`).join("");
+}
+
+// Best-effort match of an edge's free-text evidence string against known
+// filenames, so it can be made clickable like the timeline's sourced events.
+function findEvidenceDoc(evidenceText) {
+  if (!evidenceText) return null;
+  return GRAPH_DOC_MAP.find(d => evidenceText.includes(d.filename));
+}
+
+function evidenceHtml(evidenceText) {
+  const doc = findEvidenceDoc(evidenceText);
+  const label = escapeHtml(evidenceText || "—");
+  return doc ? `<span class="tl-source-link" data-doc="${doc.doc_id}">${label}</span>` : label;
 }
 
 function renderGraph() {
@@ -793,30 +847,45 @@ function renderGraph() {
   if (!data) return;
 
   const showIsolated = document.getElementById("graph-show-isolated").checked;
+  const entityFilter = document.getElementById("graph-entity-filter").value;
+  const relFilter = document.getElementById("graph-rel-filter").value;
+
+  const filteredEdges = data.edges.filter(e => relFilter === "all" || relCategory(e.relation).key === relFilter);
   const connectedIds = new Set();
-  data.edges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
-  const visibleNodes = showIsolated ? data.nodes : data.nodes.filter(n => connectedIds.has(n.id));
-  const hiddenCount = data.nodes.length - visibleNodes.length;
+  filteredEdges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
+
+  let visibleNodes = data.nodes.filter(n => entityFilter === "all" || (n.type || "other") === entityFilter);
+  visibleNodes = showIsolated ? visibleNodes : visibleNodes.filter(n => connectedIds.has(n.id));
+  const visibleIds = new Set(visibleNodes.map(n => n.id));
+  const visibleEdges = filteredEdges.filter(e => visibleIds.has(e.source) && visibleIds.has(e.target));
+
+  if (graphView === "table") {
+    renderGraphTable(visibleEdges);
+    return;
+  }
 
   canvas.innerHTML = "";
   if (visibleNodes.length === 0) {
-    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections found yet — check "Show unconnected entities" or upload more documents.</p>';
+    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections match these filters — try "Show unconnected entities" or a broader filter.</p>';
     return;
   }
 
   const nodes = new vis.DataSet(visibleNodes.map(n => ({
-    id: n.id, label: n.label,
+    id: n.id, label: n.label, entityType: n.type,
     shape: "image", image: nodeIcon(n.type), size: 26,
     font: { color: "#fdf9ee", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#2a2313", vadjust: -30 },
   })));
-  const edges = new vis.DataSet(data.edges
-    .filter(e => visibleNodes.some(n => n.id === e.source) && visibleNodes.some(n => n.id === e.target))
-    .map((e, i) => ({
-      id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: "#a1402f", highlight: "#fdf9ee", hover: "#c25a45" }, opacity: 0.75,
-      width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
-      shadow: { enabled: true, color: "rgba(20,15,5,0.35)", size: 4, x: 1, y: 2 },
-    })));
+  const edges = new vis.DataSet(visibleEdges.map((e, i) => {
+    const cat = relCategory(e.relation);
+    return {
+      id: i, from: e.source, to: e.target, label: e.relation, title: e.relation,
+      relation: e.relation, evidence: e.evidence, category: cat.label,
+      color: { color: cat.color, highlight: "#2a2313", hover: cat.color },
+      opacity: 0.8, width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
+      font: { size: 10, color: "#2a2313", strokeWidth: 4, strokeColor: "#fffcf2", align: "middle" },
+      shadow: { enabled: true, color: "rgba(20,15,5,0.3)", size: 3, x: 1, y: 1 },
+    };
+  }));
 
   const network = new vis.Network(canvas, { nodes, edges }, {
     physics: {
@@ -825,32 +894,136 @@ function renderGraph() {
       stabilization: { iterations: 150 },
     },
     interaction: { hover: true, tooltipDelay: 120 },
-    edges: { font: { size: 0 } }, // relation text lives in the hover tooltip + click panel, not always-on canvas text
   });
   GRAPH_NETWORK = network;
   network.once("stabilizationIterationsDone", () => network.fit({ animation: { duration: 400 } }));
 
-  const evidencePanel = document.getElementById("edge-evidence");
-  evidencePanel.style.display = "none";
   network.on("click", params => {
-    if (params.edges.length) {
+    if (params.nodes.length) {
+      selectGraphNode(params.nodes[0]);
+    } else if (params.edges.length) {
       const edge = edges.get(params.edges[0]);
-      evidencePanel.style.display = "block";
-      evidencePanel.innerHTML = `<strong>${escapeHtml(edge.relation || "")}</strong><p style="margin-top:8px;color:var(--text-muted);font-size:13px">Evidence: ${escapeHtml(edge.evidence || "—")}</p>`;
+      showEdgeDetail(edge);
     } else {
-      evidencePanel.style.display = "none";
+      graphSelectedNodeId = null;
+      clearGraphSidePanel();
     }
   });
 
-  const hintEl = document.querySelector(".graph-hint");
-  if (hintEl && hiddenCount > 0) {
-    hintEl.textContent = `Scroll to zoom · drag to pan · ${hiddenCount} unconnected ${hiddenCount === 1 ? "entity" : "entities"} hidden`;
-  } else if (hintEl) {
-    hintEl.textContent = "Scroll to zoom · drag to pan · drag a dot to reposition it";
+  if (graphSelectedNodeId && visibleIds.has(graphSelectedNodeId)) {
+    selectGraphNode(graphSelectedNodeId);
   }
 }
 
+function clearGraphSidePanel() {
+  document.getElementById("graph-side-panel").innerHTML =
+    '<p class="placeholder">Click an entity in the graph to see its details, relationships and related evidence.</p>';
+}
+
+function showEdgeDetail(edge) {
+  document.getElementById("graph-side-panel").innerHTML = `
+    <div class="gsp-header"><span class="gsp-rel-dot" style="background:${escapeHtml(REL_CATEGORIES.find(c => c.label === edge.category)?.color || "#9c9070")}"></span>
+      <div><div class="gsp-name">${escapeHtml(edge.relation || "Relationship")}</div><div class="gsp-type">${escapeHtml(edge.category)}</div></div>
+    </div>
+    <div class="gsp-section"><div class="gsp-label">Evidence</div><p class="gsp-about">${evidenceHtml(edge.evidence)}</p></div>`;
+  document.getElementById("graph-side-panel").querySelectorAll("[data-doc]").forEach(el =>
+    el.addEventListener("click", () => openDocModal(el.dataset.doc)));
+}
+
+function selectGraphNode(nodeId) {
+  graphSelectedNodeId = nodeId;
+  const data = GRAPH_DATA;
+  const node = data.nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  if (GRAPH_NETWORK) { GRAPH_NETWORK.selectNodes([nodeId]); }
+
+  const touching = data.edges.filter(e => e.source === nodeId || e.target === nodeId);
+  const relRows = touching.map(e => {
+    const outgoing = e.source === nodeId;
+    const otherId = outgoing ? e.target : e.source;
+    const other = data.nodes.find(n => n.id === otherId);
+    const cat = relCategory(e.relation);
+    return `<li data-jump="${otherId}"><span class="gsp-rel-dot" style="background:${cat.color}"></span><span class="gsp-rel-verb">${escapeHtml(e.relation)}</span><span class="gsp-rel-arrow">→</span><span class="gsp-rel-target">${escapeHtml(other ? other.label : otherId)}</span></li>`;
+  }).join("");
+
+  const evidenceSet = new Map();
+  touching.forEach(e => { if (e.evidence) evidenceSet.set(e.evidence, e.evidence); });
+  const evidenceRows = [...evidenceSet.values()].map(ev => `<li>${evidenceHtml(ev)}</li>`).join("");
+
+  const about = touching.length
+    ? `${escapeHtml(touching[0].relation)} ${escapeHtml((data.nodes.find(n => n.id === (touching[0].source === nodeId ? touching[0].target : touching[0].source)) || {}).label || "")}`.trim()
+    : "No relationships recorded for this entity yet.";
+
+  document.getElementById("graph-side-panel").innerHTML = `
+    <div class="gsp-header"><img class="gsp-icon" src="${nodeIcon(node.type)}" alt=""/>
+      <div><div class="gsp-name">${escapeHtml(node.label)}</div><div class="gsp-type">${escapeHtml(node.type || "other")}</div></div>
+    </div>
+    <div class="gsp-section"><div class="gsp-label">About</div><p class="gsp-about">${about}</p></div>
+    <div class="gsp-section"><div class="gsp-label">Key relationships (${touching.length})</div><ul class="gsp-rel-list">${relRows || '<li class="placeholder">None yet</li>'}</ul></div>
+    <div class="gsp-section"><div class="gsp-label">Related evidence (${evidenceSet.size})</div><ul class="gsp-evidence-list">${evidenceRows || '<li class="placeholder">None yet</li>'}</ul></div>`;
+
+  const panel = document.getElementById("graph-side-panel");
+  panel.querySelectorAll("[data-jump]").forEach(el => el.addEventListener("click", () => selectGraphNode(el.dataset.jump)));
+  panel.querySelectorAll("[data-doc]").forEach(el => el.addEventListener("click", () => openDocModal(el.dataset.doc)));
+}
+
+function renderGraphTable(edges) {
+  const wrap = document.getElementById("graph-table-view");
+  if (!edges.length) { wrap.innerHTML = '<p class="placeholder" style="padding:20px">No connections match these filters.</p>'; return; }
+  const data = GRAPH_DATA;
+  const nodeLabel = id => (data.nodes.find(n => n.id === id) || {}).label || id;
+  wrap.innerHTML = `
+    <table class="audit-table">
+      <thead><tr><th>Entity A</th><th>Relationship</th><th>Entity B</th><th>Category</th><th>Evidence</th></tr></thead>
+      <tbody>
+        ${edges.map(e => {
+          const cat = relCategory(e.relation);
+          return `<tr>
+            <td>${escapeHtml(nodeLabel(e.source))}</td>
+            <td class="action">${escapeHtml(e.relation)}</td>
+            <td>${escapeHtml(nodeLabel(e.target))}</td>
+            <td><span class="legend-dot" style="background:${cat.color}"></span>${escapeHtml(cat.label)}</td>
+            <td class="time">${evidenceHtml(e.evidence)}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+  wrap.querySelectorAll("[data-doc]").forEach(el => el.addEventListener("click", () => openDocModal(el.dataset.doc)));
+}
+
+function exportGraphText() {
+  if (!GRAPH_DATA || !GRAPH_DATA.nodes.length) { showToast("No connections to export yet", "info"); return; }
+  let out = `Connections — Case ${CURRENT_CASE_ID}\n\nEntities\n`;
+  GRAPH_DATA.nodes.forEach(n => { out += `- ${n.label} (${n.type || "other"})\n`; });
+  out += `\nRelationships\n`;
+  const nodeLabel = id => (GRAPH_DATA.nodes.find(n => n.id === id) || {}).label || id;
+  GRAPH_DATA.edges.forEach(e => { out += `${nodeLabel(e.source)} — ${e.relation} — ${nodeLabel(e.target)} (${e.evidence || "—"})\n`; });
+  const blob = new Blob([out], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${CURRENT_CASE_ID}-connections.txt`;
+  a.click();
+}
+
 document.getElementById("graph-show-isolated").addEventListener("change", () => { if (GRAPH_DATA) renderGraph(); });
+document.getElementById("graph-entity-filter").addEventListener("change", () => { if (GRAPH_DATA) renderGraph(); });
+document.getElementById("graph-rel-filter").addEventListener("change", () => { if (GRAPH_DATA) renderGraph(); });
+document.getElementById("export-graph-btn").addEventListener("click", exportGraphText);
+document.getElementById("graph-zoom-in").addEventListener("click", () => { if (GRAPH_NETWORK) GRAPH_NETWORK.moveTo({ scale: GRAPH_NETWORK.getScale() * 1.25 }); });
+document.getElementById("graph-zoom-out").addEventListener("click", () => { if (GRAPH_NETWORK) GRAPH_NETWORK.moveTo({ scale: GRAPH_NETWORK.getScale() / 1.25 }); });
+document.getElementById("graph-fit").addEventListener("click", () => { if (GRAPH_NETWORK) GRAPH_NETWORK.fit({ animation: { duration: 300 } }); });
+document.getElementById("graph-reset").addEventListener("click", () => renderGraph());
+document.querySelectorAll("[data-graphview]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-graphview]").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    graphView = btn.dataset.graphview;
+    document.getElementById("graph-canvas").style.display = graphView === "graph" ? "" : "none";
+    document.getElementById("graph-table-view").style.display = graphView === "table" ? "" : "none";
+    document.querySelector(".graph-zoom-controls").style.display = graphView === "graph" ? "" : "none";
+    if (GRAPH_DATA) renderGraph();
+  });
+});
 
 // ---------------------------------------------------------------------------
 // contradictions

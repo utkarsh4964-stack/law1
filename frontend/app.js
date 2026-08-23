@@ -754,6 +754,7 @@ let GRAPH_NETWORK = null;
 let GRAPH_DOC_MAP = [];       // [{filename, doc_id}]
 let graphView = "graph";
 let graphSelectedNodeId = null;
+let graphSelectedEdgeId = null;
 
 // A small white silhouette per entity type, baked onto a colored medallion,
 // rendered as a single flat SVG data-URI so vis-network can drop it straight
@@ -865,6 +866,7 @@ function renderGraph() {
   }
 
   canvas.innerHTML = "";
+  graphSelectedEdgeId = null;
   if (visibleNodes.length === 0) {
     canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections match these filters — try "Show unconnected entities" or a broader filter.</p>';
     return;
@@ -885,10 +887,16 @@ function renderGraph() {
     pairIndex.set(pairKey, n + 1);
     const roundness = 0.2 + (n % 3) * 0.15;
     return {
-      id: i, from: e.source, to: e.target, label: e.relation, title: e.relation,
+      // No permanent on-canvas label: the relation text is often a full
+      // sentence pulled straight from evidence, and rendering all of them
+      // at once turns the graph into a wall of overlapping text. Color +
+      // arrow direction communicates the relationship category at a
+      // glance; the full sentence still surfaces on hover (title) and via
+      // click (side panel) / Table view, unchanged.
+      id: i, from: e.source, to: e.target, title: e.relation,
       relation: e.relation, evidence: e.evidence, category: cat.label,
       color: { color: cat.color, highlight: cat.color, hover: cat.color, opacity: 0.85 },
-      width: 1.75, hoverWidth: 0.5, selectionWidth: 0.5,
+      width: 1.75, hoverWidth: 1, selectionWidth: 1,
       arrows: { to: { enabled: true, scaleFactor: 0.6 } },
       smooth: { type: n % 2 === 0 ? "curvedCW" : "curvedCCW", roundness },
       font: {
@@ -902,8 +910,8 @@ function renderGraph() {
     nodes: { shadow: { enabled: true, color: "rgba(42,35,19,0.18)", size: 6, x: 1, y: 2 } },
     physics: {
       solver: "forceAtlas2Based",
-      forceAtlas2Based: { springLength: 230, springConstant: 0.045, avoidOverlap: 1, gravitationalConstant: -85, damping: 0.42 },
-      stabilization: { iterations: 400, fit: true },
+      forceAtlas2Based: { springLength: 280, springConstant: 0.04, avoidOverlap: 1.2, gravitationalConstant: -110, damping: 0.42 },
+      stabilization: { iterations: 450, fit: true },
       minVelocity: 0.75,
     },
     layout: { improvedLayout: true },
@@ -918,13 +926,25 @@ function renderGraph() {
     network.fit({ animation: { duration: 400 } });
   });
 
+  // Reveal an edge's relation text as an on-canvas chip only while it's
+  // hovered or selected, instead of drawing every label all the time.
+  const showEdgeLabel = id => edges.update({ id, label: (edges.get(id) || {}).relation || "" });
+  const hideEdgeLabel = id => edges.update({ id, label: "" });
+  network.on("hoverEdge", p => showEdgeLabel(p.edge));
+  network.on("blurEdge", p => { if (p.edge !== graphSelectedEdgeId) hideEdgeLabel(p.edge); });
+
   network.on("click", params => {
     if (params.nodes.length) {
+      if (graphSelectedEdgeId !== null) { hideEdgeLabel(graphSelectedEdgeId); graphSelectedEdgeId = null; }
       selectGraphNode(params.nodes[0]);
     } else if (params.edges.length) {
+      if (graphSelectedEdgeId !== null && graphSelectedEdgeId !== params.edges[0]) hideEdgeLabel(graphSelectedEdgeId);
+      graphSelectedEdgeId = params.edges[0];
+      showEdgeLabel(graphSelectedEdgeId);
       const edge = edges.get(params.edges[0]);
       showEdgeDetail(edge);
     } else {
+      if (graphSelectedEdgeId !== null) { hideEdgeLabel(graphSelectedEdgeId); graphSelectedEdgeId = null; }
       graphSelectedNodeId = null;
       clearGraphSidePanel();
     }

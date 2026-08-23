@@ -621,7 +621,7 @@ async function loadTimeline() {
 
 // Muted, desaturated accents so entity types stay distinguishable at a
 // glance without fighting the app's otherwise black/white/gray theme.
-const typeColors = { person: "#d9b969", organization: "#7fae95", location: "#9295c9", other: "#8a8a90" };
+const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
 let GRAPH_DATA = null;
 let GRAPH_NETWORK = null;
 
@@ -662,15 +662,15 @@ function renderGraph() {
 
   const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label,
-    color: { background: typeColors[n.type] || typeColors.other, border: "#0a0a0b", highlight: { background: "#ffffff", border: "#0a0a0b" } },
-    font: { color: "#f4f4f2", face: "Inter", size: 13, strokeWidth: 3, strokeColor: "#0a0a0b", vadjust: -18 },
+    color: { background: typeColors[n.type] || typeColors.other, border: "#2a2313", highlight: { background: "#a1402f", border: "#2a2313" } },
+    font: { color: "#2a2313", face: "Inter", size: 13, strokeWidth: 3, strokeColor: "#fffcf2", vadjust: -18 },
     shape: "dot", size: 15, borderWidth: 2,
   })));
   const edges = new vis.DataSet(data.edges
     .filter(e => visibleNodes.some(n => n.id === e.source) && visibleNodes.some(n => n.id === e.target))
     .map((e, i) => ({
       id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: "#4a4a52", highlight: "#ffffff", hover: "#9a9a9e" },
+      color: { color: "#a89a72", highlight: "#a1402f", hover: "#2b4864" },
       width: 1.4, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
     })));
 

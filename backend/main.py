@@ -48,6 +48,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import logging
+import traceback
+
+logger = logging.getLogger("case_ai")
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request, exc):
+    # Without this, any exception we didn't specifically anticipate falls
+    # through to Starlette's default handler, which returns a bare
+    # plain-text "Internal Server Error" with zero information — that's
+    # what made earlier bugs (corrupted db.json, a deprecated model) take
+    # several rounds of guesswork to diagnose from the frontend alone.
+    # Every route in this app now returns *some* real detail on failure.
+    logger.error("Unhandled exception on %s %s:\n%s", request.method, request.url.path, traceback.format_exc())
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=500, content={"detail": f"{type(exc).__name__}: {exc}"})
+
 MAX_FILE_BYTES = 15 * 1024 * 1024  # 15 MB
 ALLOWED_EXTENSIONS = {".txt", ".md", ".pdf"}
 
@@ -110,8 +128,13 @@ def build_timeline(documents: list) -> dict:
     dated, undated = [], []
     for d in documents:
         for ev in d.get("events", []):
-            item = {"date": ev.get("date", ""), "description": ev.get("description", ""),
-                     "source": d["filename"], "doc_id": d["id"]}
+            raw_date = ev.get("date", "")
+            raw_desc = ev.get("description", "")
+            item = {
+                "date": raw_date if isinstance(raw_date, str) else str(raw_date or ""),
+                "description": raw_desc if isinstance(raw_desc, str) else str(raw_desc or ""),
+                "source": d["filename"], "doc_id": d["id"],
+            }
             parsed = parsed_date(item["date"]) if item["date"] else None
             if parsed:
                 item["_sort"] = parsed.isoformat()

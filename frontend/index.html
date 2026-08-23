@@ -4,31 +4,218 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AI Case Report</title>
+<meta name="description" content="Secure, multi-case investigation platform — document vault with chain of custody, AI-generated timelines, evidence graphs, contradiction detection and exportable case reports." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ==================== LOGIN VIEW ==================== -->
-<div class="view" id="view-login">
-  <div class="login-shell">
-    <div class="login-brand">
-      <div class="login-brand-glow"></div>
-      <div class="login-brand-mark">§</div>
-      <h1>AI Case Report</h1>
-      <p>A secure workspace for investigators — upload evidence, let AI organize it, and export a report your team can trust.</p>
-      <ul class="login-brand-points">
-        <li><svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>Role-based access &amp; full audit trail</li>
-        <li><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>Evidence-linked timeline &amp; connection graph</li>
-        <li><svg viewBox="0 0 24 24"><path d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8Z"/><path d="M12 8v4l3 3"/></svg>Every AI answer cites its source</li>
-      </ul>
+<!-- Icon sprite (original inline SVG icons, no external assets) -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6z"/></symbol>
+  <symbol id="icon-brain" viewBox="0 0 24 24"><path d="M8 4a3 3 0 0 0-3 3v.3A3.5 3.5 0 0 0 3.5 10.5 3.5 3.5 0 0 0 5 13.3V15a3 3 0 0 0 3 3 3 3 0 0 0 3-3V7a3 3 0 0 0-3-3z"/><path d="M16 4a3 3 0 0 1 3 3v.3a3.5 3.5 0 0 1 1.5 3.2A3.5 3.5 0 0 1 19 13.3V15a3 3 0 0 1-3 3 3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/></symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+  <symbol id="icon-network" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7l7-.5M8.5 8.5L11 16M15.5 8.5L13 16"/></symbol>
+  <symbol id="icon-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+  <symbol id="icon-doc-check" viewBox="0 0 24 24"><path d="M6 2h8l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13l2 2 4-4"/></symbol>
+  <symbol id="icon-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></symbol>
+  <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2l8 3.5v6c0 5-3.4 8.5-8 10.5-4.6-2-8-5.5-8-10.5v-6L12 2z"/></symbol>
+  <symbol id="icon-scale" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 8h4M15 8h4M5 8L3 13a2.5 2.5 0 0 0 5 0L5 8zM19 8l-2 5a2.5 2.5 0 0 0 5 0l-2-5z"/><circle cx="12" cy="4" r="1.4"/></symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.6"/></symbol>
+  <symbol id="icon-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24"><path d="M9 15l6-6M8 12l-2 2a3.5 3.5 0 0 0 5 5l2-2M16 12l2-2a3.5 3.5 0 0 0-5-5l-2 2"/></symbol>
+  <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 3v13"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></symbol>
+</svg>
+
+<!-- ==================== LANDING VIEW ==================== -->
+<div class="view active" id="view-landing">
+
+  <nav class="landing-nav">
+    <div class="case-mark">
+      <span class="case-mark-glyph">§</span>
+      <div>
+        <div class="case-mark-title">AI CASE REPORT</div>
+      </div>
+    </div>
+    <div class="landing-nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <button class="primary-btn" id="landing-nav-signin">Sign in</button>
+    </div>
+  </nav>
+
+  <section class="landing-hero">
+    <div>
+      <div class="landing-eyebrow">Smart India Hackathon submission</div>
+      <h1>Every document hashed.<br/>Every claim <em>traceable</em>.<br/>Nothing accused without evidence.</h1>
+      <p class="landing-lede">
+        A secure, multi-case investigation workspace for investigators and legal
+        professionals. Upload the case file and let the platform build the
+        timeline, map the connections, flag contradictions, and draft the
+        report — every conclusion linked back to its source document.
+      </p>
+      <div class="landing-cta-row">
+        <button class="primary-btn" id="landing-get-started">Open the workspace</button>
+        <a class="text-link" href="#how-it-works">See how it works ↓</a>
+      </div>
+      <div class="landing-trust">
+        <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-shield"/></svg>Role-based access control</div>
+        <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-lock"/></svg>SHA-256 document hashing</div>
+        <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg>Full audit trail</div>
+      </div>
     </div>
 
-    <div class="login-form-side">
+    <div class="evidence-board" aria-hidden="true">
+      <div class="board-bg"></div>
+      <svg class="thread-lines" viewBox="0 0 400 380">
+        <path d="M70,90 C120,120 150,140 190,150"/>
+        <path d="M300,110 C260,140 230,150 190,150"/>
+        <path d="M190,150 C170,200 150,230 130,255"/>
+        <path d="M190,150 C230,210 260,230 290,270"/>
+        <circle cx="70" cy="90" r="3.5"/>
+        <circle cx="300" cy="110" r="3.5"/>
+        <circle cx="190" cy="150" r="3.5"/>
+        <circle cx="130" cy="255" r="3.5"/>
+        <circle cx="290" cy="270" r="3.5"/>
+      </svg>
+      <div class="ev-card c1"><span class="ev-tag">EXHIBIT 01</span><span class="ev-pin"></span>
+        <div class="ev-title">Witness Statement</div>
+        <div class="ev-line"></div><div class="ev-line"></div><div class="ev-line"></div>
+      </div>
+      <div class="ev-card c2"><span class="ev-tag">EXHIBIT 02</span><span class="ev-pin"></span>
+        <div class="ev-title">Transaction Log</div>
+        <div class="ev-line"></div><div class="ev-line"></div>
+      </div>
+      <div class="ev-card c3"><span class="ev-tag">EXHIBIT 03</span><span class="ev-pin"></span>
+        <div class="ev-title">Site Report</div>
+        <div class="ev-line"></div><div class="ev-line"></div><div class="ev-line"></div>
+      </div>
+      <div class="ev-card c4"><span class="ev-tag">FLAGGED</span><span class="ev-pin"></span>
+        <div class="ev-title">Timeline Conflict</div>
+        <div class="ev-line"></div><div class="ev-line"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="landing-strip">
+    <div class="landing-strip-inner">
+      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-brain"/></svg><div class="strip-stat-label"><strong>AI case intelligence</strong>Summary, timeline &amp; graph</div></div>
+      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg><div class="strip-stat-label"><strong>Contradiction detection</strong>Always human-verified</div></div>
+      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-scale"/></svg><div class="strip-stat-label"><strong>Argument intelligence</strong>For internal analysis</div></div>
+      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg><div class="strip-stat-label"><strong>Audit trail</strong>Who, what, when</div></div>
+    </div>
+  </div>
+
+  <section class="landing-section" id="how-it-works">
+    <div class="landing-section-head">
+      <div class="landing-kicker">How it works</div>
+      <h2>From raw case file to structured report</h2>
+      <p>Four steps, all grounded in the documents you upload — nothing is invented that isn't traceable to a source.</p>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-upload"/></svg>
+        <div class="step-index">01</div>
+        <h3>Upload the case file</h3>
+        <p>.txt, .md or .pdf. Each document is validated, SHA-256 hashed and logged to the chain of custody.</p>
+      </div>
+      <div class="step-card">
+        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-brain"/></svg>
+        <div class="step-index">02</div>
+        <h3>AI reads &amp; organizes</h3>
+        <p>Entities, dated events and factual claims are extracted from every document automatically.</p>
+      </div>
+      <div class="step-card">
+        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-network"/></svg>
+        <div class="step-index">03</div>
+        <h3>Timeline, graph &amp; conflicts</h3>
+        <p>A chronological timeline, an evidence connection graph, and any contradictions across documents.</p>
+      </div>
+      <div class="step-card">
+        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg>
+        <div class="step-index">04</div>
+        <h3>Structured report</h3>
+        <p>A 12-section exportable Markdown report, ready to hand off — with a full audit trail behind it.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="photo-band">
+    <div class="photo-band-inner">
+      <div class="photo-band-caption">
+        <div class="landing-kicker">Built for the field, not just the demo</div>
+        <h3>One workspace your whole investigating team can actually use</h3>
+        <p>Investigators upload, reviewers verify, admins manage access — everyone works from the same case file instead of scattered folders, group chats and printed reports.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="landing-section" id="features">
+    <div class="landing-section-head">
+      <div class="landing-kicker">What's inside</div>
+      <h2>Built for the whole investigation, not one document</h2>
+      <p>Every feature below is grounded in the case's own documents and framed as analysis, never as a verdict.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-folder"/></svg><h3>Secure Document Vault</h3><p>Hash-verified uploads with version and confidentiality tracking, searchable and filterable by type.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-clock"/></svg><h3>Investigation Timeline</h3><p>Chronological, evidence-linked events with automatic gap detection across 30+ day silences.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-network"/></svg><h3>Connections graph</h3><p>People, organizations and locations mapped — click any connection to see the evidence behind it.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg><h3>Contradiction detection</h3><p>Conflicting claims surfaced with a conflict type and confidence score — always flagged for human review.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-layers"/></svg><h3>Similar cases</h3><p>Pattern matches against a reference case library, framed as similarity — never an outcome prediction.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-brain"/></svg><h3>Case chat</h3><p>Case, Evidence and Legal Knowledge modes, with a Hindi toggle and hold-to-speak voice input.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-shield"/></svg><h3>Role-based access</h3><p>Admin, Investigator, Reviewer and Viewer roles gate case creation, uploads and deletion server-side.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg><h3>Audit trail</h3><p>Every sensitive action on a case — who did it, what it was, and when — in one searchable log.</p></div>
+      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg><h3>Exportable report</h3><p>A structured 12-section Markdown case report, generated on demand and downloadable in one click.</p></div>
+    </div>
+  </section>
+
+  <div class="landing-cta-band">
+    <div class="landing-cta-band-inner">
+      <h2>Ready to open a case file?</h2>
+      <p>Sign in with a demo account to see the whole workflow — upload, timeline, graph, report — in minutes.</p>
+      <button class="primary-btn" id="landing-cta-signin">Sign in <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;display:inline;vertical-align:-2px;margin-left:2px"><use href="#icon-arrow-right"/></svg></button>
+    </div>
+  </div>
+
+  <footer class="landing-footer">
+    <span>AI Case Report — Smart India Hackathon submission</span>
+    <span>Demo-scale prototype · see README for production notes</span>
+  </footer>
+</div>
+
+<!-- ==================== LOGIN VIEW ==================== -->
+<div class="view" id="view-login">
+  <div class="login-page">
+
+    <div class="login-hero">
+      <div class="login-hero-inner">
+        <a class="login-back" id="login-back">← Back to overview</a>
+        <svg class="hero-illustration" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+          <use href="#icon-scale"/>
+        </svg>
+        <h2>Built for investigators,<br/>not spreadsheets.</h2>
+        <p class="hero-lede">Every document hashed. Every action logged. Every claim traceable to its source.</p>
+        <ul class="hero-features">
+          <li><svg class="hf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-shield"/></svg>
+            <span>Role-based access control with a full audit trail on every case</span></li>
+          <li><svg class="hf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-brain"/></svg>
+            <span>AI-generated summaries, timelines and evidence connection graphs</span></li>
+          <li><svg class="hf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-alert"/></svg>
+            <span>Contradiction detection — always flagged for human verification</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="login-panel">
       <div class="login-card">
-        <h2>Sign in</h2>
-        <p class="sub">Enter your credentials to continue.</p>
+        <div class="case-mark-glyph big">§</div>
+        <h1>AI Case Report</h1>
+        <p class="sub">Secure investigation case management</p>
         <form id="login-form">
           <label>Username<input type="text" id="login-username" autocomplete="username" required /></label>
           <label>Password<input type="password" id="login-password" autocomplete="current-password" required /></label>
@@ -38,14 +225,16 @@
         <div class="demo-creds">
           <div class="demo-creds-title">Demo accounts — tap a row to fill it in</div>
           <table id="demo-creds-table">
-            <tr data-user="admin" data-pass="admin123"><td>admin / admin123</td><td>Admin</td></tr>
-            <tr data-user="investigator" data-pass="investigator123"><td>investigator / investigator123</td><td>Investigator</td></tr>
-            <tr data-user="reviewer" data-pass="reviewer123"><td>reviewer / reviewer123</td><td>Reviewer</td></tr>
-            <tr data-user="viewer" data-pass="viewer123"><td>viewer / viewer123</td><td>Viewer</td></tr>
+            <tr class="demo-cred-row" data-user="admin" data-pass="admin123"><td>admin / admin123</td><td>Admin</td></tr>
+            <tr class="demo-cred-row" data-user="investigator" data-pass="investigator123"><td>investigator / investigator123</td><td>Investigator</td></tr>
+            <tr class="demo-cred-row" data-user="reviewer" data-pass="reviewer123"><td>reviewer / reviewer123</td><td>Reviewer</td></tr>
+            <tr class="demo-cred-row" data-user="viewer" data-pass="viewer123"><td>viewer / viewer123</td><td>Viewer</td></tr>
           </table>
+          <p class="demo-creds-note">First sign-in after a while can take up to a minute — the server is waking up, not stuck.</p>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -68,7 +257,10 @@
       <p class="sub">Open an existing investigation or start a new one.</p>
     </header>
 
-    <button id="new-case-btn" class="primary-btn" style="margin-bottom:24px">+ New Investigation</button>
+    <div class="cases-actions">
+      <button id="new-case-btn" class="primary-btn">+ New Investigation</button>
+      <input type="text" id="case-search" class="case-search-input" placeholder="Search cases by title, ID or officer…" />
+    </div>
 
     <div class="case-grid" id="case-grid"></div>
   </div>
@@ -121,14 +313,14 @@
     </div>
 
     <nav class="tabs" id="tabs">
-      <button class="tab active" data-tab="dashboard"><svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</button>
-      <button class="tab" data-tab="documents"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>Document Vault</button>
-      <button class="tab" data-tab="intelligence"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5c0 1.6.7 2.7 1.5 3.6.6.7 1 1.3 1 2.4v1h5v-1c0-1.1.4-1.7 1-2.4.8-.9 1.5-2 1.5-3.6a5 5 0 0 0-5-5Z"/><path d="M9.5 18h5M10 21h4"/></svg>Case Intelligence</button>
-      <button class="tab" data-tab="timeline"><svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Timeline</button>
-      <button class="tab" data-tab="graph"><svg class="tab-icon" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.2 10.5 16M16 7.2 13.5 16M8.3 6h7.4"/></svg>Connections</button>
-      <button class="tab" data-tab="similar"><svg class="tab-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Similar Cases</button>
-      <button class="tab" data-tab="report"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="m9.5 13 2 2 4-4"/></svg>Report</button>
-      <button class="tab" data-tab="audit"><svg class="tab-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Audit Trail</button>
+      <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span>Dashboard</button>
+      <button class="tab" data-tab="documents"><svg class="tab-icon"><use href="#icon-folder"/></svg><span class="tab-num">01</span>Document Vault</button>
+      <button class="tab" data-tab="intelligence"><svg class="tab-icon"><use href="#icon-brain"/></svg><span class="tab-num">02</span>Case Intelligence</button>
+      <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">03</span>Timeline</button>
+      <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">04</span>Connections</button>
+      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">05</span>Similar Cases</button>
+      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">06</span>Report</button>
+      <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">07</span>Audit Trail</button>
     </nav>
 
     <div class="nav-footer">
@@ -187,40 +379,56 @@
       </div>
     </div>
 
-    <!-- CASE INTELLIGENCE (merged: summary + contradictions + arguments + chat) -->
+    <!-- CASE INTELLIGENCE (merged: summary, contradictions, argument intel, chat) -->
     <section class="panel" id="panel-intelligence">
       <header class="panel-head">
         <h1>Case Intelligence</h1>
-        <p class="sub">Summary, contradictions, arguments, and chat for this case — all in one place.</p>
+        <p class="sub">Summary, contradiction analysis, argument intelligence and case chat — all <em class="hl">grounded in the uploaded documents</em>.</p>
       </header>
 
-      <h3 class="section-label">Case Summary</h3>
-      <div class="card prose" id="summary-body"><p class="placeholder">Upload documents, then open this tab to generate a summary.</p></div>
+      <nav class="intel-subtabs" id="intel-subtabs">
+        <button class="subtab-btn active" data-subtab="summary"><svg class="subtab-icon"><use href="#icon-doc-check"/></svg>Summary</button>
+        <button class="subtab-btn" data-subtab="contradictions"><svg class="subtab-icon"><use href="#icon-alert"/></svg>Contradictions</button>
+        <button class="subtab-btn" data-subtab="arguments"><svg class="subtab-icon"><use href="#icon-scale"/></svg>Argument Intel</button>
+        <button class="subtab-btn" data-subtab="chat"><svg class="subtab-icon"><use href="#icon-brain"/></svg>Chat</button>
+      </nav>
 
-      <h3 class="section-label">Potential Contradictions</h3>
-      <div id="contradiction-body"><p class="placeholder">No analysis yet.</p></div>
-
-      <h3 class="section-label">Argument Intelligence</h3>
-      <div id="arguments-body"><p class="placeholder">No analysis yet.</p></div>
-
-      <h3 class="section-label">Ask About This Case</h3>
-      <div class="chat-controls">
-        <div class="chat-modes" id="chat-modes">
-          <button class="mode-btn active" data-mode="case">Case</button>
-          <button class="mode-btn" data-mode="evidence">Evidence</button>
-          <button class="mode-btn" data-mode="legal">Legal Knowledge</button>
-        </div>
-        <select id="chat-lang">
-          <option value="en">English</option>
-          <option value="hi">हिंदी (Hindi)</option>
-        </select>
+      <!-- Summary sub-panel -->
+      <div class="intel-subpanel active" id="intel-summary">
+        <div class="card prose" id="summary-body"><p class="placeholder">Upload documents, then open this tab to generate a summary.</p></div>
       </div>
-      <div class="chat-window" id="chat-window"></div>
-      <form id="chat-form" class="chat-form">
-        <button type="button" id="mic-btn" title="Hold to speak">🎤</button>
-        <input type="text" id="chat-input" placeholder="How is Person A connected to Person B?" autocomplete="off" />
-        <button type="submit">Ask</button>
-      </form>
+
+      <!-- Contradictions sub-panel -->
+      <div class="intel-subpanel" id="intel-contradictions">
+        <div id="contradiction-body"><p class="placeholder">No analysis yet.</p></div>
+      </div>
+
+      <!-- Argument Intelligence sub-panel -->
+      <div class="intel-subpanel" id="intel-arguments">
+        <div id="arguments-body"><p class="placeholder">No analysis yet.</p></div>
+      </div>
+
+      <!-- Chat sub-panel -->
+      <div class="intel-subpanel" id="intel-chat">
+        <div class="chat-controls">
+          <div class="chat-modes" id="chat-modes">
+            <button class="mode-btn active" data-mode="case">Case</button>
+            <button class="mode-btn" data-mode="evidence">Evidence</button>
+            <button class="mode-btn" data-mode="legal">Legal Knowledge</button>
+          </div>
+          <select id="chat-lang">
+            <option value="en">English</option>
+            <option value="hi">हिंदी (Hindi)</option>
+          </select>
+        </div>
+
+        <div class="chat-window" id="chat-window"></div>
+        <form id="chat-form" class="chat-form">
+          <button type="button" id="mic-btn" title="Hold to speak">🎤</button>
+          <input type="text" id="chat-input" placeholder="How is Person A connected to Person B?" autocomplete="off" />
+          <button type="submit">Ask</button>
+        </form>
+      </div>
     </section>
 
     <!-- TIMELINE -->
@@ -236,8 +444,12 @@
     <section class="panel" id="panel-graph">
       <header class="panel-head">
         <h1>Evidence &amp; Connection Graph</h1>
-        <p class="sub">People, organizations and locations, and how they connect. Click a connection to see its evidence.</p>
+        <p class="sub">People, organizations and locations found in the case, and how they connect. Hover a line for the relationship, click it for the evidence behind it.</p>
       </header>
+      <div class="graph-toolbar">
+        <span class="graph-hint">Scroll to zoom · drag to pan · drag a dot to reposition it</span>
+        <label class="graph-toggle"><input type="checkbox" id="graph-show-isolated"> Show unconnected entities</label>
+      </div>
       <div id="graph-canvas" class="graph-canvas"></div>
       <div id="graph-legend" class="graph-legend"></div>
       <div class="card" id="edge-evidence" style="display:none;margin-top:14px"></div>
@@ -247,7 +459,7 @@
     <section class="panel" id="panel-similar">
       <header class="panel-head">
         <h1>Similar Cases</h1>
-        <p class="sub">Factual/legal pattern matches against a reference case library — not an outcome prediction.</p>
+        <p class="sub">Factual/legal pattern matches against a reference case library — <em class="hl">not an outcome prediction</em>.</p>
       </header>
       <div id="similar-body"><p class="placeholder">No analysis yet.</p></div>
     </section>

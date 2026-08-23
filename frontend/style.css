@@ -1,28 +1,32 @@
 :root {
-  /* ---- Ink & panels (true black/near-black, monochrome) ---- */
-  --ink: #0a0a0b;
-  --panel: #131316;
-  --panel-raised: #1d1d21;
-  --line: #303035;
-  --line-soft: #212124;
+  /* ---- Paper & panels — warm beige base (hue ~40°), each layer a shade
+     lighter than the last for depth, like stacked manila folders ---- */
+  --ink: #ece3cd;
+  --panel: #f6f0e2;
+  --panel-raised: #fffdf6;
+  --line: #d9cba3;
+  --line-soft: #e4d8b8;
 
-  /* ---- Paper accent — used sparingly for stamps / exhibit tags ---- */
-  --paper: #f2f1ec;
-  --paper-ink: #141414;
+  /* ---- Paper accent — a near-white card, for stamps / exhibit tags to pop off the beige ---- */
+  --paper: #fffcf2;
+  --paper-ink: #2a2313;
 
-  /* ---- Text ---- */
-  --text: #f4f4f2;
-  --text-muted: #9a9a9e;
-  --text-faint: #55555c;
+  /* ---- Text — warm dark ink, never pure black (softer on a warm ground) ---- */
+  --text: #2a2313;
+  --text-muted: #6e6242;
+  --text-faint: #9c9070;
 
-  /* ---- Accents — monochrome: distinguished by value/weight, not hue ---- */
-  --teal: #ffffff;
-  --teal-dim: #b8b8bd;
-  --teal-glow: rgba(255, 255, 255, 0.08);
-  --thread: #d6d6da;
-  --thread-glow: rgba(214, 214, 218, 0.10);
-  --ok: #e4e4e7;
-  --info: #c4c4c9;
+  /* ---- Accents — chosen by color theory: beige sits ~40° on the wheel,
+     so its true complement is ~220° (navy/ink-blue) for the primary
+     accent; a sealing-wax red (~8°, a split-complement) carries alerts
+     and evidence tags, echoing an official case-file stamp. ---- */
+  --teal: #2b4864;
+  --teal-dim: #4d6e8c;
+  --teal-glow: rgba(43, 72, 100, 0.10);
+  --thread: #a1402f;
+  --thread-glow: rgba(161, 64, 47, 0.11);
+  --ok: #3f6b4a;
+  --info: #5c5490;
 
   --radius: 10px;
   --radius-sm: 4px;
@@ -38,8 +42,8 @@ body {
   margin: 0;
   background: var(--ink);
   background-image:
-    radial-gradient(circle at 12% -5%, rgba(255, 255, 255, 0.05), transparent 42%),
-    radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.03), transparent 40%);
+    radial-gradient(circle at 12% -5%, rgba(43, 72, 100, 0.05), transparent 42%),
+    radial-gradient(circle at 92% 8%, rgba(161, 64, 47, 0.04), transparent 40%);
   color: var(--text);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -48,6 +52,14 @@ body {
 ::selection { background: var(--teal-glow); color: var(--text); }
 button, input, select, textarea { font-family: inherit; }
 a { color: inherit; }
+
+/* A small utility for calling out a key phrase or number inline — used
+   sparingly for the one or two things on a page that most deserve the
+   reader's eye first. */
+em.hl, .hl {
+  font-style: normal; font-weight: 700; color: var(--teal);
+  font-family: var(--display);
+}
 img { max-width: 100%; display: block; }
 
 /* ==================================================================
@@ -77,8 +89,8 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.01em;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
-.primary-btn { background: var(--teal); color: #111113; border: 1px solid var(--teal); }
-.primary-btn:hover { background: #e6e6e8; transform: translateY(-1px); }
+.primary-btn { background: var(--teal); color: #fdf9ee; border: 1px solid var(--teal); }
+.primary-btn:hover { background: #35597c; transform: translateY(-1px); }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .primary-btn.full { width: 100%; margin-top: 6px; }
 
@@ -134,23 +146,23 @@ img { max-width: 100%; display: block; }
   border-radius: 18px; overflow: hidden;
   background-color: var(--panel);
   background-image:
-    linear-gradient(160deg, rgba(6,6,7,0.88) 10%, rgba(6,6,7,0.55) 55%, rgba(6,6,7,0.85) 100%),
+    linear-gradient(160deg, rgba(24,20,11,0.88) 10%, rgba(24,20,11,0.55) 55%, rgba(24,20,11,0.85) 100%),
     url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=70");
-  background-size: cover; background-position: center; filter: grayscale(1) contrast(1.08);
+  background-size: cover; background-position: center; filter: grayscale(0.35) sepia(0.4) saturate(1.15) contrast(1.05);
 }
 .ev-card {
   position: absolute; width: 168px; background: var(--paper); color: var(--paper-ink);
-  border-radius: 3px; box-shadow: 0 14px 30px rgba(0,0,0,0.45); padding: 14px 14px 16px;
+  border-radius: 3px; box-shadow: 0 14px 30px rgba(42,35,19,0.28); padding: 14px 14px 16px;
 }
 .ev-card .ev-tag {
-  position: absolute; top: -9px; left: 12px; background: var(--thread); color: #141416;
+  position: absolute; top: -9px; left: 12px; background: var(--thread); color: #fdf9ee;
   font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.06em;
   padding: 2px 7px; border-radius: 2px;
 }
 .ev-card .ev-title { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 8px 0 8px; }
-.ev-card .ev-line { height: 6px; border-radius: 2px; background: rgba(20,20,20,0.16); margin-bottom: 6px; }
+.ev-card .ev-line { height: 6px; border-radius: 2px; background: rgba(42,35,19,0.15); margin-bottom: 6px; }
 .ev-card .ev-line:nth-child(3) { width: 78%; }
-.ev-card .ev-pin { position: absolute; top: -7px; right: 14px; width: 12px; height: 12px; border-radius: 50%; background: var(--teal); border: 2px solid #111113; }
+.ev-card .ev-pin { position: absolute; top: -7px; right: 14px; width: 12px; height: 12px; border-radius: 50%; background: var(--teal); border: 2px solid var(--panel); }
 
 .ev-card.c1 { top: 26px; left: 8px; transform: rotate(-4deg); }
 .ev-card.c2 { top: 64px; right: 6px; transform: rotate(3deg); width: 150px; }
@@ -208,9 +220,9 @@ img { max-width: 100%; display: block; }
   min-height: 300px; display: flex; align-items: flex-end;
   background-color: var(--panel);
   background-image:
-    linear-gradient(0deg, rgba(6,6,7,0.92) 0%, rgba(6,6,7,0.35) 55%, rgba(6,6,7,0.08) 100%),
+    linear-gradient(0deg, rgba(24,20,11,0.92) 0%, rgba(24,20,11,0.35) 55%, rgba(24,20,11,0.08) 100%),
     url("https://images.unsplash.com/photo-1758873268745-dd2cf0d677b5?auto=format&fit=crop&w=1600&q=70");
-  background-size: cover; background-position: center; filter: grayscale(1) contrast(1.08);
+  background-size: cover; background-position: center; filter: grayscale(0.35) sepia(0.4) saturate(1.15) contrast(1.05);
 }
 .photo-band-caption { padding: 30px 34px; max-width: 560px; }
 .photo-band-caption .landing-kicker { margin-bottom: 8px; }
@@ -224,9 +236,9 @@ img { max-width: 100%; display: block; }
 .landing-cta-band {
   background-color: var(--panel);
   background-image:
-    linear-gradient(135deg, rgba(6,6,7,0.93) 0%, rgba(6,6,7,0.82) 55%, rgba(6,6,7,0.93) 100%),
+    linear-gradient(135deg, rgba(24,20,11,0.93) 0%, rgba(24,20,11,0.82) 55%, rgba(24,20,11,0.93) 100%),
     url("https://images.unsplash.com/photo-1589994965851-a8f479c573a9?auto=format&fit=crop&w=1600&q=70");
-  background-size: cover; background-position: center; filter: grayscale(1) contrast(1.08);
+  background-size: cover; background-position: center; filter: grayscale(0.35) sepia(0.4) saturate(1.15) contrast(1.05);
   border-top: 1px solid var(--line-soft);
 }
 .landing-cta-band-inner {
@@ -267,8 +279,8 @@ img { max-width: 100%; display: block; }
 }
 .login-hero::before {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(circle at 20% 15%, rgba(255,255,255,0.07), transparent 50%),
-              radial-gradient(circle at 85% 85%, rgba(255,255,255,0.04), transparent 45%);
+  background: radial-gradient(circle at 20% 15%, rgba(43,72,100,0.07), transparent 50%),
+              radial-gradient(circle at 85% 85%, rgba(161,64,47,0.05), transparent 45%);
   pointer-events: none;
 }
 .login-hero-inner { max-width: 380px; position: relative; z-index: 1; }
@@ -346,13 +358,13 @@ img { max-width: 100%; display: block; }
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 20px; cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.case-tile:hover { border-color: var(--teal-dim); transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+.case-tile:hover { border-color: var(--teal-dim); transform: translateY(-3px); box-shadow: 0 10px 24px rgba(42,35,19,0.18); }
 .case-tile-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
 .case-tile-id { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
 .priority-pill { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; letter-spacing: 0.03em; }
 .priority-high { background: var(--thread-glow); color: var(--thread); }
 .priority-medium { background: var(--teal-glow); color: var(--teal); }
-.priority-low { background: rgba(255,255,255,0.10); color: var(--ok); }
+.priority-low { background: rgba(63,107,74,0.13); color: var(--ok); }
 .case-tile-title { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 0 0 6px; }
 .case-tile-type { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
 .case-tile-foot { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--line-soft); padding-top: 10px; margin-top: 10px; }
@@ -360,7 +372,7 @@ img { max-width: 100%; display: block; }
 /* ---------------- modal ---------------- */
 
 .modal-backdrop {
-  display: none; position: fixed; inset: 0; background: rgba(6,6,7,0.74);
+  display: none; position: fixed; inset: 0; background: rgba(24,20,11,0.74);
   align-items: center; justify-content: center; z-index: 100;
 }
 .modal-backdrop.active { display: flex; animation: modal-fade 0.18s ease; }
@@ -398,7 +410,7 @@ img { max-width: 100%; display: block; }
   pointer-events: auto; display: flex; align-items: center; gap: 10px;
   background: var(--panel-raised); border: 1px solid var(--line); border-left: 3px solid var(--info);
   border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: var(--text);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4); max-width: 340px; line-height: 1.4;
+  box-shadow: 0 10px 30px rgba(42,35,19,0.22); max-width: 340px; line-height: 1.4;
   animation: toast-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .toast.toast-success { border-left-color: var(--ok); }
@@ -527,9 +539,9 @@ img { max-width: 100%; display: block; }
 }
 .exhibit-card:hover { border-color: var(--teal-dim); transform: translateY(-2px); }
 .exhibit-tag {
-  position: absolute; top: -10px; left: 14px; background: var(--thread); color: #141416;
+  position: absolute; top: -10px; left: 14px; background: var(--thread); color: #fdf9ee;
   font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
-  padding: 2px 8px; border-radius: 2px; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  padding: 2px 8px; border-radius: 2px; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(42,35,19,0.22);
 }
 .exhibit-name { font-family: var(--display); font-weight: 600; font-size: 16px; margin: 14px 0 4px; word-break: break-word; }
 .exhibit-type { display: inline-block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; }
@@ -589,7 +601,7 @@ img { max-width: 100%; display: block; }
 .graph-canvas { height: 560px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); position: relative; }
 .graph-legend { display: flex; gap: 18px; margin-top: 12px; font-size: 11.5px; color: var(--text-muted); flex-wrap: wrap; }
 .graph-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(255,255,255,0.25); }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(42,35,19,0.3); }
 
 /* ---------------- contradictions ---------------- */
 
@@ -666,7 +678,7 @@ img { max-width: 100%; display: block; }
   padding: 12px 14px; color: var(--text); font-size: 14px;
 }
 .chat-form input:focus { outline: none; border-color: var(--teal-dim); }
-.chat-form button[type="submit"] { background: var(--teal); color: #111113; border: none; border-radius: var(--radius-sm); padding: 0 20px; font-weight: 600; cursor: pointer; font-size: 13px; }
+.chat-form button[type="submit"] { background: var(--teal); color: #fdf9ee; border: none; border-radius: var(--radius-sm); padding: 0 20px; font-weight: 600; cursor: pointer; font-size: 13px; }
 #mic-btn { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 16px; cursor: pointer; padding: 0 14px; }
 #mic-btn.recording { background: var(--thread-glow); border-color: var(--thread); }
 

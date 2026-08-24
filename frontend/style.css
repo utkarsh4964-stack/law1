@@ -753,27 +753,59 @@ img { max-width: 100%; display: block; }
 
 /* ---------------- graph ---------------- */
 
-.graph-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
-.graph-hint { font-size: 11.5px; color: var(--text-faint); }
+.graph-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.graph-hint { font-size: 11.5px; color: var(--text-faint); margin-bottom: 10px; }
 .graph-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none; }
-.graph-toggle input { accent-color: var(--teal); cursor: pointer; }
+.graph-toggle input { accent-color: var(--teal); cursor: pointer; width: 14px; height: 14px; }
+
+.graph-layout { display: flex; gap: 16px; align-items: flex-start; }
 .graph-canvas {
-  height: 560px; border-radius: var(--radius); position: relative;
-  border: 8px solid #6b4a30;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 12px 28px rgba(42,35,19,0.3);
-  background-color: #b98a5e;
-  background-image:
-    radial-gradient(rgba(74,48,26,0.25) 1.5px, transparent 1.6px),
-    radial-gradient(rgba(74,48,26,0.18) 1px, transparent 1.2px),
-    radial-gradient(ellipse at 30% 20%, rgba(255,235,200,0.12), transparent 60%),
-    radial-gradient(ellipse at 75% 80%, rgba(0,0,0,0.18), transparent 60%);
-  background-size: 9px 9px, 5px 5px, 100% 100%, 100% 100%;
-  background-position: 0 0, 3px 3px, 0 0, 0 0;
+  flex: 1; min-width: 0; height: 560px; border-radius: var(--radius); position: relative;
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(42,35,19,0.06), 0 6px 16px rgba(42,35,19,0.05);
+  background-color: var(--panel-raised);
+  background-image: radial-gradient(rgba(110,98,66,0.16) 1.4px, transparent 1.5px);
+  background-size: 22px 22px;
 }
+#graph-table-wrap { flex: 1; min-width: 0; max-height: 560px; overflow: auto; }
+
+.graph-detail {
+  width: 300px; flex-shrink: 0; background: var(--panel-raised); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); padding: 20px; height: 560px; overflow-y: auto;
+  box-shadow: 0 1px 2px rgba(42,35,19,0.06), 0 6px 16px rgba(42,35,19,0.05);
+}
+.graph-detail .placeholder { font-size: 13px; }
+.detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.detail-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(42,35,19,0.2); }
+.detail-name { font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--text); }
+.detail-type { font-size: 11.5px; color: var(--text-faint); text-transform: capitalize; }
+.detail-section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin: 18px 0 8px; font-weight: 600; }
+.detail-about { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+.rel-line { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.rel-line:last-child { border-bottom: none; }
+.rel-line .rel-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rel-line .rel-verb { color: var(--text-muted); }
+.rel-line .rel-target { color: var(--teal); font-weight: 600; cursor: pointer; margin-left: auto; text-align: right; }
+.rel-line .rel-target:hover { text-decoration: underline; }
+.evidence-line { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 0; color: var(--text-muted); }
+.evidence-line svg { width: 13px; height: 13px; color: var(--text-faint); fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
+
 .legend-icon { width: 15px; height: 15px; border-radius: 50%; display: inline-block; vertical-align: middle; box-shadow: 0 0 0 1px rgba(42,35,19,0.3); }
 .graph-legend { display: flex; gap: 18px; margin-top: 12px; font-size: 11.5px; color: var(--text-muted); flex-wrap: wrap; }
 .graph-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(42,35,19,0.3); }
+.legend-line { width: 16px; height: 2px; display: inline-block; border-radius: 1px; }
+
+.graph-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.graph-table th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel-raised); }
+.graph-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); color: var(--text); vertical-align: top; }
+.graph-table tr:hover td { background: var(--teal-glow); }
+.graph-table .rel-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+@media (max-width: 900px) {
+  .graph-layout { flex-direction: column; }
+  .graph-detail { width: 100%; height: auto; max-height: 320px; }
+}
 
 /* ---------------- contradictions ---------------- */
 

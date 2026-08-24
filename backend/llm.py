@@ -17,7 +17,7 @@ from openai import OpenAI
 
 import legal_kb
 
-MODEL = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
+MODEL = os.environ.get("LLM_MODEL", "gemini-3.6-flash")
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
 
 _client = None

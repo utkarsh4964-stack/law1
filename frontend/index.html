@@ -523,17 +523,33 @@
 
     <!-- GRAPH -->
     <section class="panel" id="panel-graph">
-      <header class="panel-head">
-        <h1>Evidence &amp; Connection Graph</h1>
-        <p class="sub">People, organizations and locations found in the case, and how they connect. Hover a line for the relationship, click it for the evidence behind it.</p>
+      <header class="panel-head dash-head">
+        <div>
+          <h1>Connections</h1>
+          <p class="sub">Visualize relationships between people, organizations and documents extracted from case evidence.</p>
+        </div>
+        <button class="ghost-btn" id="export-graph-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export Graph</button>
       </header>
       <div class="graph-toolbar">
-        <span class="graph-hint">Scroll to zoom · drag to pan · drag a dot to reposition it</span>
-        <label class="graph-toggle"><input type="checkbox" id="graph-show-isolated"> Show unconnected entities</label>
+        <div class="timeline-filters">
+          <select id="graph-filter-type" class="timeline-select"><option value="all">All Entities</option></select>
+          <select id="graph-filter-relation" class="timeline-select"><option value="all">All Relationship Types</option></select>
+          <label class="graph-toggle"><input type="checkbox" id="graph-show-isolated"> Show unconnected entities</label>
+        </div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" data-graph-view="graph"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-network"/></svg> Graph View</button>
+          <button class="view-toggle-btn" data-graph-view="table"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-rows"/></svg> Table View</button>
+        </div>
       </div>
-      <div id="graph-canvas" class="graph-canvas"></div>
+      <div class="graph-hint">Scroll to zoom · drag to pan · drag a dot to reposition it</div>
+      <div class="graph-layout">
+        <div id="graph-canvas" class="graph-canvas"></div>
+        <div id="graph-table-wrap" class="card" style="display:none"></div>
+        <aside class="graph-detail" id="graph-detail">
+          <p class="placeholder">Click an entity in the graph to see its details, relationships and related evidence.</p>
+        </aside>
+      </div>
       <div id="graph-legend" class="graph-legend"></div>
-      <div class="card" id="edge-evidence" style="display:none;margin-top:14px"></div>
     </section>
 
     <!-- SIMILAR CASES -->

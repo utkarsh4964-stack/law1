@@ -22,7 +22,7 @@ import auth
 import store
 import llm
 
-from groq import APIError as GroqAPIError, RateLimitError as GroqRateLimitError
+from openai import APIError as LLMAPIError, RateLimitError as LLMRateLimitError
 
 app = FastAPI(title="AI Case Report")
 
@@ -35,12 +35,12 @@ def call_llm(fn, *args, **kwargs):
     Error" with no indication of what actually went wrong."""
     try:
         return fn(*args, **kwargs)
-    except GroqRateLimitError as e:
-        # Groq's free tier has a hard daily token cap. This is a quota wall,
-        # not a bug — no retry loop here can conjure more tokens, and
-        # blocking the request for the ~10min Groq suggests would just time
-        # out the connection. Instead: parse the wait time out of their
-        # message and hand back one clear, actionable sentence.
+    except LLMRateLimitError as e:
+        # Free-tier daily/per-minute quota hit. This is a quota wall, not a
+        # bug — no retry loop here can conjure more tokens. Best-effort parse
+        # of a wait time out of the provider's message if it includes one
+        # (works for Groq-style "try again in Xm Ys"; harmless no-op if the
+        # current provider phrases it differently).
         wait = re.search(r"try again in ([\d.]+m)?([\d.]+s)?", str(e))
         if wait and (wait.group(1) or wait.group(2)):
             parts = []
@@ -53,13 +53,13 @@ def call_llm(fn, *args, **kwargs):
             when = "a few minutes"
         raise HTTPException(
             429,
-            f"The AI provider's free-tier daily limit has been reached. Try again in about {when}, "
-            f"or upgrade the Groq plan at console.groq.com/settings/billing.",
+            f"The AI provider's free-tier rate limit has been reached. Try again in about {when}. "
+            f"If this keeps happening, the account may need a higher-tier plan.",
         )
-    except GroqAPIError as e:
+    except LLMAPIError as e:
         raise HTTPException(502, f"AI provider error: {e}")
     except RuntimeError as e:
-        # e.g. llm.client() raising because GROQ_API_KEY isn't set
+        # e.g. llm.client() raising because GEMINI_API_KEY isn't set
         raise HTTPException(502, str(e))
 
 app.add_middleware(

@@ -1,6 +1,6 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
-groq>=1.6.0
+openai>=1.50.0
 pypdf==5.0.1
 python-multipart==0.0.9
 python-dateutil==2.9.0.post0

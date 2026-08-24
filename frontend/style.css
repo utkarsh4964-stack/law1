@@ -921,3 +921,28 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
+.perspectives-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+.perspectives-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.perspective-card {
+  background: var(--panel-raised); border: 1px solid var(--line-soft); border-radius: var(--radius);
+  padding: 18px; border-left: 3px solid var(--teal-dim);
+  box-shadow: 0 1px 2px rgba(42,35,19,0.06), 0 6px 16px rgba(42,35,19,0.05);
+}
+.perspective-card.stance-primary { border-left-color: var(--teal); }
+.perspective-card.stance-alternative_suspect { border-left-color: var(--thread); }
+.perspective-card.stance-innocent_explanation { border-left-color: var(--ok); }
+.perspective-card.stance-gap_in_evidence { border-left-color: var(--info); }
+.perspective-stance-tag {
+  display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+  padding: 3px 8px; border-radius: 3px; margin-bottom: 10px; background: var(--teal-glow); color: var(--teal);
+}
+.perspective-card.stance-alternative_suspect .perspective-stance-tag { background: var(--thread-glow); color: var(--thread); }
+.perspective-card.stance-innocent_explanation .perspective-stance-tag { background: rgba(63,107,74,0.12); color: var(--ok); }
+.perspective-card.stance-gap_in_evidence .perspective-stance-tag { background: rgba(92,84,144,0.12); color: var(--info); }
+.perspective-card h4 { font-family: var(--display); font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+.perspective-card .perspective-summary { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin: 0 0 12px; }
+.perspective-card ul { margin: 0 0 12px; padding-left: 18px; font-size: 12.5px; color: var(--text); line-height: 1.6; }
+.perspective-caveat {
+  display: flex; gap: 7px; align-items: flex-start; font-size: 11.5px; color: var(--text-faint);
+  padding-top: 10px; border-top: 1px solid var(--line-soft); font-style: italic;
+}

@@ -853,8 +853,21 @@ document.getElementById("export-timeline-btn").addEventListener("click", () => {
 // Muted, desaturated accents so entity types stay distinguishable at a
 // glance without fighting the app's otherwise beige/navy/red theme.
 const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
+const EDGE_CATEGORIES = [
+  { key: "employment", label: "Employment", color: "#3f7a5c", match: /\b(works? at|employ|joined|hired)/i },
+  { key: "business", label: "Business", color: "#2b4864", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
+  { key: "communication", label: "Communication", color: "#a1402f", match: /\b(email|communicat|repl(y|ied)|wrote|message|requested|asked)/i },
+  { key: "consultation", label: "Consultation", color: "#5c5490", match: /\b(consult|advis|shared info)/i },
+];
+function classifyEdge(relation) {
+  const found = EDGE_CATEGORIES.find(c => c.match.test(relation || ""));
+  return found || { key: "other", label: "Other", color: "#8a7d5e" };
+}
+
 let GRAPH_DATA = null;
+let GRAPH_DOCS = null;
 let GRAPH_NETWORK = null;
+let graphViewMode = "graph";
 
 // A small white silhouette per entity type, baked onto a colored medallion,
 // rendered as a single flat SVG data-URI so vis-network can drop it straight
@@ -884,27 +897,56 @@ async function loadGraph() {
   if (!res.ok) { canvas.innerHTML = `<p class="err">${data.detail}</p>`; return; }
 
   GRAPH_DATA = data;
-  legend.innerHTML = Object.entries(typeColors)
-    .map(([type, color]) => `<span><img class="legend-icon" src="${nodeIcon(type)}" alt=""/>${type}</span>`).join("") +
-    `<span><span class="legend-dot" style="background:transparent;box-shadow:0 0 0 1px var(--text-faint)"></span>unconnected</span>`;
-  renderGraph();
+  GRAPH_DOCS = docs;
+  legend.innerHTML = EDGE_CATEGORIES.concat([{ key: "other", label: "Other", color: "#8a7d5e" }])
+    .map(c => `<span><span class="legend-line" style="background:${c.color}"></span>${c.label}</span>`).join("");
+  populateGraphFilters(data);
+  renderGraphView();
   loadedTabs.add("graph");
+}
+
+function populateGraphFilters(data) {
+  const typeSelect = document.getElementById("graph-filter-type");
+  const relSelect = document.getElementById("graph-filter-relation");
+  const presentTypes = [...new Set(data.nodes.map(n => n.type))];
+  typeSelect.innerHTML = '<option value="all">All Entities</option>' +
+    presentTypes.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}s</option>`).join("");
+  const presentCats = new Set(data.edges.map(e => classifyEdge(e.relation).key));
+  relSelect.innerHTML = '<option value="all">All Relationship Types</option>' +
+    EDGE_CATEGORIES.concat([{ key: "other", label: "Other" }]).filter(c => presentCats.has(c.key))
+      .map(c => `<option value="${c.key}">${c.label}</option>`).join("");
+}
+
+function renderGraphView() {
+  document.getElementById("graph-canvas").style.display = graphViewMode === "graph" ? "block" : "none";
+  document.getElementById("graph-table-wrap").style.display = graphViewMode === "table" ? "block" : "none";
+  if (graphViewMode === "graph") renderGraph(); else renderGraphTable();
+}
+
+function getFilteredGraph() {
+  const data = GRAPH_DATA;
+  const typeFilter = document.getElementById("graph-filter-type").value;
+  const relFilter = document.getElementById("graph-filter-relation").value;
+  const showIsolated = document.getElementById("graph-show-isolated").checked;
+
+  let nodes = typeFilter === "all" ? data.nodes : data.nodes.filter(n => n.type === typeFilter);
+  let edges = relFilter === "all" ? data.edges : data.edges.filter(e => classifyEdge(e.relation).key === relFilter);
+  edges = edges.filter(e => nodes.some(n => n.id === e.source) && nodes.some(n => n.id === e.target));
+
+  const connectedIds = new Set();
+  edges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
+  const visibleNodes = showIsolated ? nodes : nodes.filter(n => connectedIds.has(n.id));
+  return { nodes: visibleNodes, edges, hiddenCount: nodes.length - visibleNodes.length };
 }
 
 function renderGraph() {
   const canvas = document.getElementById("graph-canvas");
-  const data = GRAPH_DATA;
-  if (!data) return;
-
-  const showIsolated = document.getElementById("graph-show-isolated").checked;
-  const connectedIds = new Set();
-  data.edges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
-  const visibleNodes = showIsolated ? data.nodes : data.nodes.filter(n => connectedIds.has(n.id));
-  const hiddenCount = data.nodes.length - visibleNodes.length;
+  if (!GRAPH_DATA) return;
+  const { nodes: visibleNodes, edges: visibleEdges, hiddenCount } = getFilteredGraph();
 
   canvas.innerHTML = "";
   if (visibleNodes.length === 0) {
-    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections found yet — check "Show unconnected entities" or upload more documents.</p>';
+    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections match this filter — check "Show unconnected entities" or widen your filters.</p>';
     return;
   }
 
@@ -913,14 +955,14 @@ function renderGraph() {
     shape: "image", image: nodeIcon(n.type), size: 26,
     font: { color: "#fdf9ee", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#2a2313", vadjust: -30 },
   })));
-  const edges = new vis.DataSet(data.edges
-    .filter(e => visibleNodes.some(n => n.id === e.source) && visibleNodes.some(n => n.id === e.target))
-    .map((e, i) => ({
+  const edges = new vis.DataSet(visibleEdges.map((e, i) => {
+    const cat = classifyEdge(e.relation);
+    return {
       id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: "#a1402f", highlight: "#fdf9ee", hover: "#c25a45" }, opacity: 0.75,
+      color: { color: cat.color, highlight: "#2a2313", hover: cat.color }, opacity: 0.85,
       width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
-      shadow: { enabled: true, color: "rgba(20,15,5,0.35)", size: 4, x: 1, y: 2 },
-    })));
+    };
+  }));
 
   const network = new vis.Network(canvas, { nodes, edges }, {
     physics: {
@@ -929,21 +971,13 @@ function renderGraph() {
       stabilization: { iterations: 150 },
     },
     interaction: { hover: true, tooltipDelay: 120 },
-    edges: { font: { size: 0 } }, // relation text lives in the hover tooltip + click panel, not always-on canvas text
+    edges: { font: { size: 0 } }, // relation text lives in the hover tooltip + click detail panel, not always-on canvas text
   });
   GRAPH_NETWORK = network;
   network.once("stabilizationIterationsDone", () => network.fit({ animation: { duration: 400 } }));
 
-  const evidencePanel = document.getElementById("edge-evidence");
-  evidencePanel.style.display = "none";
   network.on("click", params => {
-    if (params.edges.length) {
-      const edge = edges.get(params.edges[0]);
-      evidencePanel.style.display = "block";
-      evidencePanel.innerHTML = `<strong>${escapeHtml(edge.relation || "")}</strong><p style="margin-top:8px;color:var(--text-muted);font-size:13px">Evidence: ${escapeHtml(edge.evidence || "—")}</p>`;
-    } else {
-      evidencePanel.style.display = "none";
-    }
+    if (params.nodes.length) showEntityDetail(params.nodes[0]);
   });
 
   const hintEl = document.querySelector(".graph-hint");
@@ -954,7 +988,94 @@ function renderGraph() {
   }
 }
 
-document.getElementById("graph-show-isolated").addEventListener("change", () => { if (GRAPH_DATA) renderGraph(); });
+function showEntityDetail(nodeId) {
+  const data = GRAPH_DATA;
+  const node = data.nodes.find(n => n.id === nodeId);
+  const panel = document.getElementById("graph-detail");
+  if (!node) return;
+
+  const related = data.edges.filter(e => e.source === nodeId || e.target === nodeId);
+  const aboutEdge = related.find(e => classifyEdge(e.relation).key === "employment") || related[0];
+  const about = aboutEdge
+    ? `${escapeHtml(aboutEdge.relation)}${aboutEdge.source === nodeId ? " " + escapeHtml(data.nodes.find(n => n.id === aboutEdge.target)?.label || "") : ""}.`
+    : `${related.length} relationship${related.length === 1 ? "" : "s"} found across the case documents.`;
+
+  const relLines = related.map(e => {
+    const outgoing = e.source === nodeId;
+    const otherId = outgoing ? e.target : e.source;
+    const other = data.nodes.find(n => n.id === otherId);
+    const cat = classifyEdge(e.relation);
+    return `<div class="rel-line"><span class="rel-dot" style="background:${cat.color}"></span><span class="rel-verb">${escapeHtml(e.relation)}</span><span class="rel-target" data-node-id="${otherId}">${escapeHtml(other?.label || "Unknown")}</span></div>`;
+  }).join("") || '<p class="placeholder" style="font-size:12.5px">No relationships recorded.</p>';
+
+  const matchingDocs = (GRAPH_DOCS || []).filter(d => (d.entities || []).some(e => e.name === node.label));
+  const evidenceLines = matchingDocs.length
+    ? matchingDocs.map(d => `<div class="evidence-line" data-doc="${d.id}"><svg viewBox="0 0 24 24"><use href="#icon-folder"/></svg>${escapeHtml(d.filename)}</div>`).join("")
+    : '<p class="placeholder" style="font-size:12.5px">No directly matching documents found.</p>';
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <img class="detail-avatar" src="${nodeIcon(node.type)}" alt=""/>
+      <div><div class="detail-name">${escapeHtml(node.label)}</div><div class="detail-type">${escapeHtml(node.type)}</div></div>
+    </div>
+    <div class="detail-section-label">About</div>
+    <div class="detail-about">${about}</div>
+    <div class="detail-section-label">Key Relationships (${related.length})</div>
+    ${relLines}
+    <div class="detail-section-label">Related Evidence (${matchingDocs.length})</div>
+    ${evidenceLines}
+  `;
+  panel.querySelectorAll(".rel-target").forEach(el => el.addEventListener("click", () => {
+    if (graphViewMode === "graph" && GRAPH_NETWORK) GRAPH_NETWORK.selectNodes([el.dataset.nodeId]);
+    showEntityDetail(el.dataset.nodeId);
+  }));
+  panel.querySelectorAll(".evidence-line[data-doc]").forEach(el => el.addEventListener("click", () => openDocModal(el.dataset.doc)));
+}
+
+function renderGraphTable() {
+  const wrap = document.getElementById("graph-table-wrap");
+  const { edges } = getFilteredGraph();
+  if (!edges.length) { wrap.innerHTML = '<p class="placeholder">No relationships match this filter.</p>'; return; }
+  const nodeName = id => GRAPH_DATA.nodes.find(n => n.id === id)?.label || "Unknown";
+  wrap.innerHTML = `
+    <table class="graph-table">
+      <thead><tr><th>From</th><th>Relationship</th><th>To</th><th>Evidence</th></tr></thead>
+      <tbody>
+        ${edges.map(e => {
+          const cat = classifyEdge(e.relation);
+          return `<tr>
+            <td>${escapeHtml(nodeName(e.source))}</td>
+            <td><span class="rel-chip" style="background:${cat.color}22;color:${cat.color}">${escapeHtml(e.relation)}</span></td>
+            <td>${escapeHtml(nodeName(e.target))}</td>
+            <td>${escapeHtml(e.evidence || "—")}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
+document.getElementById("graph-show-isolated").addEventListener("change", () => { if (GRAPH_DATA) renderGraphView(); });
+document.getElementById("graph-filter-type").addEventListener("change", () => { if (GRAPH_DATA) renderGraphView(); });
+document.getElementById("graph-filter-relation").addEventListener("change", () => { if (GRAPH_DATA) renderGraphView(); });
+document.querySelectorAll("[data-graph-view]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-graph-view]").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    graphViewMode = btn.dataset.graphView;
+    renderGraphView();
+  });
+});
+document.getElementById("export-graph-btn").addEventListener("click", () => {
+  if (!GRAPH_DATA || !GRAPH_DATA.edges.length) { showToast("Nothing to export yet.", "error"); return; }
+  const nodeName = id => GRAPH_DATA.nodes.find(n => n.id === id)?.label || "Unknown";
+  let md = `# Connections\n\n`;
+  GRAPH_DATA.edges.forEach(e => { md += `- **${nodeName(e.source)}** — ${e.relation} → **${nodeName(e.target)}** _(${e.evidence || "no evidence text"})_\n`; });
+  const blob = new Blob([md], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `connections-${CURRENT_CASE_ID}.md`; a.click();
+  URL.revokeObjectURL(url);
+});
 
 // ---------------------------------------------------------------------------
 // contradictions

@@ -8,7 +8,7 @@ from groq import Groq
 
 import legal_kb
 
-MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+MODEL = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant")
 
 _client = None
 

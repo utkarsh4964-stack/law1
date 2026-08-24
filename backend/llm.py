@@ -1,28 +1,38 @@
 """
-All AI calls go through here, using Groq's free API (OpenAI-compatible chat
-completions with JSON mode). One place to swap models/providers.
+All AI calls go through here, using an OpenAI-compatible chat completions API
+with JSON mode. One place to swap models/providers.
+
+Currently pointed at Google Gemini (via its OpenAI-compatible endpoint)
+instead of Groq — Groq's free tier has a 200k-tokens/day hard cap that's
+easy to exhaust during a demo/dev session with no way to raise it without
+paying. Gemini's free tier (get a key at https://aistudio.google.com/apikey)
+is friendlier for this. Swapping providers again later only means changing
+this client() function and the two env vars below — every call site in this
+file is written against the standard OpenAI chat-completions shape, so nothing
+else needs to change.
 """
 import json
 import os
-from groq import Groq
+from openai import OpenAI
 
 import legal_kb
 
-MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b")
+MODEL = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
+BASE_URL = os.environ.get("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
 
 _client = None
 
 
-def client() -> Groq:
+def client() -> OpenAI:
     global _client
     if _client is None:
-        api_key = os.environ.get("GROQ_API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise RuntimeError(
-                "GROQ_API_KEY is not set. Get a free key at https://console.groq.com/keys "
+                "GEMINI_API_KEY is not set. Get a free key at https://aistudio.google.com/apikey "
                 "and put it in backend/.env (see .env.example)."
             )
-        _client = Groq(api_key=api_key)
+        _client = OpenAI(api_key=api_key, base_url=BASE_URL)
     return _client
 
 
@@ -144,6 +154,49 @@ def build_graph(documents: list) -> dict:
     } for d in documents]
     data = _chat_json(GRAPH_SYSTEM, json.dumps(payload, ensure_ascii=False), max_tokens=2500)
     return {"nodes": data.get("nodes", []), "edges": data.get("edges", [])}
+
+
+# ---------------------------------------------------------------------------
+# 3b. Alternative investigative angles — different lenses on the same graph
+# ---------------------------------------------------------------------------
+
+PERSPECTIVES_SYSTEM = """You are a senior investigator doing a "red team" pass on a case file. \
+Given the entities, relationships and evidence already extracted from the case documents, \
+generate 3-4 genuinely DIFFERENT investigative angles an investigator should consider - \
+not just restatements of the obvious reading of the evidence. Think about: who else could \
+be responsible, what innocent explanations could account for the same facts, what the \
+evidence does NOT yet establish, and where the investigation has tunnel vision.
+
+Each angle must be grounded in the entities/relationships actually provided - never invent \
+people, organizations, or events that are not present in the input. These are hypotheses \
+for an investigator to weigh and test, not conclusions or accusations. Respond with a single \
+JSON object:
+
+{
+  "perspectives": [
+    {
+      "title": "short name for this angle, e.g. 'Alternative suspect: the vendor side'",
+      "stance": "primary|alternative_suspect|innocent_explanation|gap_in_evidence",
+      "summary": "2-3 sentence explanation of this angle and why it's worth considering",
+      "points": ["short bullet grounded in the provided entities/evidence", "..."],
+      "caveat": "one sentence on what would need to be verified before this angle holds up"
+    }
+  ]
+}
+
+Always include at least one "gap_in_evidence" angle (what's missing or unverified) and at \
+least one "innocent_explanation" angle (a non-incriminating account of the same facts) if \
+the case involves any person who could be a suspect. Be specific to THIS case, not generic."""
+
+
+def generate_perspectives(graph: dict, case_summary: str) -> list:
+    payload = {
+        "case_summary": case_summary,
+        "entities": graph.get("nodes", []),
+        "relationships": graph.get("edges", []),
+    }
+    data = _chat_json(PERSPECTIVES_SYSTEM, json.dumps(payload, ensure_ascii=False), max_tokens=2200)
+    return data.get("perspectives", [])
 
 
 # ---------------------------------------------------------------------------

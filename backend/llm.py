@@ -2,15 +2,22 @@
 All AI calls go through here, using an OpenAI-compatible chat completions API
 with JSON mode. One place to swap models/providers.
 
-Currently pointed at Groq (via its OpenAI-compatible endpoint). Note: Groq's
-free tier has a 200k-tokens/day hard cap that's easy to exhaust during a
-demo/dev session with no way to raise it without paying — if you hit that
-wall again, either upgrade to a paid Groq tier, request a higher on-demand
-limit at https://console.groq.com/settings/billing, or point LLM_BASE_URL /
-LLM_MODEL / the api key env var back at Gemini or another OpenAI-compatible
-provider. Swapping providers only means changing this client() function and
-the two env vars below — every call site in this file is written against the
-standard OpenAI chat-completions shape, so nothing else needs to change.
+Currently pointed at Groq (via its OpenAI-compatible endpoint), using
+openai/gpt-oss-120b — Groq deprecated its old Llama chat models
+(llama-3.3-70b-versatile, llama-3.1-8b-instant) in 2026, so this model
+string is the current recommended general-purpose model on Groq. Check
+https://console.groq.com/docs/deprecations before assuming any model
+string here is still live.
+
+Note: Groq's free tier has a 200k-tokens/day hard cap that's easy to
+exhaust during a demo/dev session with no way to raise it without paying —
+if you hit that wall again, either upgrade to a paid Groq tier, request a
+higher on-demand limit at https://console.groq.com/settings/billing, or
+point LLM_BASE_URL / LLM_MODEL / the api key env var at Gemini or another
+OpenAI-compatible provider. Swapping providers only means changing this
+client() function and the two env vars below — every call site in this
+file is written against the standard OpenAI chat-completions shape, so
+nothing else needs to change.
 """
 import json
 import os
@@ -18,7 +25,7 @@ from openai import OpenAI
 
 import legal_kb
 
-MODEL = os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile")
+MODEL = os.environ.get("LLM_MODEL", "openai/gpt-oss-120b")
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.groq.com/openai/v1")
 
 _client = None

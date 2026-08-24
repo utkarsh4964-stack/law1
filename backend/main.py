@@ -408,6 +408,16 @@ def case_summary(case_id: str, user: dict = Depends(get_current_user)):
     return {"summary": summary}
 
 
+@app.get("/api/cases/{case_id}/summary/cached")
+def case_summary_cached(case_id: str, user: dict = Depends(get_current_user)):
+    # Read-only peek at whatever summary is already cached, for previews
+    # like the dashboard's AI Summary bar. Never triggers an LLM call —
+    # dashboards get visited far more often than summaries need generating,
+    # and this keeps that view fast and free.
+    get_case_or_404(case_id)
+    return {"summary": store.get_cache(case_id, "case_summary")}
+
+
 @app.get("/api/cases/{case_id}/timeline")
 def case_timeline(case_id: str, user: dict = Depends(get_current_user)):
     docs = require_documents(case_id)

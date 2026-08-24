@@ -1077,6 +1077,52 @@ document.getElementById("export-graph-btn").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
+const PERSPECTIVE_LABELS = {
+  primary: "Primary reading", alternative_suspect: "Alternative suspect",
+  innocent_explanation: "Innocent explanation", gap_in_evidence: "Gap in evidence",
+};
+
+async function generatePerspectives() {
+  const body = document.getElementById("perspectives-body");
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Weighing alternative angles…</p>';
+  try {
+    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/perspectives`);
+    const data = await res.json();
+    if (!res.ok) {
+      // A 429 here is Groq's daily free-tier quota, not a bug — show the
+      // server's already-friendly wait-time message as-is rather than a
+      // generic failure, and offer a retry button for when it resets.
+      body.innerHTML = `<p class="err">${escapeHtml(data.detail)}</p>
+        <button class="ghost-btn" id="generate-perspectives-btn" style="margin-top:10px">Try again</button>`;
+      document.getElementById("generate-perspectives-btn").addEventListener("click", generatePerspectives);
+      return;
+    }
+    renderPerspectives(data.perspectives);
+  } catch {
+    body.innerHTML = `<p class="err">Could not reach the server.</p>
+      <button class="ghost-btn" id="generate-perspectives-btn" style="margin-top:10px">Try again</button>`;
+    document.getElementById("generate-perspectives-btn").addEventListener("click", generatePerspectives);
+  }
+}
+
+function renderPerspectives(perspectives) {
+  const body = document.getElementById("perspectives-body");
+  if (!perspectives || !perspectives.length) {
+    body.innerHTML = '<p class="placeholder">No alternative angles could be generated from the current evidence.</p>';
+    return;
+  }
+  body.innerHTML = `<div class="perspectives-grid">${perspectives.map(p => `
+    <div class="perspective-card stance-${p.stance || "other"}">
+      <span class="perspective-stance-tag">${escapeHtml(PERSPECTIVE_LABELS[p.stance] || "Angle")}</span>
+      <h4>${escapeHtml(p.title || "")}</h4>
+      <p class="perspective-summary">${escapeHtml(p.summary || "")}</p>
+      <ul>${(p.points || []).map(pt => `<li>${escapeHtml(pt)}</li>`).join("")}</ul>
+      <div class="perspective-caveat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><use href="#icon-shield"/></svg>${escapeHtml(p.caveat || "Requires further verification.")}</div>
+    </div>`).join("")}</div>`;
+}
+
+document.getElementById("generate-perspectives-btn").addEventListener("click", generatePerspectives);
+
 // ---------------------------------------------------------------------------
 // contradictions
 // ---------------------------------------------------------------------------

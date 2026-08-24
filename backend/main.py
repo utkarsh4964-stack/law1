@@ -22,7 +22,7 @@ import auth
 import store
 import llm
 
-from groq import APIError as GroqAPIError
+from groq import APIError as GroqAPIError, RateLimitError as GroqRateLimitError
 
 app = FastAPI(title="AI Case Report")
 
@@ -35,6 +35,27 @@ def call_llm(fn, *args, **kwargs):
     Error" with no indication of what actually went wrong."""
     try:
         return fn(*args, **kwargs)
+    except GroqRateLimitError as e:
+        # Groq's free tier has a hard daily token cap. This is a quota wall,
+        # not a bug — no retry loop here can conjure more tokens, and
+        # blocking the request for the ~10min Groq suggests would just time
+        # out the connection. Instead: parse the wait time out of their
+        # message and hand back one clear, actionable sentence.
+        wait = re.search(r"try again in ([\d.]+m)?([\d.]+s)?", str(e))
+        if wait and (wait.group(1) or wait.group(2)):
+            parts = []
+            if wait.group(1):
+                parts.append(wait.group(1).replace("m", " min"))
+            if wait.group(2):
+                parts.append(f"{round(float(wait.group(2)[:-1]))} sec")
+            when = " ".join(parts)
+        else:
+            when = "a few minutes"
+        raise HTTPException(
+            429,
+            f"The AI provider's free-tier daily limit has been reached. Try again in about {when}, "
+            f"or upgrade the Groq plan at console.groq.com/settings/billing.",
+        )
     except GroqAPIError as e:
         raise HTTPException(502, f"AI provider error: {e}")
     except RuntimeError as e:
@@ -438,6 +459,26 @@ def case_graph(case_id: str, user: dict = Depends(get_current_user)):
     graph = call_llm(llm.build_graph, docs)
     store.set_cache(case_id, "graph", graph)
     return graph
+
+
+@app.get("/api/cases/{case_id}/perspectives")
+def case_perspectives(case_id: str, user: dict = Depends(get_current_user)):
+    docs = require_documents(case_id)
+    cached = store.get_cache(case_id, "perspectives")
+    if cached is not None:
+        return {"perspectives": cached}
+    # Reuse whatever's already cached rather than re-sending full document
+    # text again — this endpoint is explicitly user-triggered (not run
+    # automatically like the dashboard's graph fetch), but every token
+    # still counts against the same daily quota, so build it from the
+    # graph + summary rather than the raw documents a second time.
+    graph = store.get_cache(case_id, "graph") or call_llm(llm.build_graph, docs)
+    store.set_cache(case_id, "graph", graph)
+    summary = store.get_cache(case_id, "case_summary") or call_llm(llm.build_case_summary, docs)
+    store.set_cache(case_id, "case_summary", summary)
+    perspectives = call_llm(llm.generate_perspectives, graph, summary)
+    store.set_cache(case_id, "perspectives", perspectives)
+    return {"perspectives": perspectives}
 
 
 @app.get("/api/cases/{case_id}/contradictions")

@@ -441,7 +441,7 @@ async function loadDashboard() {
     ["Evidence Score", evidenceScore + "%", "icon-award", "ok", "Overall confidence"],
   ].map(([label, num, icon, tone, caption]) => `
     <div class="stat-tile tone-${tone}">
-      <svg class="stat-icon"><use href="#${icon}"/></svg>
+      <div class="stat-icon-box"><svg class="stat-icon"><use href="#${icon}"/></svg></div>
       <div class="stat-num">${num}</div>
       <div class="stat-label">${label}</div>
       <div class="stat-caption">${caption}</div>

@@ -271,6 +271,7 @@
 
     <div class="cases-actions">
       <button id="new-case-btn" class="primary-btn">+ New Investigation</button>
+      <button id="demo-case-btn" class="ghost-btn">✨ Load Demo Case</button>
       <input type="text" id="case-search" class="case-search-input" placeholder="Search cases by title, ID or officer…" />
     </div>
 
@@ -382,6 +383,12 @@
           <div id="dash-gauge" class="gauge-wrap"></div>
           <button class="ghost-btn full" data-goto="documents">View Evidence Details</button>
         </div>
+        <div class="insight-card">
+          <h3>Case Activity</h3>
+          <p class="sub">Documents added to the vault over time.</p>
+          <div id="dash-activity-chart" class="activity-chart-wrap"></div>
+          <button class="ghost-btn full" data-goto="documents">View Document Vault</button>
+        </div>
       </div>
 
       <div class="ai-summary-bar">
@@ -426,6 +433,8 @@
 
       <div id="upload-status"></div>
       <div id="processing-pipeline"></div>
+
+      <div id="vault-type-chart" class="vault-type-chart"></div>
 
       <div class="vault-controls">
         <input type="text" id="vault-search" placeholder="Search documents…" />

@@ -269,9 +269,14 @@
       <p class="sub">Open an existing investigation or start a new one.</p>
     </header>
 
+    <div class="reviewer-tip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-sparkle"/></svg>
+      <div><strong>Reviewing for the first time?</strong> Click <em class="hl">Load Demo Case</em> below for a fully populated investigation — documents, timeline, evidence graph, contradictions and report already generated.</div>
+    </div>
+
     <div class="cases-actions">
-      <button id="new-case-btn" class="primary-btn">+ New Investigation</button>
-      <button id="demo-case-btn" class="ghost-btn">✨ Load Demo Case</button>
+      <button id="demo-case-btn" class="primary-btn">✨ Load Demo Case</button>
+      <button id="new-case-btn" class="ghost-btn">+ New Investigation</button>
       <input type="text" id="case-search" class="case-search-input" placeholder="Search cases by title, ID or officer…" />
     </div>
 
@@ -326,14 +331,14 @@
     </div>
 
     <nav class="tabs" id="tabs">
-      <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span>Dashboard</button>
-      <button class="tab" data-tab="documents"><svg class="tab-icon"><use href="#icon-folder"/></svg><span class="tab-num">01</span>Document Vault</button>
-      <button class="tab" data-tab="intelligence"><svg class="tab-icon"><use href="#icon-brain"/></svg><span class="tab-num">02</span>Case Intelligence</button>
-      <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">03</span>Timeline</button>
-      <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">04</span>Connections</button>
-      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">05</span>Similar Cases</button>
-      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">06</span>Report</button>
-      <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">07</span>Audit Trail</button>
+      <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span><span class="tab-text"><span class="tab-title">Dashboard</span><span class="tab-desc">Overview &amp; quick actions</span></span></button>
+      <button class="tab" data-tab="documents"><svg class="tab-icon"><use href="#icon-folder"/></svg><span class="tab-num">01</span><span class="tab-text"><span class="tab-title">Document Vault</span><span class="tab-desc">Upload, hash, chain of custody</span></span></button>
+      <button class="tab" data-tab="intelligence"><svg class="tab-icon"><use href="#icon-brain"/></svg><span class="tab-num">02</span><span class="tab-text"><span class="tab-title">Case Intelligence</span><span class="tab-desc">AI summary, conflicts, chat</span></span></button>
+      <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">03</span><span class="tab-text"><span class="tab-title">Timeline</span><span class="tab-desc">Chronological, evidence-linked</span></span></button>
+      <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">04</span><span class="tab-text"><span class="tab-title">Connections</span><span class="tab-desc">Entity relationship graph</span></span></button>
+      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">05</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
+      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
+      <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Audit Trail</span><span class="tab-desc">Who did what, and when</span></span></button>
     </nav>
 
     <div class="nav-footer">
@@ -468,17 +473,36 @@
 
       <!-- Summary sub-panel -->
       <div class="intel-subpanel active" id="intel-summary">
-        <div class="card prose" id="summary-body"><p class="placeholder">Upload documents, then open this tab to generate a summary.</p></div>
+        <div class="card prose" id="summary-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-sparkle"/></svg>
+            <div class="empty-state-title">No summary yet</div>
+            <div class="empty-state-sub">Upload at least one case document and this tab auto-generates a narrative summary — every sentence traceable back to its source.</div>
+            <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
+          </div>
+        </div>
       </div>
 
       <!-- Contradictions sub-panel -->
       <div class="intel-subpanel" id="intel-contradictions">
-        <div id="contradiction-body"><p class="placeholder">No analysis yet.</p></div>
+        <div id="contradiction-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg>
+            <div class="empty-state-title">No contradictions checked yet</div>
+            <div class="empty-state-sub">Once documents are uploaded, conflicting claims across them are surfaced here with a conflict type and confidence score — always flagged for human review, never auto-resolved.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Argument Intelligence sub-panel -->
       <div class="intel-subpanel" id="intel-arguments">
-        <div id="arguments-body"><p class="placeholder">No analysis yet.</p></div>
+        <div id="arguments-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-scale"/></svg>
+            <div class="empty-state-title">No analysis yet</div>
+            <div class="empty-state-sub">Evidence-grounded potential arguments and fair counterarguments for internal case-building — not a courtroom simulator, and not a verdict.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Chat sub-panel -->
@@ -526,7 +550,13 @@
           </div>
         </div>
       </div>
-      <div id="timeline-body"><p class="placeholder">No timeline yet.</p></div>
+      <div id="timeline-body">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-clock"/></svg>
+          <div class="empty-state-title">No timeline yet</div>
+          <div class="empty-state-sub">Dated events are extracted from every uploaded document and arranged chronologically here, with automatic gap detection across 30+ day silences.</div>
+        </div>
+      </div>
       <button class="ghost-btn full" id="timeline-load-more" style="display:none;margin-top:16px">Load more events</button>
     </section>
 
@@ -555,7 +585,11 @@
         <div id="graph-canvas" class="graph-canvas"></div>
         <div id="graph-table-wrap" class="card" style="display:none"></div>
         <aside class="graph-detail" id="graph-detail">
-          <p class="placeholder">Click an entity in the graph to see its details, relationships and related evidence.</p>
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-network"/></svg>
+            <div class="empty-state-title">Nothing selected</div>
+            <div class="empty-state-sub">Click any entity in the graph to see its details, relationships and the evidence behind each connection.</div>
+          </div>
         </aside>
       </div>
       <div id="graph-legend" class="graph-legend"></div>
@@ -575,7 +609,13 @@
         <h1>Similar Cases</h1>
         <p class="sub">Factual/legal pattern matches against a reference case library — <em class="hl">not an outcome prediction</em>.</p>
       </header>
-      <div id="similar-body"><p class="placeholder">No analysis yet.</p></div>
+      <div id="similar-body">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-layers"/></svg>
+          <div class="empty-state-title">No analysis yet</div>
+          <div class="empty-state-sub">Once documents are uploaded, this case is matched against a small reference case library for factual and legal pattern similarity — never an outcome prediction.</div>
+        </div>
+      </div>
     </section>
 
     <!-- REPORT -->
@@ -588,7 +628,13 @@
         <button id="generate-report-btn" class="primary-btn">Generate report</button>
         <button id="download-report-btn" class="ghost-btn" disabled>Download .md</button>
       </div>
-      <div class="card prose" id="report-body"><p class="placeholder">Not generated yet.</p></div>
+      <div class="card prose" id="report-body">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg>
+          <div class="empty-state-title">Not generated yet</div>
+          <div class="empty-state-sub">Click "Generate report" above for a structured 12-section Markdown case report — synthesized from every document, timeline event and flagged contradiction on file.</div>
+        </div>
+      </div>
     </section>
 
     <!-- AUDIT TRAIL -->

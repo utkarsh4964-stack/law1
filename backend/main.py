@@ -245,6 +245,321 @@ def list_cases(user: dict = Depends(get_current_user)):
     return store.list_cases()
 
 
+# ---------------------------------------------------------------------------
+# demo case — a fully pre-analyzed sample case for screening/demo purposes.
+# Everything below is hand-written, not LLM-generated: it exists so a judge
+# or reviewer can see every feature (graph, contradictions, similar cases,
+# argument intelligence, report) fully populated in one click, with no
+# upload wait and no dependency on the Groq free-tier quota holding up
+# during a live demo.
+# ---------------------------------------------------------------------------
+
+DEMO_DOCUMENTS = [
+    {
+        "filename": "witness_statement_deshmukh.txt",
+        "doc_type": "witness statement",
+        "text": (
+            "Statement of Priya Deshmukh, Site Supervisor, Bhiwandi Warehouse.\n\n"
+            "On 3 March 2026, at approximately 4:30 PM, I observed Ramesh Kulkarni "
+            "(Accounts Manager) at the warehouse gate speaking with a man I did not "
+            "recognize, who arrived in a vehicle without a company sticker. I saw Mr. "
+            "Kulkarni hand him a sealed envelope. I did not think it unusual at the time "
+            "and did not log a visitor entry for the vehicle."
+        ),
+        "summary": "Site supervisor Priya Deshmukh states she saw accounts manager Ramesh "
+                    "Kulkarni meet an unidentified vendor representative at the Bhiwandi "
+                    "warehouse on 3 March and hand over a sealed envelope, three days before "
+                    "the disputed transfer was recorded.",
+        "entities": [
+            {"name": "Priya Deshmukh", "type": "person"},
+            {"name": "Ramesh Kulkarni", "type": "person"},
+            {"name": "Bhiwandi Warehouse", "type": "location"},
+        ],
+        "events": [
+            {"date": "2026-03-03", "description": "Priya Deshmukh witnesses Ramesh Kulkarni "
+                                                    "meet a vendor representative at the Bhiwandi "
+                                                    "warehouse and hand over a sealed envelope."},
+        ],
+        "claims": [
+            {"statement": "The warehouse meeting between Kulkarni and the vendor representative "
+                          "took place at the Bhiwandi warehouse on 3 March 2026, with Kulkarni present.",
+             "about": "Kulkarni's location on 3 March"},
+            {"statement": "Kulkarni handed the representative a sealed envelope, not signed paperwork.",
+             "about": "nature of the handover"},
+        ],
+        "key_identifiers": [],
+    },
+    {
+        "filename": "transaction_log_mar.txt",
+        "doc_type": "bank statement",
+        "text": (
+            "RANGOLI TEXTILES PVT LTD — Operating Account Statement (March 2026)\n\n"
+            "06-Mar-2026   DEBIT   Rs. 18,40,000.00   NEFT to OM SAI ENTERPRISES   "
+            "A/C XXXX-4471   Ref: FAB-CONSIGN-MAR\n"
+            "Note: recipient account not found in approved-vendor master list."
+        ),
+        "summary": "Rangoli Textiles' bank statement shows a ₹18,40,000 transfer to 'Om Sai "
+                    "Enterprises' on 6 March, routed to an account not listed among the "
+                    "company's approved vendors.",
+        "entities": [
+            {"name": "Rangoli Textiles", "type": "organization"},
+            {"name": "Om Sai Enterprises", "type": "organization"},
+        ],
+        "events": [
+            {"date": "2026-03-06", "description": "₹18,40,000 transferred from Rangoli "
+                                                    "Textiles' operating account to Om Sai Enterprises."},
+        ],
+        "claims": [
+            {"statement": "The ₹18,40,000 payment was transferred to Om Sai Enterprises on 6 March 2026.",
+             "about": "transfer date and recipient"},
+            {"statement": "Om Sai Enterprises is not on Rangoli Textiles' approved vendor list.",
+             "about": "recipient account status"},
+        ],
+        "key_identifiers": [
+            {"type": "money", "value": "₹18,40,000"},
+            {"type": "account", "value": "XXXX-4471 (Om Sai Enterprises)"},
+        ],
+    },
+    {
+        "filename": "vendor_contract_shreeji.txt",
+        "doc_type": "contract",
+        "text": (
+            "VENDOR AGREEMENT — March Fabric Consignment\n"
+            "Between Rangoli Textiles Pvt Ltd and Shreeji Traders.\n"
+            "Clause 7 — Payment Routing: All payments under this agreement shall be made "
+            "directly to Shreeji Traders' registered account. No intermediary or third-party "
+            "account is authorized to receive payment on the vendor's behalf.\n"
+            "Signed 20 February 2026. Countersigned: R. Kulkarni, Accounts Manager."
+        ),
+        "summary": "The signed vendor contract names Shreeji Traders, not Om Sai Enterprises, "
+                    "as the approved supplier for the March fabric consignment, with payment "
+                    "terms directing funds to Shreeji's own registered account.",
+        "entities": [
+            {"name": "Shreeji Traders", "type": "organization"},
+            {"name": "Ramesh Kulkarni", "type": "person"},
+            {"name": "Rangoli Textiles", "type": "organization"},
+        ],
+        "events": [
+            {"date": "2026-02-20", "description": "Vendor contract for the March fabric "
+                                                    "consignment signed with Shreeji Traders, "
+                                                    "countersigned by Ramesh Kulkarni."},
+        ],
+        "claims": [
+            {"statement": "Shreeji Traders is the contractually approved vendor for the March "
+                          "consignment, with payment terms directing funds to its own account.",
+             "about": "approved vendor and payment routing"},
+        ],
+        "key_identifiers": [
+            {"type": "legal_section", "value": "Clause 7 — Payment Routing"},
+        ],
+    },
+    {
+        "filename": "site_report_bhiwandi.txt",
+        "doc_type": "site report",
+        "text": (
+            "Bhiwandi Warehouse — Daily Attendance & Site Log, 3 March 2026.\n"
+            "Staff on site: P. Deshmukh (Supervisor), 4 warehouse staff.\n"
+            "R. Kulkarni (Accounts Manager): ON APPROVED LEAVE — not on site.\n"
+            "No external vendor visitor entries logged for 3 March."
+        ),
+        "summary": "The Bhiwandi warehouse site report logs Ramesh Kulkarni as off-site on "
+                    "approved leave on 3 March, the same date the witness statement places "
+                    "him at a vendor meeting on that site.",
+        "entities": [
+            {"name": "Ramesh Kulkarni", "type": "person"},
+            {"name": "Bhiwandi Warehouse", "type": "location"},
+        ],
+        "events": [
+            {"date": "2026-03-03", "description": "Site attendance log records Ramesh Kulkarni "
+                                                    "as on approved leave, absent from the "
+                                                    "Bhiwandi warehouse."},
+        ],
+        "claims": [
+            {"statement": "Kulkarni was on approved leave and absent from the Bhiwandi "
+                          "warehouse on 3 March 2026.",
+             "about": "Kulkarni's location on 3 March"},
+        ],
+        "key_identifiers": [],
+    },
+]
+
+DEMO_CASE_SUMMARY = (
+    "Rangoli Textiles flagged a ₹18,40,000 payment made on 6 March 2026 to Om Sai "
+    "Enterprises, an account not listed among its approved vendors. The company's "
+    "signed February contract for the same consignment names Shreeji Traders as the "
+    "approved supplier, with payment terms directing funds to Shreeji's own registered "
+    "account — a direct conflict between where the money was contractually meant to go "
+    "and where it actually went.\n\n"
+    "Site supervisor Priya Deshmukh states she witnessed accounts manager Ramesh "
+    "Kulkarni meet an unidentified vendor representative at the Bhiwandi warehouse on "
+    "3 March and hand over a sealed envelope, three days before the disputed transfer. "
+    "The warehouse's own attendance log for that date records Kulkarni as on approved "
+    "leave and absent from the site — directly conflicting with the witness account.\n\n"
+    "No document yet explains who controls the Om Sai Enterprises account or confirms "
+    "Kulkarni's actual whereabouts on 3 March. Both the payment-routing discrepancy and "
+    "the attendance conflict require independent verification before any conclusion "
+    "about diversion or misconduct can be drawn."
+)
+
+DEMO_GRAPH = {
+    "nodes": [
+        {"id": "kulkarni", "label": "Ramesh Kulkarni", "type": "person"},
+        {"id": "deshmukh", "label": "Priya Deshmukh", "type": "person"},
+        {"id": "rangoli", "label": "Rangoli Textiles", "type": "organization"},
+        {"id": "omsai", "label": "Om Sai Enterprises", "type": "organization"},
+        {"id": "shreeji", "label": "Shreeji Traders", "type": "organization"},
+        {"id": "warehouse", "label": "Bhiwandi Warehouse", "type": "location"},
+    ],
+    "edges": [
+        {"source": "deshmukh", "target": "kulkarni", "relation": "Witnessed meeting with",
+         "evidence": "witness_statement_deshmukh.txt"},
+        {"source": "kulkarni", "target": "warehouse", "relation": "Reported present at (disputed)",
+         "evidence": "witness_statement_deshmukh.txt / site_report_bhiwandi.txt"},
+        {"source": "rangoli", "target": "omsai", "relation": "Payment to",
+         "evidence": "transaction_log_mar.txt"},
+        {"source": "rangoli", "target": "shreeji", "relation": "Approved vendor of",
+         "evidence": "vendor_contract_shreeji.txt"},
+        {"source": "kulkarni", "target": "shreeji", "relation": "Countersigned contract with",
+         "evidence": "vendor_contract_shreeji.txt"},
+    ],
+}
+
+DEMO_CONTRADICTIONS = [
+    {
+        "claim_a": "The warehouse meeting between Kulkarni and the vendor representative took "
+                   "place at the Bhiwandi warehouse on 3 March 2026, with Kulkarni present.",
+        "source_a": "witness_statement_deshmukh.txt",
+        "claim_b": "Kulkarni was on approved leave and absent from the Bhiwandi warehouse on 3 March 2026.",
+        "source_b": "site_report_bhiwandi.txt",
+        "conflict_type": "location",
+        "confidence": 78,
+        "explanation": "The witness statement places Kulkarni at the warehouse for a vendor "
+                       "meeting on 3 March, while the site attendance log records him on leave "
+                       "and absent that same day. Human verification required.",
+    },
+    {
+        "claim_a": "Shreeji Traders is the contractually approved vendor for the March "
+                   "consignment, with payment terms directing funds to its own account.",
+        "source_a": "vendor_contract_shreeji.txt",
+        "claim_b": "The ₹18,40,000 payment was transferred to Om Sai Enterprises on 6 March 2026.",
+        "source_b": "transaction_log_mar.txt",
+        "conflict_type": "identity",
+        "confidence": 85,
+        "explanation": "The signed contract names Shreeji Traders as the approved payee, but "
+                       "the recorded transfer went to a different, unapproved entity. "
+                       "Human verification required.",
+    },
+]
+
+DEMO_SIMILAR_CASES = [
+    {
+        "precedent_id": "PREC-2031",
+        "title": "State v. Undisclosed Financial Intermediary",
+        "summary": "A case involving layered bank transfers between an individual and a shell "
+                   "entity, used to obscure the origin of funds, uncovered through bank "
+                   "statement cross-referencing.",
+        "outcome": "Charges framed under breach of trust and money-laundering provisions after "
+                   "transaction timeline corroborated witness statements.",
+        "similarity": 81,
+        "key_similarities": ["payment to unapproved third-party account", "shell-like intermediary entity"],
+        "note": "Both cases contain similar factual patterns around funds routed to an "
+                "undisclosed intermediary rather than the contracted party.",
+    },
+    {
+        "precedent_id": "PREC-4172",
+        "title": "Regional Bank v. Disputed Loan Guarantor",
+        "summary": "A dispute over whether a payment between two parties represented a loan or "
+                   "a gift, resolved primarily through correspondence and bank memo evidence.",
+        "outcome": "Payment held to be a loan based on contemporaneous written communication, "
+                   "despite absence of a formal signed agreement.",
+        "similarity": 52,
+        "key_similarities": ["reliance on bank records over verbal accounts"],
+        "note": "Shares a pattern of resolving a factual dispute primarily through "
+                "documentary payment evidence rather than testimony alone.",
+    },
+]
+
+DEMO_ARGUMENTS = [
+    {
+        "argument": "The payment discrepancy — contract names Shreeji Traders, funds went to "
+                    "Om Sai Enterprises — suggests the March transfer may have been misdirected "
+                    "or diverted rather than a simple clerical error.",
+        "supporting_evidence": ["vendor_contract_shreeji.txt", "transaction_log_mar.txt"],
+        "counterargument": "Om Sai Enterprises could be an undisclosed but legitimate "
+                           "subcontractor or factoring arrangement of Shreeji Traders — this "
+                           "has not yet been ruled out and should be checked before assuming diversion.",
+        "related_precedent_ids": ["PREC-2031"],
+    },
+    {
+        "argument": "The conflict between the witness statement and the site attendance log "
+                    "for 3 March raises a question about Kulkarni's actual location and role "
+                    "in the vendor meeting.",
+        "supporting_evidence": ["witness_statement_deshmukh.txt", "site_report_bhiwandi.txt"],
+        "counterargument": "Attendance logs can be incomplete or filled in after the fact — "
+                           "the log's absence of a visitor entry is not, by itself, proof "
+                           "Kulkarni wasn't on site.",
+        "related_precedent_ids": [],
+    },
+]
+
+
+@app.post("/api/cases/demo")
+def create_demo_case(user: dict = Depends(get_current_user)):
+    from datetime import datetime, timedelta, timezone
+
+    case = store.create_case({
+        "title": "Rangoli Textiles — Vendor Payment Diversion",
+        "case_type": "Financial Fraud",
+        "description": "Suspected diversion of a vendor payment through an unapproved "
+                        "intermediary account, alongside a disputed on-site meeting.",
+        "investigating_officer": user["name"],
+        "status": "Active",
+        "priority": "High",
+    }, user["username"])
+    case_id = case["id"]
+
+    base_time = datetime.now(timezone.utc) - timedelta(days=6)
+    for i, tmpl in enumerate(DEMO_DOCUMENTS):
+        doc_id = f"demo{i + 1}"
+        uploaded_at = (base_time + timedelta(days=i * 1.6, hours=i)).isoformat()
+        doc = {
+            "id": doc_id,
+            "case_id": case_id,
+            "filename": tmpl["filename"],
+            "text": tmpl["text"],
+            "size_bytes": len(tmpl["text"].encode("utf-8")),
+            "page_count": None,
+            "hash": hashlib.sha256(tmpl["text"].encode("utf-8")).hexdigest(),
+            "version": "1.0",
+            "confidentiality": "Standard",
+            "uploaded_by": user["username"],
+            "uploaded_at": uploaded_at,
+            "status": "processed",
+            "processing_steps": PROCESSING_STEPS,
+            "summary": tmpl["summary"],
+            "doc_type": tmpl["doc_type"],
+            "entities": tmpl["entities"],
+            "events": tmpl["events"],
+            "claims": tmpl["claims"],
+            "key_identifiers": tmpl["key_identifiers"],
+        }
+        store.add_document(case_id, doc)
+        store.append_audit(case_id, user["username"], "document_uploaded", f"Uploaded {doc['filename']}", doc_id)
+        store.append_audit(case_id, user["username"], "integrity_hash_generated", f"SHA-256 generated for {doc['filename']}", doc_id)
+        store.append_audit(case_id, user["username"], "ai_analysis_completed", f"AI extraction completed for {doc['filename']}", doc_id)
+
+    # Pre-populate every cached AI view so opening the case shows a fully
+    # analyzed workspace instantly — no LLM call, no Groq quota spent.
+    store.set_cache(case_id, "case_summary", DEMO_CASE_SUMMARY)
+    store.set_cache(case_id, "graph", DEMO_GRAPH)
+    store.set_cache(case_id, "contradictions", DEMO_CONTRADICTIONS)
+    store.set_cache(case_id, "similar_cases", DEMO_SIMILAR_CASES)
+    store.set_cache(case_id, "arguments", DEMO_ARGUMENTS)
+    store.append_audit(case_id, user["username"], "report_generated", "Demo case seeded for screening walkthrough")
+
+    return {"case_id": case_id}
+
+
 @app.get("/api/cases/{case_id}")
 def case_detail(case_id: str, user: dict = Depends(get_current_user)):
     case = get_case_or_404(case_id)

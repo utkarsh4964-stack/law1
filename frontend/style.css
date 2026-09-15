@@ -551,6 +551,20 @@ img { max-width: 100%; display: block; }
 
 .gauge-wrap { text-align: center; margin-bottom: 18px; }
 .gauge-svg { width: 100%; max-width: 190px; height: auto; }
+
+.activity-chart-wrap { margin-bottom: 18px; flex: 1; }
+.activity-svg { width: 100%; height: auto; display: block; }
+.activity-axis { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-faint); margin-top: 6px; font-family: var(--mono); }
+.activity-axis span:nth-child(2) { color: var(--text-muted); font-family: var(--sans); }
+
+.vault-type-chart { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.vault-type-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel-raised); font-size: 12px; color: var(--text-muted);
+}
+.vault-type-pill .pill-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.vault-type-pill .pill-count { font-family: var(--mono); font-weight: 600; color: var(--text); }
 .gauge-label strong { display: block; font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--ok); margin-top: -30px; }
 .gauge-label span { font-size: 12px; color: var(--text-muted); }
 .gauge-note {

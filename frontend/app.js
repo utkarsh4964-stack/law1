@@ -313,6 +313,27 @@ document.getElementById("new-case-form").addEventListener("submit", async e => {
   openCase(data.id);
 });
 
+document.getElementById("demo-case-btn").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.textContent = "Loading demo case…";
+  try {
+    const res = await apiFetch("/cases/demo", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.detail || "Could not load the demo case.", "error");
+      return;
+    }
+    showToast("Demo case loaded — fully analyzed, nothing to upload.", "success");
+    openCase(data.case_id);
+  } catch (err) {
+    showToast(err.message === "SERVER_UNREACHABLE" ? "Could not reach the server — try again in a moment." : "Something went wrong. Please try again.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✨ Load Demo Case";
+  }
+});
+
 // ---------------------------------------------------------------------------
 // workspace entry
 // ---------------------------------------------------------------------------
@@ -451,6 +472,11 @@ async function loadDashboard() {
   renderRelationshipList(graph.edges);
   renderGauge(evidenceScore);
 
+  try {
+    const docsRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`);
+    renderActivityChart(docsRes.ok ? await docsRes.json() : []);
+  } catch { renderActivityChart([]); }
+
   const cachedSummary = await getCachedSummaryPreview();
   if (cachedSummary) document.getElementById("dash-ai-summary").textContent = cachedSummary;
 
@@ -535,6 +561,70 @@ function renderGauge(score) {
     <div class="gauge-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-shield"/></svg>${note}</div>`;
 }
 
+function renderActivityChart(docs) {
+  const el = document.getElementById("dash-activity-chart");
+  if (!docs.length) {
+    el.innerHTML = '<p class="placeholder" style="margin:0">No documents uploaded yet.</p>';
+    return;
+  }
+  const sorted = [...docs].sort((a, b) => new Date(a.uploaded_at) - new Date(b.uploaded_at));
+  const first = new Date(sorted[0].uploaded_at).getTime();
+  const last = new Date(sorted[sorted.length - 1].uploaded_at).getTime();
+  const span = Math.max(last - first, 1);
+  const W = 280, H = 100, PAD = 8;
+
+  const points = sorted.map((d, i) => [
+    PAD + ((new Date(d.uploaded_at).getTime() - first) / span) * (W - PAD * 2),
+    H - PAD - ((i + 1) / sorted.length) * (H - PAD * 2),
+  ]);
+  // uploads that all landed in the same instant (typical demo run) would
+  // collapse to one x position — spread them evenly instead so the trend
+  // is still readable.
+  if (points.length > 1 && points.every(([x]) => Math.abs(x - points[0][0]) < 1)) {
+    points.forEach((p, i) => { p[0] = PAD + (i / (points.length - 1)) * (W - PAD * 2); });
+  }
+
+  const linePath = points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L${points[points.length - 1][0].toFixed(1)},${H - PAD} L${points[0][0].toFixed(1)},${H - PAD} Z`;
+  const dots = points.map(([x, y], i) => `
+    <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="var(--teal)">
+      <title>${escapeHtml(sorted[i].filename)} — ${fmtTime(sorted[i].uploaded_at)}</title>
+    </circle>`).join("");
+
+  el.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" class="activity-svg">
+      <defs>
+        <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.28"/>
+          <stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" stroke="var(--line)" stroke-width="1"/>
+      <path d="${areaPath}" fill="url(#activityFill)"/>
+      <path d="${linePath}" fill="none" stroke="var(--teal)" stroke-width="2"/>
+      ${dots}
+    </svg>
+    <div class="activity-axis">
+      <span>${fmtTime(sorted[0].uploaded_at)}</span>
+      <span>${sorted.length} document${sorted.length === 1 ? "" : "s"} total</span>
+      <span>${fmtTime(sorted[sorted.length - 1].uploaded_at)}</span>
+    </div>`;
+}
+
+function renderVaultTypeChart(docs) {
+  const el = document.getElementById("vault-type-chart");
+  if (!docs.length) { el.innerHTML = ""; return; }
+  const counts = {};
+  docs.forEach(d => { const t = d.doc_type || "Untyped"; counts[t] = (counts[t] || 0) + 1; });
+  const palette = ["#2b4864", "#a1402f", "#3f6b4a", "#5c5490", "#b8842e", "#8a7d5e"];
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  el.innerHTML = rows.map(([type, count], i) => `
+    <span class="vault-type-pill">
+      <span class="pill-swatch" style="background:${palette[i % palette.length]}"></span>
+      ${escapeHtml(type)} <span class="pill-count">${count}</span>
+    </span>`).join("");
+}
+
 // ---------------------------------------------------------------------------
 // documents / vault
 // ---------------------------------------------------------------------------
@@ -612,6 +702,8 @@ async function refreshDocuments() {
   const current = filterSel.value;
   const types = [...new Set(docs.map(d => d.doc_type).filter(Boolean))];
   filterSel.innerHTML = ['All', ...types].map(t => `<option ${t === current ? "selected" : ""}>${escapeHtml(t)}</option>`).join("");
+
+  renderVaultTypeChart(docs);
 }
 
 function exhibitCard(doc, index) {

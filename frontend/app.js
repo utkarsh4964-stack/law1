@@ -183,7 +183,11 @@ async function enterApp() {
     return;
   }
   document.getElementById("whoami").textContent = `${ME.name} · ${ME.role}`;
-  document.getElementById("whoami-workspace").textContent = `${ME.name} · ${ME.role}`;
+  document.getElementById("whoami-workspace").textContent = ME.name;
+  const roleEl = document.getElementById("whoami-role-workspace");
+  if (roleEl) roleEl.textContent = ME.role;
+  const avatarEl = document.getElementById("whoami-avatar");
+  if (avatarEl) avatarEl.textContent = (ME.name || "?").trim().charAt(0).toUpperCase();
   showView("cases");
   loadCases();
 }
@@ -416,6 +420,34 @@ async function openCase(caseId) {
 function invalidateCase() { loadedTabs.clear(); }
 
 // ---------------------------------------------------------------------------
+// persistent case context header (title, status/priority pills, quick stats)
+// ---------------------------------------------------------------------------
+
+function renderCaseContextBar(caseObj, counts) {
+  const titleEl = document.getElementById("ccb-title");
+  const idEl = document.getElementById("ccb-id");
+  const statusEl = document.getElementById("ccb-status");
+  const priorityEl = document.getElementById("ccb-priority");
+  const statsEl = document.getElementById("ccb-stats");
+  if (!titleEl) return;
+  titleEl.textContent = caseObj.title;
+  idEl.textContent = `${caseObj.id} · ${caseObj.case_type}`;
+  statusEl.textContent = caseObj.status;
+  statusEl.className = "ccb-pill ccb-status status-" + String(caseObj.status || "").toLowerCase().replace(/\s+/g, "-");
+  priorityEl.textContent = (caseObj.priority || "") + " priority";
+  priorityEl.className = "ccb-pill ccb-priority priority-" + String(caseObj.priority || "").toLowerCase();
+
+  const parts = [];
+  if (counts.documents !== undefined) parts.push([counts.documents, "Documents"]);
+  if (counts.events !== undefined) parts.push([counts.events, "Events"]);
+  if (counts.entities !== undefined) parts.push([counts.entities, "Entities"]);
+  if (counts.conflicts !== undefined) parts.push([counts.conflicts, "Conflicts", counts.conflicts > 0]);
+  statsEl.innerHTML = parts.map(([num, label, warn]) =>
+    `<div class="ccb-stat${warn ? " ccb-stat-warn" : ""}"><span class="ccb-stat-num">${num}</span><span class="ccb-stat-label">${label}</span></div>`
+  ).join("");
+}
+
+// ---------------------------------------------------------------------------
 // dashboard
 // ---------------------------------------------------------------------------
 
@@ -437,6 +469,9 @@ async function loadDashboard() {
   document.getElementById("dash-title").textContent = data.case.title;
   document.getElementById("dash-sub").textContent =
     `${data.case.id} · ${data.case.case_type} · ${data.case.status} · Priority: ${data.case.priority}`;
+  renderCaseContextBar(data.case, {
+    documents: data.document_count, events: data.event_count, conflicts: data.contradiction_count
+  });
 
   // Pull the graph too (cached after first build) so the overview can show
   // real entity/relationship breakdowns and an evidence-backed confidence
@@ -471,6 +506,10 @@ async function loadDashboard() {
   renderDonut(typeCounts, entityTotal);
   renderRelationshipList(graph.edges);
   renderGauge(evidenceScore);
+  renderCaseContextBar(data.case, {
+    documents: data.document_count, events: data.event_count,
+    entities: entityTotal, conflicts: data.contradiction_count
+  });
 
   try {
     const docsRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`);

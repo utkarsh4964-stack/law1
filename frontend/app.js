@@ -363,6 +363,8 @@ function onTabShown(name) {
   if (loadedTabs.has(name)) return;
   if (name === "timeline") loadTimeline();
   if (name === "graph") loadGraph();
+  if (name === "contradictions") loadContradictions();
+  if (name === "report") renderReportReadiness();
   if (name === "similar") loadSimilar();
   if (name === "audit") loadAudit();
 }
@@ -374,7 +376,7 @@ document.querySelectorAll("[data-goto]").forEach(btn => {
 });
 
 // ---------------------------------------------------------------------------
-// case intelligence (merged: summary, contradictions, arguments, chat)
+// case intelligence (summary, arguments, chat — contradictions are separate)
 // ---------------------------------------------------------------------------
 
 let currentIntelSubtab = "summary";
@@ -395,13 +397,14 @@ intelSubtabs.forEach(btn => {
 function onIntelSubtabShown(name) {
   if (loadedTabs.has(`intel-${name}`)) return;
   if (name === "summary") loadSummary();
-  if (name === "contradictions") loadContradictions();
   if (name === "arguments") loadArguments();
   // "chat" needs no preload — the chat window loads its own history lazily.
 }
 async function openCase(caseId) {
   CURRENT_CASE_ID = caseId;
   loadedTabs.clear();
+  CONTRA_DATA = null;
+  updateContraBadge(0);
   document.getElementById("case-id").textContent = caseId;
   tabs.forEach(t => t.classList.remove("active"));
   panels.forEach(p => p.classList.remove("active"));
@@ -452,11 +455,11 @@ function renderCaseContextBar(caseObj, counts) {
 // ---------------------------------------------------------------------------
 
 const RELATIONSHIP_CATEGORIES = [
-  { label: "Works at", color: "#2b4864", match: /\b(works? at|employ|joined|hired)/i },
-  { label: "Communicated with", color: "#5c5490", match: /\b(email|communicat|repl|wrote|message)/i },
-  { label: "Vendor of", color: "#3f7a5c", match: /\b(vendor|supplie[rd]|contract)/i },
-  { label: "Asked to process", color: "#a1402f", match: /\b(asked|instructed|requested)/i },
-  { label: "Payment to", color: "#b8842e", match: /\b(payment|paid|invoice|transfer)/i },
+  { label: "Works at", color: "#4a7fb5", match: /\b(works? at|employ|joined|hired)/i },
+  { label: "Communicated with", color: "#8f8bc4", match: /\b(email|communicat|repl|wrote|message)/i },
+  { label: "Vendor of", color: "#4f9d76", match: /\b(vendor|supplie[rd]|contract)/i },
+  { label: "Asked to process", color: "#c9705f", match: /\b(asked|instructed|requested)/i },
+  { label: "Payment to", color: "#d9a441", match: /\b(payment|paid|invoice|transfer)/i },
 ];
 function classifyRelation(text) {
   const found = RELATIONSHIP_CATEGORIES.find(c => c.match.test(text || ""));
@@ -574,7 +577,7 @@ function renderRelationshipList(edges) {
   const counts = {};
   edges.forEach(e => { const label = classifyRelation(e.relation); counts[label] = (counts[label] || 0) + 1; });
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const colorFor = label => (RELATIONSHIP_CATEGORIES.find(c => c.label === label) || { color: "#8a7d5e" }).color;
+  const colorFor = label => (RELATIONSHIP_CATEGORIES.find(c => c.label === label) || { color: "#9a8f6e" }).color;
   el.innerHTML = rows.map(([label, count]) => `
     <div class="relationship-row">
       <span class="rel-bar" style="background:${colorFor(label)}"></span>
@@ -651,17 +654,23 @@ function renderActivityChart(docs) {
 }
 
 function renderVaultTypeChart(docs) {
-  const el = document.getElementById("vault-type-chart");
-  if (!docs.length) { el.innerHTML = ""; return; }
+  const card = document.getElementById("vault-chart-card");
+  const foot = document.getElementById("vault-chart-foot");
+  if (!docs.length) { if (card) card.style.display = "none"; return; }
+  if (card) card.style.display = "";
+
   const counts = {};
   docs.forEach(d => { const t = d.doc_type || "Untyped"; counts[t] = (counts[t] || 0) + 1; });
-  const palette = ["#2b4864", "#a1402f", "#3f6b4a", "#5c5490", "#b8842e", "#8a7d5e"];
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  el.innerHTML = rows.map(([type, count], i) => `
-    <span class="vault-type-pill">
-      <span class="pill-swatch" style="background:${palette[i % palette.length]}"></span>
-      ${escapeHtml(type)} <span class="pill-count">${count}</span>
-    </span>`).join("");
+  renderHBars("vault-type-chart", rows, { colorAt: i => `var(--chart-${(i % 6) + 1})` });
+
+  const typed = docs.filter(d => d.doc_type && d.doc_type !== "Untyped").length;
+  if (foot) {
+    foot.innerHTML = `
+      <span>${docs.length} document${docs.length === 1 ? "" : "s"}</span>
+      <span>${rows.length} distinct type${rows.length === 1 ? "" : "s"}</span>
+      <span>${Math.round(100 * typed / docs.length)}% auto-classified</span>`;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -830,17 +839,17 @@ async function loadSummary() {
 // ---------------------------------------------------------------------------
 
 const TIMELINE_CATEGORIES = [
-  { key: "employment", label: "Employment", icon: "icon-briefcase", color: "#2b4864", match: /\b(began working|joined|hired|appointed|resigned|terminated|employ)/i },
-  { key: "vendor", label: "Vendor / Org", icon: "icon-bank", color: "#3f7a5c", match: /\b(vendor|approved|contract|agreement|registered|onboard)/i },
-  { key: "communication", label: "Communication", icon: "icon-mail", color: "#5c5490", match: /\b(emailed|e-mailed|wrote to|message|contacted)/i },
-  { key: "reply", label: "Reply / Statement", icon: "icon-person", color: "#b8842e", match: /\b(replied|responded|stated|acknowledg|confirmed)/i },
-  { key: "delivery", label: "Delivery", icon: "icon-truck", color: "#4a4f8c", match: /\b(deliver|shipment|warehouse|dispatch|received goods)/i },
-  { key: "financial", label: "Financial", icon: "icon-invoice", color: "#a1402f", match: /\b(invoice|payment|paid|transfer|amount|inr|₹|rs\.)/i },
-  { key: "task", label: "Task / Instruction", icon: "icon-doc-check", color: "#6e6242", match: /\b(asked|requested|instructed|process|task)/i },
+  { key: "employment", label: "Employment", icon: "icon-briefcase", color: "#4a7fb5", match: /\b(began working|joined|hired|appointed|resigned|terminated|employ)/i },
+  { key: "vendor", label: "Vendor / Org", icon: "icon-bank", color: "#4f9d76", match: /\b(vendor|approved|contract|agreement|registered|onboard)/i },
+  { key: "communication", label: "Communication", icon: "icon-mail", color: "#8f8bc4", match: /\b(emailed|e-mailed|wrote to|message|contacted)/i },
+  { key: "reply", label: "Reply / Statement", icon: "icon-person", color: "#d9a441", match: /\b(replied|responded|stated|acknowledg|confirmed)/i },
+  { key: "delivery", label: "Delivery", icon: "icon-truck", color: "#7f8cc4", match: /\b(deliver|shipment|warehouse|dispatch|received goods)/i },
+  { key: "financial", label: "Financial", icon: "icon-invoice", color: "#c9705f", match: /\b(invoice|payment|paid|transfer|amount|inr|₹|rs\.)/i },
+  { key: "task", label: "Task / Instruction", icon: "icon-doc-check", color: "#9a8f6e", match: /\b(asked|requested|instructed|process|task)/i },
 ];
 function classifyEvent(description) {
   const found = TIMELINE_CATEGORIES.find(c => c.match.test(description || ""));
-  return found || { key: "other", label: "Other", icon: "icon-clock", color: "#6e6242" };
+  return found || { key: "other", label: "Other", icon: "icon-clock", color: "#9a8f6e" };
 }
 
 let TIMELINE_DATA = null;
@@ -860,6 +869,7 @@ async function loadTimeline() {
   TIMELINE_DATA = data;
   timelineVisibleCount = TIMELINE_PAGE_SIZE;
   populateTimelineFilters(data);
+  renderTimelineDensity(data.events || []);
   renderTimeline();
   loadedTabs.add("timeline");
 }
@@ -877,6 +887,51 @@ function populateTimelineFilters(data) {
     return m ? m[0] : null;
   }).filter(Boolean))].sort();
   timeSelect.innerHTML = '<option value="all">All Time</option>' + years.map(y => `<option value="${y}">${y}</option>`).join("");
+}
+
+// Bucket events by year (or by month when the whole case sits inside one
+// year) so the shape of the case is legible before a single row is read.
+function renderTimelineDensity(events) {
+  const card = document.getElementById("timeline-density-card");
+  const chart = document.getElementById("timeline-density-chart");
+  const foot = document.getElementById("timeline-density-foot");
+  if (!card || !chart) return;
+
+  const parsed = events.map(ev => {
+    const m = (ev.date || "").match(/\b((?:19|20)\d{2})(?:[-/](\d{1,2}))?/);
+    return m ? { year: m[1], month: m[2] ? String(m[2]).padStart(2, "0") : null } : null;
+  }).filter(Boolean);
+
+  if (parsed.length < 2) { card.style.display = "none"; return; }
+  card.style.display = "";
+
+  const years = [...new Set(parsed.map(e => e.year))];
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  let buckets;
+  if (years.length === 1 && parsed.some(e => e.month)) {
+    const counts = {};
+    parsed.forEach(e => { if (e.month) counts[e.month] = (counts[e.month] || 0) + 1; });
+    buckets = Object.keys(counts).sort().map(m => [MONTHS[Number(m) - 1] || m, counts[m]]);
+  } else {
+    const counts = {};
+    parsed.forEach(e => { counts[e.year] = (counts[e.year] || 0) + 1; });
+    buckets = Object.keys(counts).sort().map(y => [y, counts[y]]);
+  }
+
+  const max = Math.max(...buckets.map(([, v]) => v)) || 1;
+  const peak = buckets.reduce((a, b) => (b[1] > a[1] ? b : a));
+  chart.innerHTML = buckets.map(([label, value], i) => `
+    <div class="col-item" title="${escapeHtml(label)}: ${value} event${value === 1 ? "" : "s"}">
+      <span class="col-bar-wrap"><span class="col-bar" style="height:${Math.max(6, (value / max) * 100)}%;background:${value === max ? "var(--teal)" : "var(--chart-6)"};animation-delay:${i * 40}ms"></span></span>
+      <span class="col-label">${escapeHtml(label)}</span>
+    </div>`).join("");
+
+  if (foot) {
+    foot.innerHTML = `
+      <span>${parsed.length} dated event${parsed.length === 1 ? "" : "s"}</span>
+      <span>Busiest: ${escapeHtml(peak[0])} (${peak[1]})</span>
+      <span>${buckets.length} period${buckets.length === 1 ? "" : "s"} covered</span>`;
+  }
 }
 
 function renderTimeline() {
@@ -983,16 +1038,16 @@ document.getElementById("export-timeline-btn").addEventListener("click", () => {
 
 // Muted, desaturated accents so entity types stay distinguishable at a
 // glance without fighting the app's otherwise beige/navy/red theme.
-const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
+const typeColors = { person: "#d9a441", organization: "#4f9d76", location: "#7f8cc4", other: "#9a8f6e" };
 const EDGE_CATEGORIES = [
-  { key: "employment", label: "Employment", color: "#3f7a5c", match: /\b(works? at|employ|joined|hired)/i },
-  { key: "business", label: "Business", color: "#2b4864", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
-  { key: "communication", label: "Communication", color: "#a1402f", match: /\b(email|communicat|repl(y|ied)|wrote|message|requested|asked)/i },
-  { key: "consultation", label: "Consultation", color: "#5c5490", match: /\b(consult|advis|shared info)/i },
+  { key: "employment", label: "Employment", color: "#4f9d76", match: /\b(works? at|employ|joined|hired)/i },
+  { key: "business", label: "Business", color: "#4a7fb5", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
+  { key: "communication", label: "Communication", color: "#c9705f", match: /\b(email|communicat|repl(y|ied)|wrote|message|requested|asked)/i },
+  { key: "consultation", label: "Consultation", color: "#8f8bc4", match: /\b(consult|advis|shared info)/i },
 ];
 function classifyEdge(relation) {
   const found = EDGE_CATEGORIES.find(c => c.match.test(relation || ""));
-  return found || { key: "other", label: "Other", color: "#8a7d5e" };
+  return found || { key: "other", label: "Other", color: "#9a8f6e" };
 }
 
 let GRAPH_DATA = null;
@@ -1013,7 +1068,7 @@ const typeGlyphs = {
 function nodeIcon(type) {
   const color = typeColors[type] || typeColors.other;
   const glyph = (typeGlyphs[type] || typeGlyphs.other).replaceAll("TYPECOLOR", color);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="${color}" stroke="#2a2313" stroke-width="2"/><g fill="#fffcf2">${glyph}</g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="${color}" stroke="#12141a" stroke-width="2"/><g fill="#fffcf2">${glyph}</g></svg>`;
   return "data:image/svg+xml;base64," + btoa(svg);
 }
 
@@ -1029,11 +1084,56 @@ async function loadGraph() {
 
   GRAPH_DATA = data;
   GRAPH_DOCS = docs;
-  legend.innerHTML = EDGE_CATEGORIES.concat([{ key: "other", label: "Other", color: "#8a7d5e" }])
+  legend.innerHTML = EDGE_CATEGORIES.concat([{ key: "other", label: "Other", color: "#9a8f6e" }])
     .map(c => `<span><span class="legend-line" style="background:${c.color}"></span>${c.label}</span>`).join("");
   populateGraphFilters(data);
+  renderGraphInsights(data);
   renderGraphView();
   loadedTabs.add("graph");
+}
+
+// Degree ranking + entity mix. The force layout already shows who is central,
+// but "central" is a visual impression — this puts a number on it.
+function renderGraphInsights(data) {
+  const wrap = document.getElementById("graph-insights");
+  if (!wrap) return;
+  if (!data.nodes.length) { wrap.style.display = "none"; return; }
+  wrap.style.display = "";
+
+  const degree = {};
+  data.nodes.forEach(n => { degree[n.id ?? n.label] = 0; });
+  data.edges.forEach(e => {
+    degree[e.from] = (degree[e.from] || 0) + 1;
+    degree[e.to] = (degree[e.to] || 0) + 1;
+  });
+  const labelOf = {};
+  data.nodes.forEach(n => { labelOf[n.id ?? n.label] = n.label ?? n.id; });
+
+  const top = Object.entries(degree)
+    .map(([id, deg]) => [labelOf[id] || id, deg])
+    .filter(([, deg]) => deg > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 7);
+  renderHBars("graph-top-entities", top, { color: "var(--teal)" });
+
+  const typeCounts = { person: 0, organization: 0, location: 0, other: 0 };
+  data.nodes.forEach(n => { typeCounts[n.type] = (typeCounts[n.type] || 0) + 1; });
+  const entries = [["person", "People"], ["organization", "Organizations"], ["location", "Locations"], ["other", "Other"]];
+  const total = data.nodes.length;
+  let cursor = 0;
+  const stops = entries.map(([key]) => {
+    const pct = (typeCounts[key] / total) * 100;
+    const stop = `${typeColors[key]} ${cursor}% ${cursor + pct}%`;
+    cursor += pct;
+    return stop;
+  }).join(", ");
+  document.getElementById("graph-entity-donut").innerHTML = `
+    <div class="donut" style="background: conic-gradient(${stops})"><div class="donut-hole"><strong>${total}</strong><span>Entities</span></div></div>
+    <ul class="donut-legend">
+      ${entries.map(([key, label]) => `
+        <li><span class="legend-key"><span class="legend-swatch" style="background:${typeColors[key]}"></span>${label}</span><span class="legend-count">${typeCounts[key] || 0}</span></li>
+      `).join("")}
+    </ul>`;
 }
 
 function populateGraphFilters(data) {
@@ -1084,13 +1184,13 @@ function renderGraph() {
   const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label,
     shape: "image", image: nodeIcon(n.type), size: 26,
-    font: { color: "#fdf9ee", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#2a2313", vadjust: -30 },
+    font: { color: "#f3f0e8", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#12141a", vadjust: -30 },
   })));
   const edges = new vis.DataSet(visibleEdges.map((e, i) => {
     const cat = classifyEdge(e.relation);
     return {
       id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: cat.color, highlight: "#2a2313", hover: cat.color }, opacity: 0.85,
+      color: { color: cat.color, highlight: "#12141a", hover: cat.color }, opacity: 0.85,
       width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
     };
   }));
@@ -1258,22 +1358,157 @@ document.getElementById("generate-perspectives-btn").addEventListener("click", g
 // contradictions
 // ---------------------------------------------------------------------------
 
+let CONTRA_DATA = null;
+
+// Confidence is the only severity signal the API gives us, so band it once
+// here and let the stats, the donut, the card border and the filter all read
+// from the same function — otherwise "high" ends up meaning three things.
+function contraSeverity(confidence) {
+  const c = Number(confidence);
+  if (!Number.isFinite(c)) return { key: "low", label: "Unscored", color: "var(--sev-low)" };
+  if (c >= 75) return { key: "high", label: "High", color: "var(--sev-high)" };
+  if (c >= 50) return { key: "med", label: "Medium", color: "var(--sev-med)" };
+  return { key: "low", label: "Low", color: "var(--sev-low)" };
+}
+
 async function loadContradictions() {
   const body = document.getElementById("contradiction-body");
   const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
   if (docs.length === 0) return;
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Comparing evidence across documents…</p>';
+  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Comparing every claim against every other claim…</p>';
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/contradictions`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
 
-  if (!data.contradictions.length) {
-    body.innerHTML = '<p class="no-contradictions">No contradictions detected across the current documents.</p>';
-  } else {
-    body.innerHTML = data.contradictions.map(c => `
-      <div class="contradiction-card">
+  CONTRA_DATA = data.contradictions || [];
+  populateContraFilters();
+  renderContraStats();
+  renderContraCharts();
+  renderContradictions();
+  updateContraBadge(CONTRA_DATA.length);
+  loadedTabs.add("contradictions");
+}
+
+function populateContraFilters() {
+  const sel = document.getElementById("contra-filter-type");
+  const types = [...new Set(CONTRA_DATA.map(c => c.conflict_type || "conflict"))].sort();
+  sel.innerHTML = '<option value="all">All Conflict Types</option>' +
+    types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+}
+
+function updateContraBadge(n) {
+  const badge = document.getElementById("tab-contra-badge");
+  if (!badge) return;
+  badge.hidden = !n;
+  badge.textContent = n;
+}
+
+function renderContraStats() {
+  const el = document.getElementById("contra-stats");
+  const total = CONTRA_DATA.length;
+  const bands = { high: 0, med: 0, low: 0 };
+  CONTRA_DATA.forEach(c => { bands[contraSeverity(c.confidence).key]++; });
+  const docsTouched = new Set();
+  CONTRA_DATA.forEach(c => { if (c.source_a) docsTouched.add(c.source_a); if (c.source_b) docsTouched.add(c.source_b); });
+
+  el.innerHTML = [
+    ["sev-neutral", total, "Conflicts found", total ? "Across the current evidence" : "Nothing contradicts so far"],
+    ["sev-high", bands.high, "High confidence", "Review these first"],
+    ["sev-med", bands.med, "Medium confidence", "Worth a second look"],
+    ["sev-low", bands.low, "Low confidence", "May be phrasing, not conflict"],
+    ["sev-neutral", docsTouched.size, "Documents implicated", "Exhibits involved in a conflict"],
+  ].map(([tone, num, label, cap]) => `
+    <div class="contra-stat ${tone}">
+      <div class="contra-stat-num">${num}</div>
+      <div class="contra-stat-label">${label}</div>
+      <div class="contra-stat-cap">${cap}</div>
+    </div>`).join("");
+}
+
+function renderContraCharts() {
+  const wrap = document.getElementById("contra-charts");
+  if (!CONTRA_DATA.length) { wrap.style.display = "none"; document.getElementById("contra-toolbar").style.display = "none"; return; }
+  wrap.style.display = "";
+  document.getElementById("contra-toolbar").style.display = "";
+
+  // --- severity donut (conic-gradient, same technique as the dashboard) ---
+  const bands = [
+    ["high", "High (75%+)", "var(--sev-high)"],
+    ["med", "Medium (50–74%)", "var(--sev-med)"],
+    ["low", "Low (under 50%)", "var(--sev-low)"],
+  ];
+  const counts = { high: 0, med: 0, low: 0 };
+  CONTRA_DATA.forEach(c => { counts[contraSeverity(c.confidence).key]++; });
+  const total = CONTRA_DATA.length;
+  let cursor = 0;
+  const stops = bands.map(([key, , color]) => {
+    const pct = (counts[key] / total) * 100;
+    const stop = `${color} ${cursor}% ${cursor + pct}%`;
+    cursor += pct;
+    return stop;
+  }).join(", ");
+  document.getElementById("contra-donut").innerHTML = `
+    <div class="donut" style="background: conic-gradient(${stops})"><div class="donut-hole"><strong>${total}</strong><span>Conflicts</span></div></div>
+    <ul class="donut-legend">
+      ${bands.map(([key, label, color]) => `
+        <li><span class="legend-key"><span class="legend-swatch" style="background:${color}"></span>${label}</span><span class="legend-count">${counts[key]}</span></li>
+      `).join("")}
+    </ul>`;
+
+  // --- conflict types ---
+  const typeCounts = {};
+  CONTRA_DATA.forEach(c => { const t = c.conflict_type || "conflict"; typeCounts[t] = (typeCounts[t] || 0) + 1; });
+  renderHBars("contra-type-chart", Object.entries(typeCounts).sort((a, b) => b[1] - a[1]),
+    { colorAt: i => `var(--chart-${(i % 6) + 1})` });
+
+  // --- documents implicated ---
+  const docCounts = {};
+  CONTRA_DATA.forEach(c => {
+    [c.source_a, c.source_b].filter(Boolean).forEach(s => { docCounts[s] = (docCounts[s] || 0) + 1; });
+  });
+  renderHBars("contra-doc-chart", Object.entries(docCounts).sort((a, b) => b[1] - a[1]).slice(0, 6),
+    { color: "var(--thread)" });
+}
+
+function renderContradictions() {
+  const body = document.getElementById("contradiction-body");
+  const countEl = document.getElementById("contra-count");
+  if (!CONTRA_DATA) return;
+
+  if (!CONTRA_DATA.length) {
+    body.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg>
+        <div class="empty-state-title">No contradictions detected</div>
+        <div class="empty-state-sub">Every claim compared across the current documents was consistent. Re-run this check after uploading new evidence — consistency today is not consistency tomorrow.</div>
+      </div>`;
+    if (countEl) countEl.textContent = "";
+    return;
+  }
+
+  const typeFilter = document.getElementById("contra-filter-type").value;
+  const sevFilter = document.getElementById("contra-filter-sev").value;
+  const rows = CONTRA_DATA.filter(c => {
+    if (typeFilter !== "all" && (c.conflict_type || "conflict") !== typeFilter) return false;
+    if (sevFilter !== "all" && contraSeverity(c.confidence).key !== sevFilter) return false;
+    return true;
+  });
+
+  if (countEl) countEl.textContent = `${rows.length} of ${CONTRA_DATA.length} shown`;
+
+  if (!rows.length) {
+    body.innerHTML = '<p class="placeholder">No conflicts match the current filters.</p>';
+    return;
+  }
+
+  body.innerHTML = rows.map(c => {
+    const sev = contraSeverity(c.confidence);
+    const pct = Number.isFinite(Number(c.confidence)) ? Number(c.confidence) : 0;
+    return `
+      <div class="contradiction-card sev-${sev.key}">
         <div class="contradiction-top">
           <span class="conflict-type-pill">${escapeHtml(c.conflict_type || "conflict")}</span>
+          <span class="sev-pill sev-${sev.key}">${sev.label}</span>
           <span class="confidence-pill">confidence: ${c.confidence ?? "—"}%</span>
         </div>
         <div class="contradiction-pair">
@@ -1282,15 +1517,104 @@ async function loadContradictions() {
           <div class="contradiction-claim">${escapeHtml(c.claim_b)}<span class="src">${escapeHtml(c.source_b)}</span></div>
         </div>
         <div class="contradiction-explain">${escapeHtml(c.explanation)}</div>
-      </div>
-    `).join("");
-  }
-  loadedTabs.add("intel-contradictions");
+        <div class="contra-confidence-bar"><span style="width:${pct}%;background:${sev.color}"></span></div>
+      </div>`;
+  }).join("");
+}
+
+document.getElementById("contra-filter-type").addEventListener("change", renderContradictions);
+document.getElementById("contra-filter-sev").addEventListener("change", renderContradictions);
+
+document.getElementById("contra-rerun-btn").addEventListener("click", () => {
+  loadedTabs.delete("contradictions");
+  loadContradictions();
+});
+
+document.getElementById("contra-export-btn").addEventListener("click", () => {
+  if (!CONTRA_DATA || !CONTRA_DATA.length) return;
+  const lines = [
+    `# Contradiction Findings — ${CURRENT_CASE_ID}`,
+    "",
+    "> Flagged by automated cross-document comparison. Each item requires investigator verification; none is a finding of fact.",
+    "",
+  ];
+  CONTRA_DATA.forEach((c, i) => {
+    const sev = contraSeverity(c.confidence);
+    lines.push(`## ${i + 1}. ${c.conflict_type || "Conflict"} — ${sev.label} confidence (${c.confidence ?? "—"}%)`);
+    lines.push("", `- **Claim A** (${c.source_a}): ${c.claim_a}`);
+    lines.push(`- **Claim B** (${c.source_b}): ${c.claim_b}`);
+    lines.push("", `${c.explanation}`, "");
+  });
+  downloadText(`contradictions-${CURRENT_CASE_ID}.md`, lines.join("\n"));
+});
+
+// Small shared helper so every page's bar chart looks and animates the same.
+function renderHBars(elId, entries, opts = {}) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!entries.length) { el.innerHTML = '<p class="placeholder" style="margin:0">Nothing to show yet.</p>'; return; }
+  const max = Math.max(...entries.map(([, v]) => v)) || 1;
+  el.innerHTML = entries.map(([name, value], i) => {
+    const color = opts.colorAt ? opts.colorAt(i) : (opts.color || "var(--teal)");
+    const pct = (value / max) * 100;
+    return `
+      <div class="hbar-row" title="${escapeHtml(String(name))}: ${value}${opts.suffix || ""}">
+        <span class="hbar-name">${escapeHtml(String(name))}</span>
+        <span class="hbar-track"><span class="hbar-fill" style="width:${pct}%;background:${color};animation-delay:${i * 45}ms"></span></span>
+        <span class="hbar-val">${value}${opts.suffix || ""}</span>
+      </div>`;
+  }).join("");
+}
+
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ---------------------------------------------------------------------------
 // similar cases
 // ---------------------------------------------------------------------------
+
+// Shown above the report so it is obvious *before* generating whether the
+// case file is thin. A polished report built on two documents is still a
+// report built on two documents.
+async function renderReportReadiness() {
+  const card = document.getElementById("report-readiness-card");
+  const grid = document.getElementById("report-readiness");
+  if (!card || !grid) return;
+  try {
+    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/dashboard`);
+    if (!res.ok) { card.style.display = "none"; return; }
+    const d = await res.json();
+
+    const pctOf = (n, target) => Math.min(100, Math.round(100 * (n / target)));
+    const items = [
+      ["Evidence", pctOf(d.document_count, 5), `${d.document_count} document${d.document_count === 1 ? "" : "s"} on file`],
+      ["Timeline", pctOf(d.event_count, 10), `${d.event_count} dated event${d.event_count === 1 ? "" : "s"} extracted`],
+      ["Conflicts checked", d.contradiction_count > 0 ? 100 : (d.document_count ? 60 : 0),
+        d.contradiction_count ? `${d.contradiction_count} flagged for review` : "None outstanding"],
+    ];
+
+    card.style.display = d.document_count ? "" : "none";
+    grid.innerHTML = items.map(([label, pct, note]) => {
+      const C = 2 * Math.PI * 19;
+      return `
+        <div class="readiness-item">
+          <svg class="readiness-ring" viewBox="0 0 46 46">
+            <circle class="rr-track" cx="23" cy="23" r="19"/>
+            <circle class="rr-val" cx="23" cy="23" r="19"
+              stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct / 100)}"
+              stroke="${pct >= 80 ? "var(--ok)" : pct >= 40 ? "var(--teal)" : "var(--thread)"}"/>
+          </svg>
+          <div class="readiness-copy"><strong>${label}</strong><span>${escapeHtml(note)}</span></div>
+        </div>`;
+    }).join("");
+  } catch { card.style.display = "none"; }
+}
 
 async function loadSimilar() {
   const body = document.getElementById("similar-body");
@@ -1300,6 +1624,16 @@ async function loadSimilar() {
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/similar-cases`);
   const data = await res.json();
   if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
+
+  const simCard = document.getElementById("similar-chart-card");
+  if (data.matches.length) {
+    simCard.style.display = "";
+    renderHBars("similar-chart",
+      data.matches.map(m => [m.title || m.precedent_id, Number(m.similarity) || 0]).sort((a, b) => b[1] - a[1]),
+      { suffix: "%", colorAt: i => (i === 0 ? "var(--teal)" : "var(--chart-6)") });
+  } else {
+    simCard.style.display = "none";
+  }
 
   if (!data.matches.length) {
     body.innerHTML = '<p class="placeholder">No sufficiently similar precedents found in the reference library.</p>';
@@ -1510,7 +1844,20 @@ async function loadAudit() {
   const body = document.getElementById("audit-body");
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/audit-log`);
   const data = await res.json();
-  if (!data.log.length) { renderEmptyState(body, "icon-list", "No activity yet", "Every upload, deletion and analysis on this case will show up here."); return; }
+  const auditCard = document.getElementById("audit-chart-card");
+  if (!data.log.length) {
+    if (auditCard) auditCard.style.display = "none";
+    renderEmptyState(body, "icon-list", "No activity yet", "Every upload, deletion and analysis on this case will show up here.");
+    return;
+  }
+  if (auditCard) {
+    auditCard.style.display = "";
+    const actionCounts = {};
+    data.log.forEach(a => { actionCounts[a.action] = (actionCounts[a.action] || 0) + 1; });
+    renderHBars("audit-chart",
+      Object.entries(actionCounts).sort((a, b) => b[1] - a[1]).slice(0, 8),
+      { colorAt: i => `var(--chart-${(i % 6) + 1})` });
+  }
   body.innerHTML = `
     <table class="audit-table">
       <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th></tr></thead>

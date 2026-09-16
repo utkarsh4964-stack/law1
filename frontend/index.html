@@ -7,7 +7,7 @@
 <meta name="description" content="Secure, multi-case investigation platform — document vault with chain of custody, AI-generated timelines, evidence graphs, contradiction detection and exportable case reports." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
 
@@ -41,6 +41,10 @@
   <symbol id="icon-rows" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="10.5" width="18" height="5" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></symbol>
   <symbol id="icon-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 14.2c2.5.3 4.5 2.4 4.5 5.3"/></symbol>
   <symbol id="icon-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5.5"/><path d="M8.5 12.8L7 21l5-3 5 3-1.5-8.2"/></symbol>
+  <symbol id="icon-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="icon-bar-chart" viewBox="0 0 24 24"><path d="M4 21V10M10 21V4M16 21v-8M22 21H2"/></symbol>
+  <symbol id="icon-split" viewBox="0 0 24 24"><path d="M3 6h4l5 6 5-6h4M3 18h4l5-6"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3"/></symbol>
   <symbol id="icon-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/><path d="M19 15l0.8 2.2L22 18l-2.2 0.8L19 21l-0.8-2.2L16 18l2.2-0.8L19 15z"/></symbol>
 </svg>
 
@@ -123,6 +127,62 @@
     </div>
   </div>
 
+  <div class="landing-showcase">
+    <div class="landing-showcase-inner">
+      <div class="landing-showcase-copy">
+        <div class="landing-kicker">Inside a case file</div>
+        <h3>The whole investigation, charted</h3>
+        <p>Entity breakdowns, conflict severity, upload cadence and evidence-backing scores are computed from the case's own documents — so you can see where the file is thin before you act on it.</p>
+        <div class="showcase-metrics">
+          <div class="showcase-metric"><strong>10</strong><span>Case views</span></div>
+          <div class="showcase-metric"><strong>12</strong><span>Report sections</span></div>
+          <div class="showcase-metric"><strong>4</strong><span>Access roles</span></div>
+        </div>
+      </div>
+      <div class="landing-showcase-art" aria-hidden="true">
+        <svg viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="scBar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" style="stop-color:var(--brass-dim, #eec37a)"/><stop offset="100%" style="stop-color:var(--brass, #d9a441)"/>
+            </linearGradient>
+            <linearGradient id="scArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-opacity="0.34" style="stop-color:var(--brass, #d9a441)"/>
+              <stop offset="100%" stop-opacity="0" style="stop-color:var(--brass, #d9a441)"/>
+            </linearGradient>
+          </defs>
+          <rect x="8" y="10" width="404" height="240" rx="14" style="fill:var(--ink, #0a0d14);stroke:var(--line, #2a3346)"/>
+          <rect x="8" y="10" width="404" height="30" rx="14" style="fill:var(--panel-raised, #18202d)"/>
+          <rect x="8" y="30" width="404" height="10" style="fill:var(--panel-raised, #18202d)"/>
+          <circle cx="28" cy="25" r="3.4" style="fill:var(--crimson, #e2574f)"/><circle cx="41" cy="25" r="3.4" style="fill:var(--brass, #d9a441)"/><circle cx="54" cy="25" r="3.4" style="fill:var(--verdigris, #46a97f)"/>
+          <!-- column chart -->
+          <rect x="26" y="58" width="168" height="94" rx="9" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
+          <rect x="38" y="118" width="17" height="24" rx="3" fill="url(#scBar)"/>
+          <rect x="62" y="102" width="17" height="40" rx="3" fill="url(#scBar)"/>
+          <rect x="86" y="86" width="17" height="56" rx="3" fill="url(#scBar)"/>
+          <rect x="110" y="110" width="17" height="32" rx="3" fill="url(#scBar)"/>
+          <rect x="134" y="94" width="17" height="48" rx="3" fill="url(#scBar)"/>
+          <rect x="158" y="78" width="17" height="64" rx="3" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
+          <rect x="38" y="70" width="52" height="5" rx="2.5" style="fill:var(--line, #2a3346)"/>
+          <!-- donut -->
+          <rect x="204" y="58" width="190" height="94" rx="9" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
+          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" style="stroke:var(--line-soft, #1d2535)"/>
+          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" stroke-dasharray="72 170" transform="rotate(-90 248 105)" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
+          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" stroke-dasharray="42 170" stroke-dashoffset="-76" transform="rotate(-90 248 105)" stroke-linecap="round" style="stroke:var(--steel, #6f93c4)"/>
+          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" stroke-dasharray="28 170" stroke-dashoffset="-122" transform="rotate(-90 248 105)" stroke-linecap="round" style="stroke:var(--verdigris, #46a97f)"/>
+          <rect x="292" y="84" width="70" height="6" rx="3" opacity="0.8" style="fill:var(--brass, #d9a441)"/>
+          <rect x="292" y="99" width="54" height="6" rx="3" opacity="0.8" style="fill:var(--steel, #6f93c4)"/>
+          <rect x="292" y="114" width="42" height="6" rx="3" opacity="0.8" style="fill:var(--verdigris, #46a97f)"/>
+          <!-- area line -->
+          <rect x="26" y="164" width="368" height="70" rx="9" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
+          <path d="M42,214 L96,198 L150,206 L204,182 L258,190 L312,172 L372,180 L372,224 L42,224 Z" fill="url(#scArea)"/>
+          <path d="M42,214 L96,198 L150,206 L204,182 L258,190 L312,172 L372,180" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--brass, #d9a441)"/>
+          <circle cx="204" cy="182" r="3.2" style="fill:var(--brass, #d9a441)"/>
+          <circle cx="312" cy="172" r="3.2" style="fill:var(--brass, #d9a441)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
   <section class="landing-section compact" id="how-it-works">
     <div class="landing-section-head">
       <div class="landing-kicker">How it works</div>
@@ -163,34 +223,6 @@
         <div class="landing-kicker">Built for the field, not just the demo</div>
         <h3>One workspace your whole investigating team can actually use</h3>
         <p>Investigators upload, reviewers verify, admins manage access — everyone works from the same case file instead of scattered folders, group chats and printed reports.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="contra-band">
-    <div class="contra-band-inner">
-      <div class="contra-band-copy">
-        <div class="landing-kicker">The part investigators actually ask for</div>
-        <h3>Two documents disagree. The platform will not let that slide.</h3>
-        <p>Every factual claim in the case file is compared against every other claim. Where two statements cannot both be true, the conflict is surfaced with its type, a confidence score and both source exhibits side by side.</p>
-        <ul class="contra-band-points">
-          <li><svg viewBox="0 0 24 24"><use href="#icon-alert"/></svg><span>Dates, amounts, roles and sequences checked across the whole vault — not one document at a time.</span></li>
-          <li><svg viewBox="0 0 24 24"><use href="#icon-shield"/></svg><span>Flagged, never resolved. Deciding which claim is true stays with the investigator.</span></li>
-          <li><svg viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg><span>Findings export to Markdown and flow straight into the final case report.</span></li>
-        </ul>
-      </div>
-
-      <div class="contra-demo" aria-hidden="true">
-        <div class="contra-demo-card">
-          <div class="contra-demo-head">
-            <span class="contra-demo-tag">Timeline conflict</span>
-            <span class="contra-demo-conf">confidence 88%</span>
-          </div>
-          <div class="contra-demo-claim">Goods were received at the warehouse on 14 March.<span>EXHIBIT 02 · Delivery Receipt</span></div>
-          <div class="contra-demo-vs">— VS —</div>
-          <div class="contra-demo-claim">The consignment had not arrived as of 18 March.<span>EXHIBIT 05 · Site Inspection Report</span></div>
-          <div class="contra-demo-bar"><span></span></div>
-        </div>
       </div>
     </div>
   </div>
@@ -360,17 +392,16 @@
 
     <nav class="tabs" id="tabs">
       <div class="nav-group-label">Case</div>
-      <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span><span class="tab-text"><span class="tab-title">Overview</span><span class="tab-desc">Overview &amp; quick actions</span></span></button>
+      <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span><span class="tab-text"><span class="tab-title">Overview</span><span class="tab-desc">Charts, counts &amp; quick actions</span></span></button>
       <button class="tab" data-tab="documents"><svg class="tab-icon"><use href="#icon-folder"/></svg><span class="tab-num">01</span><span class="tab-text"><span class="tab-title">Evidence</span><span class="tab-desc">Upload, hash, chain of custody</span></span></button>
       <button class="tab" data-tab="intelligence"><svg class="tab-icon"><use href="#icon-brain"/></svg><span class="tab-num">02</span><span class="tab-text"><span class="tab-title">Intelligence</span><span class="tab-desc">AI summary, arguments, chat</span></span></button>
-      <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">03</span><span class="tab-text"><span class="tab-title">Timeline</span><span class="tab-desc">Chronological, evidence-linked</span></span></button>
-      <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">04</span><span class="tab-text"><span class="tab-title">Connections</span><span class="tab-desc">Entity relationship graph</span></span></button>
-      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">05</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
-      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
-
       <div class="nav-group-label">Verification</div>
-      <button class="tab tab-alert" data-tab="contradictions"><svg class="tab-icon"><use href="#icon-alert"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Contradictions</span><span class="tab-desc">Conflicting claims across evidence</span></span><span class="tab-badge" id="tab-contra-badge" hidden>0</span></button>
-
+      <button class="tab" data-tab="contradictions"><svg class="tab-icon"><use href="#icon-alert"/></svg><span class="tab-num">03</span><span class="tab-text"><span class="tab-title">Contradictions</span><span class="tab-desc">Conflicting claims, human-verified</span></span><span class="tab-count" id="tab-count-contradictions"></span></button>
+      <div class="nav-group-label">Analysis</div>
+      <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">04</span><span class="tab-text"><span class="tab-title">Timeline</span><span class="tab-desc">Chronological, evidence-linked</span></span></button>
+      <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">05</span><span class="tab-text"><span class="tab-title">Connections</span><span class="tab-desc">Entity relationship graph</span></span></button>
+      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
+      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
       <div class="nav-group-label">Security</div>
       <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">08</span><span class="tab-text"><span class="tab-title">Audit Trail</span><span class="tab-desc">Who did what, and when</span></span></button>
     </nav>
@@ -405,27 +436,37 @@
 
     <!-- DASHBOARD -->
     <section class="panel active" id="panel-dashboard">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 00</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-grid"/></svg>Case Overview</div>
           <h1 id="dash-title">Case Overview</h1>
           <p class="sub" id="dash-sub"></p>
-          <div class="banner-actions">
+          <div class="page-hero-actions">
             <button class="ghost-btn" data-goto="report"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-doc-check"/></svg> View Full Report</button>
-            <button class="ghost-btn" data-goto="contradictions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-alert"/></svg> Check Contradictions</button>
+            <button class="ghost-btn" data-goto="contradictions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-alert"/></svg> Review Contradictions</button>
           </div>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <rect class="ba-soft" x="14" y="16" width="80" height="40" rx="4"/>
-  <rect class="ba-soft" x="14" y="64" width="80" height="38" rx="4"/>
-  <path class="ba-stroke" d="M24 46l16-16 12 10 20-22"/>
-  <rect class="ba-fill" x="24" y="86" width="12" height="10"/><rect class="ba-stroke" x="24" y="80" width="12" height="16"/>
-  <rect class="ba-stroke" x="42" y="72" width="12" height="24"/>
-  <rect class="ba-stroke" x="60" y="82" width="12" height="14"/>
-  <circle class="ba-stroke" cx="146" cy="59" r="34"/>
-  <path class="ba-stroke" d="M146 25a34 34 0 0 1 29 52"/>
-  <circle class="ba-dot" cx="146" cy="59" r="5"/>
-</svg>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="14" width="184" height="122" rx="10" style="fill:var(--ink, #0a0d14);stroke:var(--line, #2a3346)"/>
+            <rect x="22" y="30" width="48" height="34" rx="6" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="78" y="30" width="48" height="34" rx="6" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="134" y="30" width="44" height="34" rx="6" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="30" y="40" width="20" height="4" rx="2" style="fill:var(--brass, #d9a441)"/>
+            <rect x="86" y="40" width="26" height="4" rx="2" style="fill:var(--steel, #6f93c4)"/>
+            <rect x="142" y="40" width="16" height="4" rx="2" style="fill:var(--crimson, #e2574f)"/>
+            <rect x="30" y="50" width="30" height="6" rx="3" style="fill:var(--line, #2a3346)"/>
+            <rect x="86" y="50" width="24" height="6" rx="3" style="fill:var(--line, #2a3346)"/>
+            <rect x="142" y="50" width="28" height="6" rx="3" style="fill:var(--line, #2a3346)"/>
+            <circle cx="52" cy="102" r="20" fill="none" stroke-width="9" style="stroke:var(--line-soft, #1d2535)"/>
+            <circle cx="52" cy="102" r="20" fill="none" stroke-width="9" stroke-dasharray="58 126" transform="rotate(-90 52 102)" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
+            <rect x="92" y="112" width="13" height="14" rx="3" opacity="0.9" style="fill:var(--brass, #d9a441)"/>
+            <rect x="110" y="100" width="13" height="26" rx="3" opacity="0.75" style="fill:var(--brass, #d9a441)"/>
+            <rect x="128" y="92" width="13" height="34" rx="3" opacity="0.9" style="fill:var(--brass, #d9a441)"/>
+            <rect x="146" y="104" width="13" height="22" rx="3" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
+            <rect x="164" y="84" width="13" height="42" rx="3" style="fill:var(--brass, #d9a441)"/>
+          </svg>
+        </div>
       </div>
 
       <div class="stat-grid" id="stat-grid"></div>
@@ -478,7 +519,6 @@
       <div class="quick-actions">
         <button class="quick-action" data-goto="documents"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-folder"/></svg><span>Upload a document</span></button>
         <button class="quick-action" data-goto="intelligence"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-brain"/></svg><span>Ask Case Chat</span></button>
-        <button class="quick-action" data-goto="contradictions"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-alert"/></svg><span>Review contradictions</span></button>
         <button class="quick-action" data-goto="timeline"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-clock"/></svg><span>View timeline</span></button>
         <button class="quick-action" data-goto="graph"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-network"/></svg><span>Explore connections</span></button>
         <button class="quick-action" data-goto="report"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg><span>Generate report</span></button>
@@ -490,22 +530,30 @@
 
     <!-- DOCUMENTS / VAULT -->
     <section class="panel" id="panel-documents">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 01</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-lock"/></svg>Secure Vault</div>
           <h1>Document Vault</h1>
-          <p>Upload the case file. Every document is validated, SHA-256 hashed and analyzed automatically, with a full chain of custody attached from the moment it lands.</p>
+          <p class="sub">Upload the case file. Each document is validated, SHA-256 hashed and analyzed automatically — with a full chain of custody behind every exhibit.</p>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <rect class="ba-fill" x="18" y="16" width="62" height="82" rx="4"/>
-  <rect class="ba-stroke" x="18" y="16" width="62" height="82" rx="4"/>
-  <path class="ba-soft" d="M30 34h38M30 46h38M30 58h26"/>
-  <rect class="ba-stroke" x="96" y="28" width="58" height="70" rx="4"/>
-  <path class="ba-soft" d="M106 44h38M106 56h38M106 68h22"/>
-  <path class="ba-stroke" d="M163 40l10 10 18-22"/>
-  <circle class="ba-dot" cx="80" cy="57" r="3"/>
-  <path class="ba-soft" d="M83 57h13"/>
-</svg>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect x="34" y="34" width="96" height="104" rx="8" transform="rotate(-7 82 86)" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
+            <rect x="48" y="26" width="96" height="104" rx="8" transform="rotate(3 96 78)" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="56" y="22" width="96" height="106" rx="8" stroke-opacity="0.5" style="fill:var(--ink, #0a0d14);stroke:var(--brass, #d9a441)"/>
+            <rect x="70" y="40" width="58" height="5" rx="2.5" style="fill:var(--brass, #d9a441)"/>
+            <rect x="70" y="54" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="70" y="64" width="62" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="70" y="74" width="66" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="70" y="84" width="40" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="70" y="100" width="68" height="16" rx="5" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <path d="M78 108l3.5 3.5 7-7.5" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--verdigris, #46a97f)"/>
+            <rect x="94" y="106" width="36" height="4" rx="2" opacity="0.6" style="fill:var(--verdigris, #46a97f)"/>
+            <circle cx="160" cy="112" r="17" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <path d="M153 112v-4a7 7 0 0 1 14 0v4" fill="none" stroke-width="2" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
+            <rect x="151" y="112" width="18" height="12" rx="3" opacity="0.9" style="fill:var(--brass, #d9a441)"/>
+          </svg>
+        </div>
       </div>
 
       <label class="dropzone" id="dropzone">
@@ -522,11 +570,21 @@
       <div id="upload-status"></div>
       <div id="processing-pipeline"></div>
 
-      <div class="chart-card" id="vault-chart-card" style="display:none">
-        <h3>Vault Composition</h3>
-        <p class="sub">What kind of evidence this case is built on.</p>
-        <div id="vault-type-chart" class="hbar-chart"></div>
-        <div class="col-chart-foot" id="vault-chart-foot"></div>
+      <div class="chart-grid two vault-type-chart">
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Evidence mix</h3><p class="sub">How the vault breaks down by document type.</p></div>
+            <span class="chart-badge" id="vault-total-badge">—</span>
+          </div>
+          <div id="vault-type-bars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Upload cadence</h3><p class="sub">When evidence entered the vault.</p></div>
+            <span class="chart-badge" id="vault-cadence-badge">—</span>
+          </div>
+          <div id="vault-cadence-chart"></div>
+        </div>
       </div>
 
       <div class="vault-controls">
@@ -545,22 +603,28 @@
       </div>
     </div>
 
-    <!-- CASE INTELLIGENCE (summary, argument intel, chat — contradictions are their own tab) -->
+    <!-- CASE INTELLIGENCE (merged: summary, contradictions, argument intel, chat) -->
     <section class="panel" id="panel-intelligence">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 02</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-sparkle"/></svg>AI Analysis</div>
           <h1>Case Intelligence</h1>
-          <p>Narrative summary, argument intelligence and case chat — every answer <em class="hl">grounded in the uploaded documents</em>. Conflicting claims have moved to their own <em class="hl">Contradictions</em> tab.</p>
+          <p class="sub">Narrative summary, argument intelligence and grounded case chat — every output traceable to an uploaded document. Conflicting claims now live in their own <em class="hl">Contradictions</em> workspace.</p>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <circle class="ba-fill" cx="100" cy="59" r="36"/>
-  <circle class="ba-stroke" cx="100" cy="59" r="36"/>
-  <path class="ba-stroke" d="M100 23v72M64 59h72M75 34c14 12 36 12 50 0M75 84c14-12 36-12 50 0"/>
-  <circle class="ba-dot" cx="28" cy="30" r="4"/><circle class="ba-dot-alt" cx="24" cy="86" r="4"/>
-  <circle class="ba-dot-alt" cx="176" cy="34" r="4"/><circle class="ba-dot" cx="172" cy="88" r="4"/>
-  <path class="ba-soft" d="M32 32l32 16M28 84l36-18M172 36l-36 14M168 86l-32-18"/>
-</svg>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="76" r="50" fill="none" stroke-dasharray="3 6" style="stroke:var(--line, #2a3346)"/>
+            <circle cx="100" cy="76" r="33" stroke-opacity="0.45" style="fill:var(--panel, #111620);stroke:var(--brass, #d9a441)"/>
+            <path d="M88 62a8 8 0 0 1 12 0 8 8 0 0 1 12 0M88 90a8 8 0 0 0 12 0 8 8 0 0 0 12 0M100 62v28" fill="none" stroke-width="2.2" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
+            <circle cx="100" cy="26" r="6" style="fill:var(--brass, #d9a441)"/>
+            <circle cx="150" cy="76" r="6" style="fill:var(--steel, #6f93c4)"/>
+            <circle cx="100" cy="126" r="6" style="fill:var(--verdigris, #46a97f)"/>
+            <circle cx="50" cy="76" r="6" opacity="0.6" style="fill:var(--brass, #d9a441)"/>
+            <path d="M100 32v11M144 76h-11M100 120v-11M56 76h11" stroke-width="1.6" style="stroke:var(--line, #2a3346)"/>
+            <rect x="24" y="132" width="152" height="4" rx="2" style="fill:var(--line-soft, #1d2535)"/>
+            <rect x="24" y="132" width="96" height="4" rx="2" style="fill:var(--brass, #d9a441)"/>
+          </svg>
+        </div>
       </div>
 
       <nav class="intel-subtabs" id="intel-subtabs">
@@ -615,27 +679,125 @@
       </div>
     </section>
 
-    <!-- TIMELINE -->
-    <section class="panel" id="panel-timeline">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 03</span>
-          <h1>Investigation Timeline</h1>
-          <p>Dated events extracted from every document and arranged chronologically, each one linked back to the exhibit it came from. Silences of 30+ days are flagged as gaps.</p>
-          <div class="banner-actions">
-            <button class="ghost-btn" id="export-timeline-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg> Export Timeline</button>
+    <!-- CONTRADICTIONS (standalone feature) -->
+    <section class="panel contra-page" id="panel-contradictions">
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-alert"/></svg>Verification</div>
+          <h1>Contradiction Analysis</h1>
+          <p class="sub">Claims that conflict across the case file, ranked by severity and scored for confidence. Every finding is a <em class="hl">prompt for human verification</em> — nothing here is resolved, decided, or treated as proof.</p>
+          <div class="page-hero-actions">
+            <button class="ghost-btn" id="recheck-contradictions-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-search"/></svg> Re-run check</button>
+            <button class="ghost-btn" id="export-contradictions-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export findings</button>
           </div>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <path class="ba-stroke" d="M16 59h168"/>
-  <circle class="ba-dot" cx="34" cy="59" r="5"/><circle class="ba-dot" cx="82" cy="59" r="5"/>
-  <circle class="ba-dot-alt" cx="126" cy="59" r="5"/><circle class="ba-dot" cx="170" cy="59" r="5"/>
-  <path class="ba-soft" d="M34 59V30M82 59v30M126 59V26M170 59v32"/>
-  <rect class="ba-fill" x="18" y="16" width="32" height="14" rx="3"/>
-  <rect class="ba-fill" x="66" y="88" width="32" height="14" rx="3"/>
-  <rect class="ba-fill" x="110" y="12" width="32" height="14" rx="3"/>
-  <rect class="ba-fill" x="154" y="90" width="32" height="14" rx="3"/>
-</svg>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect x="14" y="34" width="70" height="82" rx="8" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="116" y="34" width="70" height="82" rx="8" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="26" y="48" width="42" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="26" y="58" width="46" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="26" y="68" width="34" height="4" rx="2" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
+            <rect x="26" y="78" width="44" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="26" y="88" width="30" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="128" y="48" width="44" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="128" y="58" width="38" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="128" y="68" width="34" height="4" rx="2" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
+            <rect x="128" y="78" width="46" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="128" y="88" width="26" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <path d="M84 70h14M102 70h14" stroke-width="2" stroke-dasharray="3 4" style="stroke:var(--crimson, #e2574f)"/>
+            <circle cx="100" cy="70" r="16" stroke-width="2" style="fill:var(--ink, #0a0d14);stroke:var(--crimson, #e2574f)"/>
+            <path d="M100 62v9" stroke-width="2.4" stroke-linecap="round" style="stroke:var(--crimson, #e2574f)"/>
+            <circle cx="100" cy="77" r="1.6" style="fill:var(--crimson, #e2574f)"/>
+            <rect x="46" y="128" width="108" height="6" rx="3" style="fill:var(--line-soft, #1d2535)"/>
+            <rect x="46" y="128" width="62" height="6" rx="3" style="fill:var(--crimson, #e2574f)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="contra-summary" id="contra-summary"></div>
+
+      <div class="chart-grid two">
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Severity breakdown</h3><p class="sub">Confidence-weighted, highest first.</p></div>
+            <span class="chart-badge alert" id="contra-severity-badge">—</span>
+          </div>
+          <div id="contra-severity-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Conflict types</h3><p class="sub">What kind of disagreement was found.</p></div>
+            <span class="chart-badge" id="contra-type-badge">—</span>
+          </div>
+          <div id="contra-type-chart"></div>
+        </div>
+      </div>
+
+      <div class="chart-card" style="margin-bottom:22px">
+        <div class="chart-card-head">
+          <div><h3>Documents most often in conflict</h3><p class="sub">Which exhibits keep turning up on one side of a disagreement.</p></div>
+          <span class="chart-badge" id="contra-doc-badge">—</span>
+        </div>
+        <div id="contra-doc-chart"></div>
+      </div>
+
+      <div class="contra-toolbar">
+        <div class="contra-filters" id="contra-filters">
+          <button class="contra-chip active" data-sev="all">All findings</button>
+          <button class="contra-chip" data-sev="high">High severity</button>
+          <button class="contra-chip" data-sev="med">Medium</button>
+          <button class="contra-chip" data-sev="low">Low</button>
+        </div>
+        <span class="contra-count-hint" id="contra-count-hint"></span>
+      </div>
+
+      <div id="contradiction-body">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg>
+          <div class="empty-state-title">No contradictions checked yet</div>
+          <div class="empty-state-sub">Once documents are uploaded, conflicting claims across them are surfaced here with a conflict type and confidence score — always flagged for human review, never auto-resolved.</div>
+          <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="panel" id="panel-timeline">
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-clock"/></svg>Chronology</div>
+          <h1>Investigation Timeline</h1>
+          <p class="sub">Dated events extracted from every document, arranged chronologically and linked back to the exhibit they came from — with automatic gap detection across 30+ day silences.</p>
+          <div class="page-hero-actions">
+            <button class="ghost-btn" id="export-timeline-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export Timeline</button>
+          </div>
+        </div>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <path d="M40 22v106" stroke-width="2" style="stroke:var(--line, #2a3346)"/>
+            <circle cx="40" cy="38" r="7" stroke-width="2.4" style="fill:var(--ink, #0a0d14);stroke:var(--brass, #d9a441)"/>
+            <circle cx="40" cy="70" r="7" stroke-width="2.4" style="fill:var(--ink, #0a0d14);stroke:var(--steel, #6f93c4)"/>
+            <circle cx="40" cy="102" r="7" stroke-width="2.4" style="fill:var(--ink, #0a0d14);stroke:var(--verdigris, #46a97f)"/>
+            <rect x="58" y="26" width="118" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="58" y="58" width="118" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="58" y="90" width="118" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="68" y="34" width="46" height="4" rx="2" style="fill:var(--brass, #d9a441)"/>
+            <rect x="68" y="42" width="78" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="68" y="66" width="38" height="4" rx="2" style="fill:var(--steel, #6f93c4)"/>
+            <rect x="68" y="74" width="86" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="68" y="98" width="52" height="4" rx="2" style="fill:var(--verdigris, #46a97f)"/>
+            <rect x="68" y="106" width="70" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="chart-card" style="margin-bottom:18px">
+        <div class="chart-card-head">
+          <div><h3>Event density</h3><p class="sub">Where activity clusters — and where the file goes quiet.</p></div>
+          <span class="chart-badge" id="timeline-density-badge">—</span>
+        </div>
+        <div id="timeline-density"></div>
       </div>
       <div class="timeline-toolbar">
         <div class="timeline-filters">
@@ -650,13 +812,6 @@
           </div>
         </div>
       </div>
-      <div class="chart-card timeline-density" id="timeline-density-card" style="display:none">
-        <h3>Event Density</h3>
-        <p class="sub">When the activity in this case actually happened.</p>
-        <div class="col-chart" id="timeline-density-chart"></div>
-        <div class="col-chart-foot" id="timeline-density-foot"></div>
-      </div>
-
       <div id="timeline-body">
         <div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-clock"/></svg>
@@ -669,23 +824,27 @@
 
     <!-- GRAPH -->
     <section class="panel" id="panel-graph">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 04</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-network"/></svg>Entity Map</div>
           <h1>Connections</h1>
-          <p>Relationships between people, organizations, locations and documents, pulled out of the evidence. Every edge carries the sentence it was inferred from.</p>
-          <div class="banner-actions">
+          <p class="sub">People, organizations and locations mapped from the case evidence. Click any connection to see the document line that supports it.</p>
+          <div class="page-hero-actions">
             <button class="ghost-btn" id="export-graph-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export Graph</button>
           </div>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <path class="ba-soft" d="M40 30L100 59 40 90M160 26L100 59l60 34M100 59v-42M100 59v46"/>
-  <circle class="ba-fill" cx="100" cy="59" r="16"/>
-  <circle class="ba-stroke" cx="100" cy="59" r="16"/>
-  <circle class="ba-dot" cx="40" cy="30" r="6"/><circle class="ba-dot-alt" cx="40" cy="90" r="6"/>
-  <circle class="ba-dot-alt" cx="160" cy="26" r="6"/><circle class="ba-dot" cx="160" cy="93" r="6"/>
-  <circle class="ba-dot" cx="100" cy="17" r="5"/><circle class="ba-dot-alt" cx="100" cy="105" r="5"/>
-</svg>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <path d="M62 44L100 76M138 40L100 76M100 76L66 112M100 76L142 108M62 44L138 40" stroke-width="1.8" style="stroke:var(--line, #2a3346)"/>
+            <circle cx="100" cy="76" r="17" stroke-width="2.4" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
+            <circle cx="100" cy="71" r="5" style="fill:var(--brass, #d9a441)"/>
+            <path d="M91 86c0-5 4-8 9-8s9 3 9 8" style="fill:var(--brass, #d9a441)"/>
+            <circle cx="62" cy="44" r="12" stroke-width="2.2" style="fill:var(--panel-raised, #18202d);stroke:var(--steel, #6f93c4)"/>
+            <circle cx="138" cy="40" r="12" stroke-width="2.2" style="fill:var(--panel-raised, #18202d);stroke:var(--verdigris, #46a97f)"/>
+            <circle cx="66" cy="112" r="12" stroke-width="2.2" stroke-opacity="0.7" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
+            <circle cx="142" cy="108" r="12" stroke-width="2.2" stroke-opacity="0.7" style="fill:var(--panel-raised, #18202d);stroke:var(--steel, #6f93c4)"/>
+          </svg>
+        </div>
       </div>
       <div class="graph-toolbar">
         <div class="timeline-filters">
@@ -712,16 +871,20 @@
       </div>
       <div id="graph-legend" class="graph-legend"></div>
 
-      <div class="graph-insights" id="graph-insights" style="display:none">
-        <div class="chart-card" style="margin:0">
-          <h3>Most Connected Entities</h3>
-          <p class="sub">Who sits at the centre of this case.</p>
-          <div class="hbar-chart" id="graph-top-entities"></div>
+      <div class="graph-side-charts">
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Most connected entities</h3><p class="sub">Ranked by number of relationships in the case.</p></div>
+            <span class="chart-badge" id="graph-central-badge">—</span>
+          </div>
+          <div id="graph-central-chart"></div>
         </div>
-        <div class="chart-card" style="margin:0">
-          <h3>Entity Mix</h3>
-          <p class="sub">Composition of everything extracted.</p>
-          <div class="donut-row" id="graph-entity-donut"></div>
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Entity composition</h3><p class="sub">People, organizations and locations on file.</p></div>
+            <span class="chart-badge" id="graph-mix-badge">—</span>
+          </div>
+          <div id="graph-mix-chart"></div>
         </div>
       </div>
 
@@ -734,99 +897,31 @@
       </div>
     </section>
 
-
-    <!-- CONTRADICTIONS (top-level feature, split out of Case Intelligence) -->
-    <section class="panel" id="panel-contradictions">
-      <div class="page-banner banner-alert">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Verification · 07</span>
-          <h1>Contradiction Analysis</h1>
-          <p>Claims from different documents that cannot both be true, surfaced with a conflict type, a confidence score and both source exhibits side by side.</p>
-          <div class="banner-actions">
-            <button class="ghost-btn" id="contra-rerun-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><use href="#icon-sparkle"/></svg> Re-run check</button>
-            <button class="ghost-btn" id="contra-export-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><use href="#icon-download"/></svg> Export findings</button>
-          </div>
-        </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <rect class="ba-stroke" x="14" y="18" width="66" height="82" rx="4"/>
-  <path class="ba-soft" d="M26 36h42M26 48h42M26 60h28"/>
-  <rect class="ba-stroke" x="120" y="18" width="66" height="82" rx="4"/>
-  <path class="ba-soft" d="M132 36h42M132 48h42M132 60h28"/>
-  <path class="ba-accent" d="M100 10l-9 44h13l-9 54"/>
-  <circle class="ba-dot" cx="54" cy="78" r="3.5"/>
-  <circle class="ba-dot" cx="160" cy="78" r="3.5"/>
-</svg>
-      </div>
-
-      <div class="contra-review-note">
-        <svg viewBox="0 0 24 24"><use href="#icon-shield"/></svg>
-        <div><strong>Flagged, not resolved.</strong> The system never decides which claim is true. A conflict here means two documents disagree — deciding which one is right is an investigator's call, and the decision belongs in the case report, not in the model.</div>
-      </div>
-
-      <div class="contra-stats" id="contra-stats"></div>
-
-      <div class="contra-charts" id="contra-charts" style="display:none">
-        <div class="chart-card" style="margin:0">
-          <h3>Severity Mix</h3>
-          <p class="sub">Conflicts grouped by detection confidence.</p>
-          <div class="sev-donut-wrap" id="contra-donut"></div>
-        </div>
-        <div class="chart-card" style="margin:0">
-          <h3>Conflict Types</h3>
-          <p class="sub">What kind of disagreement was found.</p>
-          <div class="hbar-chart" id="contra-type-chart"></div>
-        </div>
-        <div class="chart-card" style="margin:0">
-          <h3>Documents Implicated</h3>
-          <p class="sub">Which exhibits keep turning up in conflicts.</p>
-          <div class="hbar-chart" id="contra-doc-chart"></div>
-        </div>
-      </div>
-
-      <div class="contra-toolbar" id="contra-toolbar" style="display:none">
-        <select class="timeline-select" id="contra-filter-type"><option value="all">All Conflict Types</option></select>
-        <select class="timeline-select" id="contra-filter-sev">
-          <option value="all">All Severities</option>
-          <option value="high">High confidence (75%+)</option>
-          <option value="med">Medium confidence (50–74%)</option>
-          <option value="low">Low confidence (under 50%)</option>
-        </select>
-        <span class="timeline-hint" id="contra-count"></span>
-      </div>
-
-      <div id="contradiction-body">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg>
-          <div class="empty-state-title">No contradictions checked yet</div>
-          <div class="empty-state-sub">Once documents are uploaded, conflicting claims across them are surfaced here with a conflict type and confidence score — always flagged for human review, never auto-resolved.</div>
-          <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
-        </div>
-      </div>
-    </section>
-
     <!-- SIMILAR CASES -->
     <section class="panel" id="panel-similar">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 05</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-layers"/></svg>Precedent Library</div>
           <h1>Similar Cases</h1>
-          <p>Factual and legal pattern matches against a reference case library, scored on overlap of facts and issues — <em class="hl">not an outcome prediction</em> and never a forecast of how this case will end.</p>
+          <p class="sub">Factual and legal pattern matches against a reference case library, scored for similarity — <em class="hl">not an outcome prediction</em> and never a sentencing signal.</p>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <rect class="ba-fill" x="20" y="24" width="54" height="70" rx="4"/>
-  <rect class="ba-stroke" x="20" y="24" width="54" height="70" rx="4"/>
-  <rect class="ba-soft" x="84" y="30" width="48" height="58" rx="4"/>
-  <rect class="ba-soft" x="140" y="36" width="44" height="46" rx="4"/>
-  <path class="ba-stroke" d="M30 42h34M30 54h34M30 66h20"/>
-  <path class="ba-soft" d="M94 46h28M94 58h28M150 50h24M150 62h24"/>
-</svg>
-      </div>
-      <div class="chart-card similar-chart-wrap" id="similar-chart-card" style="display:none">
-        <h3>Match Strength</h3>
-        <p class="sub">How closely each precedent tracks the facts on file.</p>
-        <div class="hbar-chart" id="similar-chart"></div>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 30l58 26-58 26-58-26 58-26z" stroke-width="2" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
+            <path d="M42 74l58 26 58-26" fill="none" stroke-width="2" style="stroke:var(--steel, #6f93c4)"/>
+            <path d="M42 94l58 26 58-26" fill="none" stroke-width="2" style="stroke:var(--verdigris, #46a97f)"/>
+            <circle cx="100" cy="56" r="4" style="fill:var(--brass, #d9a441)"/>
+          </svg>
+        </div>
       </div>
 
+      <div class="chart-card" id="similar-chart-card" style="display:none;margin-bottom:20px">
+        <div class="chart-card-head">
+          <div><h3>Match strength</h3><p class="sub">How closely each precedent's pattern resembles this case.</p></div>
+          <span class="chart-badge" id="similar-badge">—</span>
+        </div>
+        <div id="similar-chart"></div>
+      </div>
       <div id="similar-body">
         <div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-layers"/></svg>
@@ -838,31 +933,33 @@
 
     <!-- REPORT -->
     <section class="panel" id="panel-report">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Case file · 06</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-doc-check"/></svg>Deliverable</div>
           <h1>AI Case Report</h1>
-          <p>A structured, exportable 12-section report synthesized from every document, timeline event and flagged contradiction on file — with each conclusion traceable to its source exhibit.</p>
+          <p class="sub">A structured, exportable 12-section summary of the entire case — synthesized from every document, timeline event and flagged contradiction on file.</p>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <rect class="ba-fill" x="46" y="12" width="92" height="94" rx="5"/>
-  <rect class="ba-stroke" x="46" y="12" width="92" height="94" rx="5"/>
-  <path class="ba-soft" d="M62 34h60M62 46h60M62 58h60M62 70h38"/>
-  <circle class="ba-stroke" cx="150" cy="84" r="17"/>
-  <path class="ba-stroke" d="M143 84l5 5 10-11"/>
-  <path class="ba-soft" d="M150 101v11l-6-4-6 4"/>
-</svg>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <rect x="52" y="16" width="96" height="118" rx="9" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
+            <rect x="52" y="16" width="96" height="16" rx="9" opacity="0.22" style="fill:var(--brass, #d9a441)"/>
+            <rect x="52" y="26" width="96" height="6" opacity="0.22" style="fill:var(--brass, #d9a441)"/>
+            <rect x="66" y="44" width="52" height="5" rx="2.5" style="fill:var(--brass, #d9a441)"/>
+            <rect x="66" y="58" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="66" y="68" width="62" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="66" y="78" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="66" y="92" width="34" height="4" rx="2" style="fill:var(--steel, #6f93c4)"/>
+            <rect x="66" y="102" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <rect x="66" y="112" width="48" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
+            <circle cx="148" cy="118" r="18" stroke-width="2" style="fill:var(--ink, #0a0d14);stroke:var(--verdigris, #46a97f)"/>
+            <path d="M140 118l6 6 11-12" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--verdigris, #46a97f)"/>
+          </svg>
+        </div>
       </div>
       <div class="report-actions">
         <button id="generate-report-btn" class="primary-btn">Generate report</button>
         <button id="download-report-btn" class="ghost-btn" disabled>Download .md</button>
       </div>
-      <div class="chart-card" id="report-readiness-card" style="display:none">
-        <h3>Report Readiness</h3>
-        <p class="sub">How much of the case file is actually ready to be written up.</p>
-        <div class="readiness-grid" id="report-readiness"></div>
-      </div>
-
       <div class="card prose" id="report-body">
         <div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg>
@@ -874,25 +971,38 @@
 
     <!-- AUDIT TRAIL -->
     <section class="panel" id="panel-audit">
-      <div class="page-banner">
-        <div class="banner-copy">
-          <span class="banner-eyebrow">Security · 08</span>
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-shield"/></svg>Accountability</div>
           <h1>Audit Trail</h1>
-          <p>Who did what, and when. Every upload, deletion, export and analysis on this case is recorded against a named user and cannot be edited from the interface.</p>
+          <p class="sub">Who did what, and when — every sensitive action on this case, written at the moment it happened and never editable after the fact.</p>
         </div>
-        <svg class="banner-art" viewBox="0 0 200 118" aria-hidden="true">
-  <path class="ba-stroke" d="M100 12l40 16v26c0 24-16 40-40 50-24-10-40-26-40-50V28l40-16z"/>
-  <path class="ba-fill" d="M100 12l40 16v26c0 24-16 40-40 50-24-10-40-26-40-50V28l40-16z"/>
-  <path class="ba-stroke" d="M86 58l10 10 20-24"/>
-  <path class="ba-soft" d="M12 34h30M12 48h22M12 62h30M158 34h30M166 48h22M158 62h30"/>
-</svg>
-      </div>
-      <div class="chart-card audit-chart-wrap" id="audit-chart-card" style="display:none">
-        <h3>Activity Breakdown</h3>
-        <p class="sub">What has been done to this case file so far.</p>
-        <div class="hbar-chart" id="audit-chart"></div>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 18l42 17v30c0 26-18 44-42 54-24-10-42-28-42-54V35l42-17z" stroke-width="2" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
+            <path d="M84 74l11 11 22-24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--verdigris, #46a97f)"/>
+          </svg>
+        </div>
       </div>
 
+      <div class="audit-charts">
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Actions by type</h3><p class="sub">What has been done on this case so far.</p></div>
+            <span class="chart-badge" id="audit-action-badge">—</span>
+          </div>
+          <div id="audit-action-chart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <div><h3>Activity by user</h3><p class="sub">Who has touched the case file.</p></div>
+            <span class="chart-badge" id="audit-user-badge">—</span>
+          </div>
+          <div id="audit-user-chart"></div>
+        </div>
+      </div>
+
+      <h3 class="section-label">Full log</h3>
       <div id="audit-body"><p class="placeholder">No activity yet.</p></div>
     </section>
 
@@ -901,6 +1011,6 @@
 </div>
 
 <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

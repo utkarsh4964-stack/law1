@@ -1,51 +1,51 @@
 :root {
   /* ==================================================================
-     THEME — "Ink & Brass"
-     A case-file palette rather than a SaaS one: archival ink-charcoal
-     surfaces with a warm cast, brass/gold as the primary accent (court
-     brass, scales, evidence tags), crimson reserved almost exclusively
-     for contradictions and alerts, verdigris for verified/OK, steel
-     blue for neutral secondary categories.
-     Rationale: the old cobalt blue competed with the red conflict
-     signal and read like a generic dashboard. Brass on ink is warmer,
-     more authoritative, and leaves red free to mean exactly one thing.
+     THEME — "Ink & Brass" (light)
+     Archival paper rather than a black terminal: warm ivory page,
+     crisp white cards, brass/gold as the primary accent (court brass,
+     scales, evidence tags), crimson reserved almost exclusively for
+     contradictions and alerts, verdigris for verified/OK, steel blue
+     for neutral secondary categories.
+     Swapped from the earlier dark "ink-charcoal" version on request —
+     same token names throughout, so every component below repaints
+     without needing per-rule changes.
      ================================================================== */
 
-  /* ---- surfaces: page darkest, cards a step lighter ---- */
-  --ink: #0a0d14;
-  --ink-deep: #06080d;
-  --panel: #111620;
-  --panel-raised: #18202d;
-  --line: #2a3346;
-  --line-soft: #1d2535;
+  /* ---- surfaces: page a warm ivory, cards white and brighter ---- */
+  --ink: #f7f4ec;
+  --ink-deep: #efe9db;
+  --panel: #fbf9f3;
+  --panel-raised: #ffffff;
+  --line: #e6e0d1;
+  --line-soft: #eeeade;
 
   /* ---- card accent (evidence tags, chips) ---- */
-  --paper: #1c2536;
-  --paper-ink: #f2ede2;
+  --paper: #fff6dc;
+  --paper-ink: #211a0a;
 
-  /* ---- text: warm off-white (archival paper) on ink ---- */
-  --text: #f1ece2;
-  --text-muted: #9aa4b6;
-  --text-faint: #636d82;
+  /* ---- text: near-black ink on paper ---- */
+  --text: #191307;
+  --text-muted: #6b6558;
+  --text-faint: #9a9686;
 
   /* ---- accents ---- */
-  --brass: #d9a441;
-  --brass-dim: #eec37a;
-  --brass-deep: #8a6412;
-  --brass-glow: rgba(217, 164, 65, 0.15);
+  --brass: #f0b429;
+  --brass-dim: #f6cf6e;
+  --brass-deep: #b9860a;
+  --brass-glow: rgba(240, 180, 41, 0.16);
   --crimson: #e2574f;
-  --crimson-glow: rgba(226, 87, 79, 0.15);
-  --verdigris: #46a97f;
-  --steel: #6f93c4;
-  --on-accent: #17120a;
+  --crimson-glow: rgba(226, 87, 79, 0.12);
+  --verdigris: #1f9d64;
+  --steel: #5678ab;
+  --on-accent: #1a1408;
 
   /* ---- chart series (used by both CSS and app.js) ---- */
-  --c1: #d9a441;
-  --c2: #6f93c4;
-  --c3: #46a97f;
-  --c4: #b98bd6;
+  --c1: #f0b429;
+  --c2: #5678ab;
+  --c3: #1f9d64;
+  --c4: #9b6fc9;
   --c5: #e2574f;
-  --c6: #8d97ab;
+  --c6: #8a8677;
 
   /* ---- legacy aliases: older rules still reference these names ---- */
   --teal: var(--brass);
@@ -59,9 +59,9 @@
   --radius: 12px;
   --radius-sm: 5px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.32);
-  --shadow-lg: 0 18px 46px rgba(0, 0, 0, 0.42);
+  --shadow-sm: 0 1px 2px rgba(30, 22, 9, 0.06);
+  --shadow-md: 0 6px 18px rgba(30, 22, 9, 0.08);
+  --shadow-lg: 0 18px 40px rgba(30, 22, 9, 0.12);
 
   --display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -74,13 +74,14 @@ body {
   margin: 0;
   background: var(--ink);
   background-image:
-    radial-gradient(circle at 12% -10%, rgba(217, 164, 65, 0.13), transparent 44%),
-    radial-gradient(circle at 90% 4%, rgba(111, 147, 196, 0.09), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.015) 0%, transparent 30%);
+    radial-gradient(circle at 12% -10%, rgba(240, 180, 41, 0.10), transparent 44%),
+    radial-gradient(circle at 92% 6%, rgba(86, 120, 171, 0.06), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 30%);
   color: var(--text);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
+
 
 
 /* A thin letterhead ribbon at the very top of the page — blue fading into
@@ -279,8 +280,8 @@ img { max-width: 100%; display: block; }
 }
 .photo-band-caption { padding: 22px 28px; max-width: 560px; }
 .photo-band-caption .landing-kicker { margin-bottom: 6px; }
-.photo-band-caption h3 { font-family: var(--display); font-size: 19px; font-weight: 600; margin: 0 0 6px; color: var(--text); }
-.photo-band-caption p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.photo-band-caption h3 { font-family: var(--display); font-size: 19px; font-weight: 600; margin: 0 0 6px; color: #f8f6ee; }
+.photo-band-caption p { font-size: 13px; color: #cfc9b8; line-height: 1.5; margin: 0; }
 @media (max-width: 900px) {
   .photo-band { padding: 0 24px; }
   .photo-band-inner { min-height: 170px; }
@@ -297,8 +298,8 @@ img { max-width: 100%; display: block; }
 .landing-cta-band-inner {
   max-width: 900px; margin: 0 auto; padding: 44px 48px; text-align: center;
 }
-.landing-cta-band h2 { font-family: var(--display); font-size: 26px; margin: 0 0 10px; }
-.landing-cta-band p { color: var(--text-muted); font-size: 14px; margin: 0 0 22px; }
+.landing-cta-band h2 { font-family: var(--display); font-size: 26px; margin: 0 0 10px; color: #f8f6ee; }
+.landing-cta-band p { color: #cfc9b8; font-size: 14px; margin: 0 0 22px; }
 .landing-cta-band .primary-btn { width: auto; padding: 13px 30px; font-size: 14px; }
 
 .landing-footer {
@@ -588,7 +589,7 @@ img { max-width: 100%; display: block; }
 
 /* ---------------- content ---------------- */
 
-.content { flex: 1; padding: 40px 56px 80px; max-width: 1020px; }
+.content { flex: 1; padding: 36px 44px 80px; max-width: 1560px; }
 .panel { display: none; }
 .panel.active { display: block; animation: panel-in 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
 @keyframes panel-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -706,7 +707,7 @@ img { max-width: 100%; display: block; }
 .stat-tile.tone-gold .stat-icon, .stat-tile.tone-gold .stat-num { color: var(--teal); }
 .stat-tile.tone-gold .stat-icon-box { background: var(--teal-glow); }
 .stat-tile.tone-gold-dim .stat-icon, .stat-tile.tone-gold-dim .stat-num { color: var(--teal-dim); }
-.stat-tile.tone-gold-dim .stat-icon-box { background: rgba(102,144,245,0.12); }
+.stat-tile.tone-gold-dim .stat-icon-box { background: rgba(246,207,110,0.22); }
 .stat-tile.tone-info .stat-icon, .stat-tile.tone-info .stat-num { color: var(--info); }
 .stat-tile.tone-info .stat-icon-box { background: rgba(139,127,214,0.12); }
 .stat-tile.tone-ok .stat-icon, .stat-tile.tone-ok .stat-num { color: var(--ok); }
@@ -1068,8 +1069,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .page-hero::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+    linear-gradient(rgba(25, 19, 7, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(25, 19, 7, 0.035) 1px, transparent 1px);
   background-size: 26px 26px;
   mask-image: linear-gradient(105deg, transparent 38%, #000 100%);
   -webkit-mask-image: linear-gradient(105deg, transparent 38%, #000 100%);

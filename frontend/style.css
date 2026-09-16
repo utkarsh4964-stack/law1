@@ -1,1539 +1,1022 @@
-const API = "/api";
+:root {
+  /* ---- Dark navy surfaces — page bg darkest, cards a step lighter, ---- */
+  --ink: #0a0f1c;
+  --panel: #111827;
+  --panel-raised: #161f33;
+  --line: #26314a;
+  --line-soft: #1c2438;
 
-let TOKEN = localStorage.getItem("case_ai_token") || null;
-let ME = null;
-let CURRENT_CASE_ID = null;
-let chatMode = "case";
+  /* ---- Card accent — a slightly lighter navy chip, used where the old
+     theme used a near-white "paper" card (e.g. evidence tags) ---- */
+  --paper: #1b2440;
+  --paper-ink: #eef1f8;
 
-// ---------------------------------------------------------------------------
-// view switching
-// ---------------------------------------------------------------------------
+  /* ---- Text — near-white on navy, with two muted steps ---- */
+  --text: #eef1f8;
+  --text-muted: #93a0bf;
+  --text-faint: #5c6a8a;
 
-function showView(name) {
-  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-  document.getElementById(`view-${name}`).classList.add("active");
-  window.scrollTo({ top: 0, behavior: "auto" });
+  /* ---- Accents — a confident SaaS blue as the primary accent, a clear
+     red for alerts/high-priority, green for verified/ok, amber/purple
+     for secondary categories ---- */
+  --teal: #3b6df0;
+  --teal-dim: #6690f5;
+  --teal-glow: rgba(59, 109, 240, 0.16);
+  --thread: #ef4444;
+  --thread-glow: rgba(239, 68, 68, 0.14);
+  --ok: #22c55e;
+  --info: #8b7fd6;
+
+  --radius: 10px;
+  --radius-sm: 4px;
+
+  --display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+* { box-sizing: border-box; }
 
-// ---------------------------------------------------------------------------
-// toasts
-// ---------------------------------------------------------------------------
-
-let toastStack = document.querySelector(".toast-stack");
-if (!toastStack) {
-  toastStack = document.createElement("div");
-  toastStack.className = "toast-stack";
-  document.body.appendChild(toastStack);
+body {
+  margin: 0;
+  background: var(--ink);
+  background-image:
+    radial-gradient(circle at 14% -8%, rgba(59, 109, 240, 0.16), transparent 42%),
+    radial-gradient(circle at 92% 6%, rgba(139, 127, 214, 0.10), transparent 40%);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-function showToast(message, type = "info", timeoutMs = 4000) {
-  const el = document.createElement("div");
-  el.className = `toast toast-${type}`;
-  el.textContent = message;
-  toastStack.appendChild(el);
-  setTimeout(() => {
-    el.classList.add("toast-leaving");
-    setTimeout(() => el.remove(), 200);
-  }, timeoutMs);
+/* A thin letterhead ribbon at the very top of the page — blue fading into
+   indigo, echoing an official case-file cover sheet in the new palette. */
+body::before {
+  content: ""; position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 500;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal) 40%, var(--info) 100%);
 }
 
-// Render's free tier sleeps after 15 min idle; the first request after that
-// can take 30-60s to wake up and may bounce with a 502/503/504 (or just
-// fail to connect) before the app is actually ready. Previously ANY failure
-// here — including that wake-up blip — was treated as "your session is
-// invalid" and silently logged the user out, which is what made the app
-// feel like it kept kicking back to the login screen. Only a genuine 401
-// from the server (bad/expired token) should ever log the user out; a cold
-// server gets retried instead.
-async function apiFetch(path, options = {}) {
-  const headers = options.headers || {};
-  if (TOKEN) headers["Authorization"] = `Bearer ${TOKEN}`;
-  const method = (options.method || "GET").toUpperCase();
-  const maxRetries = method === "GET" ? 4 : 1; // idempotent reads retry harder
-  let lastErr = null;
+::selection { background: var(--teal-glow); color: var(--text); }
+button, input, select, textarea { font-family: inherit; }
+a { color: inherit; }
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let res;
-    try {
-      res = await fetch(`${API}${path}`, { ...options, headers });
-    } catch (networkErr) {
-      lastErr = networkErr;
-      if (attempt < maxRetries) { await sleep(1200 * (attempt + 1)); continue; }
-      throw new Error("SERVER_UNREACHABLE");
-    }
-
-    if (res.status === 401) {
-      logout();
-      throw new Error("SESSION_EXPIRED");
-    }
-    if ([502, 503, 504].includes(res.status) && attempt < maxRetries) {
-      lastErr = new Error(`HTTP ${res.status}`);
-      await sleep(1200 * (attempt + 1));
-      continue;
-    }
-    return res;
-  }
-  throw new Error("SERVER_UNREACHABLE");
+:focus-visible {
+  outline: 2px solid var(--teal-dim); outline-offset: 2px; border-radius: 3px;
 }
 
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str ?? "";
-  return div.innerHTML;
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 20px; border: 2.5px solid var(--ink); }
+::-webkit-scrollbar-thumb:hover { background: var(--teal-dim); }
+* { scrollbar-color: var(--line) var(--ink); scrollbar-width: thin; }
+
+/* A small utility for calling out a key phrase or number inline — used
+   sparingly for the one or two things on a page that most deserve the
+   reader's eye first. */
+em.hl, .hl {
+  font-style: normal; font-weight: 700; color: var(--teal);
+  font-family: var(--display);
+}
+img { max-width: 100%; display: block; }
+
+/* ==================================================================
+   VIEW SWITCHING  (the actual bug lived here — do not reintroduce an
+   ID rule like `#view-login { display: block; }`. Visibility must be
+   controlled ONLY through the .view / .view.active class pair below,
+   or any view with higher CSS specificity will render permanently
+   regardless of what showView() does in app.js.)
+   ================================================================== */
+
+.view { display: none; min-height: 100vh; }
+.view.active { display: block; animation: view-in 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes view-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+.placeholder { color: var(--text-faint); font-style: italic; }
+.err { color: var(--thread); font-size: 13px; margin-top: 8px; }
+
+/* ---------------- buttons ---------------- */
+
+.primary-btn, .ghost-btn {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.primary-btn { background: var(--teal); color: #f8fafc; border: 1px solid var(--teal); box-shadow: 0 1px 2px rgba(2,6,20,0.15), 0 4px 14px rgba(59,109,240,0.18); }
+.primary-btn:hover { background: #2f5fe0; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(2,6,20,0.18), 0 8px 20px rgba(59,109,240,0.24); }
+.primary-btn:active { transform: translateY(0) scale(0.98); box-shadow: 0 1px 2px rgba(2,6,20,0.15); }
+.primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.primary-btn.full { width: 100%; margin-top: 6px; }
+
+.ghost-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--line); width: 100%; }
+.ghost-btn:hover { color: var(--text); border-color: var(--text-faint); }
+.ghost-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ghost-btn.small { width: auto; padding: 8px 16px; font-size: 12px; }
+
+/* ==================================================================
+   LANDING VIEW
+   ================================================================== */
+
+.landing-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 48px; max-width: 1240px; margin: 0 auto;
+}
+.landing-nav-links { display: flex; align-items: center; gap: 28px; }
+.landing-nav-links a { font-size: 13.5px; color: var(--text-muted); text-decoration: none; }
+.landing-nav-links a:hover { color: var(--text); }
+.landing-nav .primary-btn { width: auto; padding: 9px 18px; }
+
+.landing-hero {
+  display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center;
+  max-width: 1240px; margin: 0 auto; padding: 20px 48px 48px;
+}
+.landing-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); border: 1px solid var(--teal-dim);
+  background: var(--teal-glow); padding: 6px 12px; border-radius: 20px; margin-bottom: 16px;
+}
+.landing-eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+.landing-hero h1 {
+  font-family: var(--display); font-weight: 600; font-size: 40px; line-height: 1.14; letter-spacing: -0.01em;
+  margin: 0 0 16px; color: var(--text);
+}
+.landing-hero h1 em { color: var(--teal); font-style: normal; }
+.landing-lede { font-size: 15px; line-height: 1.6; color: var(--text-muted); max-width: 480px; margin: 0 0 24px; }
+.landing-cta-row { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+.landing-cta-row .primary-btn { width: auto; padding: 13px 26px; font-size: 14px; }
+.landing-cta-row .text-link { font-size: 13.5px; color: var(--text-muted); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.landing-cta-row .text-link:hover { color: var(--text); }
+
+.landing-trust { display: flex; flex-wrap: wrap; gap: 22px; }
+.landing-trust-item { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--text-faint); }
+.landing-trust-item svg { width: 15px; height: 15px; color: var(--teal-dim); flex-shrink: 0; }
+
+/* -- evidence-board hero illustration -- */
+.evidence-board {
+  position: relative; height: 380px; border-radius: 18px; overflow: visible;
+}
+.evidence-board .board-bg {
+  position: absolute; inset: 0; border: 1px solid var(--line);
+  border-radius: 18px; overflow: hidden;
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(160deg, rgba(4,9,22,0.88) 10%, rgba(4,9,22,0.55) 55%, rgba(4,9,22,0.85) 100%),
+    url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=70");
+  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
+}
+.ev-card {
+  position: absolute; width: 168px; background: var(--paper); color: var(--paper-ink);
+  border-radius: 3px; box-shadow: 0 14px 30px rgba(2,6,20,0.28); padding: 14px 14px 16px;
+}
+.ev-card .ev-tag {
+  position: absolute; top: -9px; left: 12px; background: var(--thread); color: #f8fafc;
+  font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.06em;
+  padding: 2px 7px; border-radius: 2px;
+}
+.ev-card .ev-title { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 8px 0 8px; }
+.ev-card .ev-line { height: 6px; border-radius: 2px; background: rgba(2,6,20,0.15); margin-bottom: 6px; }
+.ev-card .ev-line:nth-child(3) { width: 78%; }
+.ev-card .ev-pin { position: absolute; top: -7px; right: 14px; width: 12px; height: 12px; border-radius: 50%; background: var(--teal); border: 2px solid var(--panel); }
+
+.ev-card.c1 { top: 26px; left: 8px; transform: rotate(-4deg); }
+.ev-card.c2 { top: 64px; right: 6px; transform: rotate(3deg); width: 150px; }
+.ev-card.c3 { bottom: 96px; left: 54px; transform: rotate(2deg); }
+.ev-card.c4 { bottom: 24px; right: 30px; transform: rotate(-3deg); width: 150px; }
+
+.evidence-board svg.thread-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.thread-lines path { fill: none; stroke: var(--thread); stroke-width: 1.6; stroke-dasharray: 5 5; opacity: 0.75; }
+.thread-lines circle { fill: var(--thread); }
+
+@media (max-width: 980px) {
+  .landing-hero { grid-template-columns: 1fr; padding: 20px 24px 60px; }
+  .evidence-board { height: 320px; order: -1; }
+  .landing-nav { padding: 18px 22px; }
 }
 
-function fmtTime(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+.landing-strip {
+  border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+  background: var(--panel);
+}
+.landing-strip-inner {
+  max-width: 1240px; margin: 0 auto; padding: 16px 48px; display: grid;
+  grid-template-columns: repeat(4, 1fr); gap: 20px;
+}
+.strip-stat { display: flex; align-items: center; gap: 12px; }
+.strip-stat svg { width: 20px; height: 20px; color: var(--teal); flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.strip-stat-label { font-size: 12.5px; color: var(--text-muted); line-height: 1.35; }
+.strip-stat-label strong { display: block; color: var(--text); font-size: 13.5px; }
+
+.landing-section { max-width: 1240px; margin: 0 auto; padding: 56px 48px; }
+.landing-section.compact { padding: 44px 48px; }
+.landing-section-head { max-width: 560px; margin: 0 0 28px; }
+.landing-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--thread); margin-bottom: 8px; }
+.landing-section-head h2 { font-family: var(--display); font-size: 27px; font-weight: 600; margin: 0 0 10px; line-height: 1.2; }
+.landing-section-head p { color: var(--text-muted); font-size: 14px; line-height: 1.55; margin: 0; }
+
+.steps-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; counter-reset: step; }
+.step-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 18px; position: relative; }
+.step-card .step-index { font-family: var(--display); font-size: 26px; color: var(--line); font-weight: 600; line-height: 1; margin-bottom: 10px; }
+.step-card h3 { font-family: var(--display); font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+.step-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+.step-card .step-icon { width: 26px; height: 26px; padding: 6px; border-radius: 7px; background: var(--teal-glow); color: var(--teal); margin-bottom: 10px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.feature-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+.feature-card:hover { border-color: var(--teal-dim); transform: translateY(-3px); box-shadow: 0 10px 22px rgba(2,6,20,0.12); }
+.feature-card svg { width: 19px; height: 19px; color: var(--teal); fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 10px; }
+.feature-card h3 { font-family: var(--display); font-size: 14.5px; font-weight: 600; margin: 0 0 5px; }
+.feature-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+.photo-band {
+  position: relative; max-width: 1240px; margin: 0 auto; padding: 0 48px;
+}
+.photo-band-inner {
+  position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--line);
+  min-height: 190px; display: flex; align-items: flex-end;
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(0deg, rgba(4,9,22,0.92) 0%, rgba(4,9,22,0.35) 55%, rgba(4,9,22,0.08) 100%),
+    url("https://images.unsplash.com/photo-1758873268745-dd2cf0d677b5?auto=format&fit=crop&w=1600&q=70");
+  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
+}
+.photo-band-caption { padding: 22px 28px; max-width: 560px; }
+.photo-band-caption .landing-kicker { margin-bottom: 6px; }
+.photo-band-caption h3 { font-family: var(--display); font-size: 19px; font-weight: 600; margin: 0 0 6px; color: var(--text); }
+.photo-band-caption p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+@media (max-width: 900px) {
+  .photo-band { padding: 0 24px; }
+  .photo-band-inner { min-height: 170px; }
 }
 
-// ---------------------------------------------------------------------------
-// landing
-// ---------------------------------------------------------------------------
+.landing-cta-band {
+  background-color: var(--panel);
+  background-image:
+    linear-gradient(135deg, rgba(4,9,22,0.93) 0%, rgba(4,9,22,0.82) 55%, rgba(4,9,22,0.93) 100%),
+    url("https://images.unsplash.com/photo-1589994965851-a8f479c573a9?auto=format&fit=crop&w=1600&q=70");
+  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
+  border-top: 1px solid var(--line-soft);
+}
+.landing-cta-band-inner {
+  max-width: 900px; margin: 0 auto; padding: 44px 48px; text-align: center;
+}
+.landing-cta-band h2 { font-family: var(--display); font-size: 26px; margin: 0 0 10px; }
+.landing-cta-band p { color: var(--text-muted); font-size: 14px; margin: 0 0 22px; }
+.landing-cta-band .primary-btn { width: auto; padding: 13px 30px; font-size: 14px; }
 
-document.getElementById("landing-nav-signin").addEventListener("click", () => showView("login"));
-document.getElementById("landing-get-started").addEventListener("click", () => showView("login"));
-document.getElementById("landing-cta-signin").addEventListener("click", () => showView("login"));
-document.getElementById("login-back").addEventListener("click", () => showView("landing"));
-
-document.querySelectorAll(".demo-cred-row").forEach(row => {
-  row.addEventListener("click", () => {
-    document.getElementById("login-username").value = row.dataset.user;
-    document.getElementById("login-password").value = row.dataset.pass;
-    document.getElementById("login-error").textContent = "";
-  });
-});
-
-// ---------------------------------------------------------------------------
-// auth
-// ---------------------------------------------------------------------------
-
-document.getElementById("login-form").addEventListener("submit", async e => {
-  e.preventDefault();
-  const username = document.getElementById("login-username").value.trim();
-  const password = document.getElementById("login-password").value;
-  const errEl = document.getElementById("login-error");
-  const submitBtn = document.querySelector("#login-form button[type='submit']");
-  errEl.textContent = "";
-  submitBtn.disabled = true;
-
-  const maxAttempts = 6; // covers Render's ~30-60s cold-start window
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const res = await fetch(`${API}/auth/login`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if ([502, 503, 504].includes(res.status) && attempt < maxAttempts) {
-        errEl.textContent = `Server is waking up (Render free tier)… retrying (${attempt}/${maxAttempts})`;
-        await sleep(1500 * attempt);
-        continue;
-      }
-
-      const data = await res.json();
-      if (!res.ok) { errEl.textContent = data.detail || "Login failed."; break; }
-      TOKEN = data.token;
-      localStorage.setItem("case_ai_token", TOKEN);
-      ME = { username: data.username, role: data.role, name: data.display_name };
-      errEl.textContent = "";
-      enterApp();
-      break;
-    } catch {
-      if (attempt < maxAttempts) {
-        errEl.textContent = `Server is waking up (Render free tier)… retrying (${attempt}/${maxAttempts})`;
-        await sleep(1500 * attempt);
-        continue;
-      }
-      errEl.textContent = "Could not reach the server after several tries. Check your connection, or the Render service may be down — try again shortly.";
-    }
-  }
-  submitBtn.disabled = false;
-});
-
-function logout() {
-  TOKEN = null;
-  ME = null;
-  CURRENT_CASE_ID = null;
-  localStorage.removeItem("case_ai_token");
-  showView("login");
+.landing-footer {
+  padding: 18px 48px; display: flex; justify-content: space-between; color: var(--text-faint); font-size: 12px;
+  max-width: 1240px; margin: 0 auto;
 }
 
-document.getElementById("logout-btn-cases").addEventListener("click", logout);
-document.getElementById("logout-btn").addEventListener("click", logout);
-document.getElementById("back-to-cases").addEventListener("click", () => { CURRENT_CASE_ID = null; showView("cases"); loadCases(); });
-
-async function enterApp() {
-  const errEl = document.getElementById("login-error");
-  try {
-    const res = await apiFetch("/auth/me");
-    if (!res.ok) { logout(); return; }
-    ME = await res.json();
-  } catch (err) {
-    // apiFetch already called logout() itself for a real 401 (SESSION_EXPIRED).
-    // For anything else (server still waking up / unreachable), stay put and
-    // tell the user what's actually happening instead of silently dumping
-    // them back to a blank login form.
-    if (err.message !== "SESSION_EXPIRED" && errEl) {
-      errEl.textContent = "Server is waking up (Render free tier can take up to a minute after being idle). Please try signing in again.";
-    }
-    return;
-  }
-  document.getElementById("whoami").textContent = `${ME.name} · ${ME.role}`;
-  document.getElementById("whoami-workspace").textContent = ME.name;
-  const roleEl = document.getElementById("whoami-role-workspace");
-  if (roleEl) roleEl.textContent = ME.role;
-  const avatarEl = document.getElementById("whoami-avatar");
-  if (avatarEl) avatarEl.textContent = (ME.name || "?").trim().charAt(0).toUpperCase();
-  showView("cases");
-  loadCases();
+@media (max-width: 900px) {
+  .landing-strip-inner { grid-template-columns: repeat(2, 1fr); }
+  .steps-row { grid-template-columns: repeat(2, 1fr); }
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .landing-section { padding: 40px 24px; }
+  .landing-section.compact { padding: 32px 24px; }
+}
+@media (max-width: 560px) {
+  .steps-row, .feature-grid, .landing-strip-inner { grid-template-columns: 1fr; }
 }
 
-// ---------------------------------------------------------------------------
-// my cases
-// ---------------------------------------------------------------------------
+/* ==================================================================
+   LOGIN VIEW
+   (No display rule on the #view-login ID — visibility comes only
+   from the shared .view / .view.active rules above.)
+   ================================================================== */
 
-let ALL_CASES = [];
+.login-page { display: flex; min-height: 100vh; }
 
-async function loadCases() {
-  const grid = document.getElementById("case-grid");
-  grid.innerHTML = Array.from({ length: 3 }, () => '<div class="case-tile-skeleton"></div>').join("");
-  let cases;
-  try {
-    const res = await apiFetch("/cases");
-    cases = await res.json();
-  } catch (err) {
-    grid.innerHTML = "";
-    renderEmptyState(grid, "icon-alert", "Couldn't load cases",
-      err.message === "SERVER_UNREACHABLE" ? "The server may still be waking up — try again in a moment." : "Something went wrong loading your cases.");
-    return;
-  }
-  ALL_CASES = cases;
-  renderCaseGrid(cases);
+.login-hero {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 60px; position: relative; overflow: hidden;
+  background: linear-gradient(160deg, var(--panel) 0%, var(--ink) 65%);
+  border-right: 1px solid var(--line-soft);
+}
+.login-hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 20% 15%, rgba(59,109,240,0.07), transparent 50%),
+              radial-gradient(circle at 85% 85%, rgba(239,68,68,0.05), transparent 45%);
+  pointer-events: none;
+}
+.login-hero-inner { max-width: 380px; position: relative; z-index: 1; }
+.login-back { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-faint); text-decoration: none; margin-bottom: 30px; cursor: pointer; }
+.login-back:hover { color: var(--text-muted); }
+.hero-illustration { width: 56px; height: 56px; color: var(--teal); margin-bottom: 24px; }
+.login-hero h2 { font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1.3; margin: 0 0 14px; color: var(--text); }
+.hero-lede { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 0 0 30px; }
+.hero-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 17px; }
+.hero-features li { display: flex; align-items: flex-start; gap: 12px; font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+.hf-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--teal-dim); margin-top: 1px; }
+
+.login-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+.login-card {
+  width: 380px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 40px 36px;
+  text-align: center;
+}
+.case-mark-glyph.big {
+  font-family: var(--display); font-size: 34px; font-weight: 600; color: #f8fafc;
+  width: 62px; height: 62px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
+  background: radial-gradient(circle at 32% 28%, #6690f5 0%, var(--teal) 55%, #14213d 100%);
+  box-shadow:
+    0 3px 8px rgba(2,6,20,0.35),
+    0 10px 22px rgba(59,109,240,0.28),
+    inset 0 1px 1px rgba(255,255,255,0.28),
+    inset 0 -3px 6px rgba(0,0,0,0.25);
+}
+.login-card h1 { font-family: var(--display); font-size: 23px; font-weight: 600; margin: 0 0 4px; }
+.login-card .sub { color: var(--text-muted); font-size: 13px; margin-bottom: 26px; }
+#login-form { text-align: left; display: flex; flex-direction: column; gap: 14px; }
+#login-form label { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; }
+#login-form input {
+  background: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 10px 12px; color: var(--text); font-size: 14px;
+}
+#login-form input:focus { outline: none; border-color: var(--teal-dim); }
+
+.demo-creds { margin-top: 26px; border-top: 1px solid var(--line-soft); padding-top: 16px; text-align: left; }
+.demo-creds-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin-bottom: 8px; }
+.demo-creds table { width: 100%; font-family: var(--mono); font-size: 11px; color: var(--text-muted); border-collapse: collapse; }
+.demo-creds td { padding: 5px 4px; }
+.demo-creds td:last-child { text-align: right; color: var(--teal-dim); }
+.demo-cred-row { cursor: pointer; border-radius: 4px; transition: background 0.12s ease; }
+.demo-cred-row:hover { background: var(--teal-glow); }
+.demo-cred-row:hover td:first-child { color: var(--text); }
+.demo-creds-note { font-size: 10.5px; color: var(--text-faint); margin: 10px 0 0; line-height: 1.45; }
+
+@media (max-width: 860px) {
+  .login-hero { display: none; }
 }
 
-function renderCaseGrid(cases) {
-  const grid = document.getElementById("case-grid");
-  grid.innerHTML = "";
-  if (cases.length === 0) {
-    const isFiltered = document.getElementById("case-search").value.trim().length > 0;
-    renderEmptyState(grid, isFiltered ? "icon-list" : "icon-folder",
-      isFiltered ? "No matching cases" : "No investigations yet",
-      isFiltered ? "Try a different search term." : "Create your first case to start uploading documents.");
-    return;
-  }
-  cases.forEach(c => grid.appendChild(caseTile(c)));
+/* ---------------- my cases ---------------- */
+
+.cases-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 40px; border-bottom: 1px solid var(--line-soft); background: var(--panel);
+}
+.cases-content { padding: 40px; max-width: 1100px; margin: 0 auto; }
+
+.cases-actions { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.case-search-input {
+  flex: 1; min-width: 220px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 14px; color: var(--text); font-size: 13.5px;
+  transition: border-color 0.12s ease;
+}
+.case-search-input:focus { outline: none; border-color: var(--teal-dim); }
+.case-search-input::placeholder { color: var(--text-faint); }
+
+.case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.case-tile-skeleton {
+  height: 148px; border-radius: var(--radius); background: linear-gradient(100deg, var(--panel) 40%, var(--panel-raised) 50%, var(--panel) 60%);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite; border: 1px solid var(--line);
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.case-tile {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.case-tile:hover { border-color: var(--teal-dim); transform: translateY(-3px); box-shadow: 0 10px 24px rgba(2,6,20,0.18); }
+.case-tile-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+.case-tile-id { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+.priority-pill { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; letter-spacing: 0.03em; }
+.priority-high { background: var(--thread-glow); color: var(--thread); }
+.priority-medium { background: var(--teal-glow); color: var(--teal); }
+.priority-low { background: rgba(34,197,94,0.13); color: var(--ok); }
+.case-tile-title { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+.case-tile-type { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.case-tile-foot { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--line-soft); padding-top: 10px; margin-top: 10px; }
+
+/* ---------------- modal ---------------- */
+
+.modal-backdrop {
+  display: none; position: fixed; inset: 0; background: rgba(4,9,22,0.74);
+  align-items: center; justify-content: center; z-index: 100;
+}
+.modal-backdrop.active { display: flex; animation: modal-fade 0.18s ease; }
+@keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+.modal-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 28px 30px; width: 420px; max-height: 82vh; overflow-y: auto;
+  animation: modal-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes modal-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-card.wide { width: 620px; }
+.modal-card h2 { font-family: var(--display); font-weight: 600; margin: 0 0 18px; }
+#new-case-form { display: flex; flex-direction: column; gap: 14px; }
+#new-case-form label { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; }
+#new-case-form input, #new-case-form select, #new-case-form textarea {
+  background: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 9px 11px; color: var(--text); font-size: 13.5px; resize: vertical;
+  transition: border-color 0.12s ease;
+}
+#new-case-form input:focus, #new-case-form select:focus, #new-case-form textarea:focus {
+  outline: none; border-color: var(--teal-dim);
+}
+.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.modal-actions .ghost-btn, .modal-actions .primary-btn { width: auto; }
+
+/* ---------------- toasts ---------------- */
+
+.toast-stack {
+  position: fixed; bottom: 22px; right: 22px; z-index: 300;
+  display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto; display: flex; align-items: center; gap: 10px;
+  background: var(--panel-raised); border: 1px solid var(--line); border-left: 3px solid var(--info);
+  border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: var(--text);
+  box-shadow: 0 10px 30px rgba(2,6,20,0.22); max-width: 340px; line-height: 1.4;
+  animation: toast-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.toast.toast-success { border-left-color: var(--ok); }
+.toast.toast-error { border-left-color: var(--thread); }
+.toast.toast-leaving { animation: toast-out 0.18s ease forwards; }
+@keyframes toast-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-out { to { opacity: 0; transform: translateX(24px); } }
+
+/* ---------------- spinner / loading states ---------------- */
+
+.spinner {
+  display: inline-block; width: 13px; height: 13px; border-radius: 50%;
+  border: 2px solid var(--line); border-top-color: var(--teal);
+  animation: spin 0.7s linear infinite; flex-shrink: 0; vertical-align: -2px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-line { display: flex; align-items: center; gap: 10px; color: var(--text-faint); font-style: italic; font-size: 13.5px; padding: 4px 0; }
+
+/* ---------------- empty states ---------------- */
+
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-faint); }
+.graph-detail .empty-state { padding: 28px 16px; }
+.empty-state svg { width: 34px; height: 34px; color: var(--text-faint); opacity: 0.6; margin-bottom: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.empty-state-title { font-family: var(--display); font-size: 16px; color: var(--text-muted); margin-bottom: 6px; }
+.empty-state-sub { font-size: 12.5px; max-width: 320px; margin: 0 auto; line-height: 1.5; }
+
+
+/* ---------------- sidebar / folder tabs ---------------- */
+
+.app { display: flex; min-height: 100vh; }
+
+.folder-nav {
+  width: 240px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+}
+.case-mark { display: flex; align-items: center; gap: 12px; padding: 24px 20px; border-bottom: 1px solid var(--line-soft); }
+.case-mark.clickable { cursor: pointer; }
+.case-mark-glyph {
+  font-family: var(--display); font-size: 17px; font-weight: 600; color: #f8fafc;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 32% 28%, #6690f5 0%, var(--teal) 55%, #14213d 100%);
+  box-shadow: 0 2px 5px rgba(2,6,20,0.3), inset 0 1px 1px rgba(255,255,255,0.25), inset 0 -2px 4px rgba(0,0,0,0.22);
+}
+.case-mark-title { font-size: 11px; letter-spacing: 0.12em; color: var(--text-muted); font-weight: 600; }
+.case-mark-id { font-family: var(--mono); font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+.tabs { display: flex; flex-direction: column; padding: 16px 0; flex: 1; overflow-y: auto; }
+.nav-group-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-faint); padding: 14px 20px 6px; font-weight: 600;
+}
+.nav-group-label:first-child { padding-top: 4px; }
+.tab {
+  display: flex; align-items: flex-start; gap: 10px; background: transparent; border: none;
+  border-left: 2px solid transparent; color: var(--text-muted); text-align: left; padding: 9px 20px;
+  font-size: 13.5px; cursor: pointer; transition: background 0.12s ease, color 0.12s ease;
+}
+.tab:hover { background: var(--panel-raised); color: var(--text); }
+.tab.active { color: var(--teal); background: var(--teal-glow); border-left-color: var(--teal); }
+.tab-num { font-family: var(--mono); font-size: 10px; color: var(--text-faint); width: 16px; margin-top: 1px; }
+.tab.active .tab-num { color: var(--teal-dim); }
+.tab-icon { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+.tab.active .tab-icon { opacity: 1; }
+.tab-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tab-title { font-weight: 600; color: var(--text); line-height: 1.3; }
+.tab.active .tab-title { color: var(--teal); }
+.tab-desc { font-size: 10.5px; color: var(--text-faint); line-height: 1.3; }
+.tab.active .tab-desc { color: var(--teal-dim); }
+
+.nav-footer { padding: 14px 16px 18px; border-top: 1px solid var(--line-soft); }
+.whoami-badge { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; font-family: var(--mono); }
+
+.whoami-pill {
+  display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--radius);
+  background: var(--panel-raised); border: 1px solid var(--line-soft); margin-bottom: 10px;
+}
+.whoami-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; font-family: var(--display); font-weight: 700; font-size: 13px; color: #f8fafc;
+  background: radial-gradient(circle at 32% 28%, #6690f5 0%, var(--teal) 55%, #14213d 100%);
+}
+.whoami-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.whoami-name { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.whoami-role { font-size: 10.5px; color: var(--text-faint); text-transform: capitalize; }
+.nav-footer-actions { display: flex; }
+.nav-footer-actions .ghost-btn { width: 100%; }
+
+/* ---------------- persistent case context header ---------------- */
+
+.case-context-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  padding: 16px 0 18px; margin-bottom: 24px; border-bottom: 1px solid var(--line-soft);
+  position: sticky; top: 0; background: var(--ink); z-index: 20;
+}
+.ccb-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ccb-title-row h2 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0; }
+.ccb-id { font-family: var(--mono); font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+.ccb-pill { font-size: 10px; font-weight: 600; letter-spacing: 0.03em; padding: 2px 9px; border-radius: 10px; text-transform: capitalize; }
+.ccb-status.status-active { background: rgba(34,197,94,0.13); color: var(--ok); }
+.ccb-status.status-under-review { background: var(--teal-glow); color: var(--teal); }
+.ccb-status.status-closed { background: var(--panel-raised); color: var(--text-faint); }
+.ccb-priority.priority-high { background: var(--thread-glow); color: var(--thread); }
+.ccb-priority.priority-medium { background: var(--teal-glow); color: var(--teal); }
+.ccb-priority.priority-low { background: rgba(34,197,94,0.13); color: var(--ok); }
+.ccb-stats { display: flex; gap: 22px; }
+.ccb-stat { display: flex; flex-direction: column; align-items: flex-end; }
+.ccb-stat-num { font-family: var(--display); font-weight: 700; font-size: 17px; line-height: 1.1; }
+.ccb-stat-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.ccb-stat-warn .ccb-stat-num { color: var(--thread); }
+@media (max-width: 700px) {
+  .case-context-bar { position: static; }
+  .ccb-stats { gap: 14px; }
 }
 
-function renderEmptyState(container, icon, title, sub) {
-  container.innerHTML = `
-    <div class="empty-state" style="grid-column:1/-1">
-      <svg viewBox="0 0 24 24"><use href="#${icon}"/></svg>
-      <div class="empty-state-title">${escapeHtml(title)}</div>
-      <div class="empty-state-sub">${escapeHtml(sub)}</div>
-    </div>`;
+/* ---------------- content ---------------- */
+
+.content { flex: 1; padding: 40px 56px 80px; max-width: 1020px; }
+.panel { display: none; }
+.panel.active { display: block; animation: panel-in 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes panel-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.panel-head { margin-bottom: 28px; }
+.panel-head h1 { font-family: var(--display); font-weight: 600; font-size: 27px; margin: 0 0 6px; letter-spacing: -0.005em; position: relative; padding-left: 15px; }
+.panel-head h1::before {
+  content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px;
+  background: linear-gradient(180deg, var(--teal) 0%, var(--thread) 100%);
+}
+.sub { color: var(--text-muted); font-size: 14px; margin: 0; }
+.section-label {
+  font-family: var(--mono); font-size: 11px; color: var(--text-faint); text-transform: uppercase;
+  letter-spacing: 0.08em; margin: 26px 0 12px; font-weight: 400;
 }
 
-document.getElementById("case-search").addEventListener("input", debounce(e => {
-  const q = e.target.value.trim().toLowerCase();
-  if (!q) { renderCaseGrid(ALL_CASES); return; }
-  const filtered = ALL_CASES.filter(c =>
-    (c.title || "").toLowerCase().includes(q) ||
-    (c.id || "").toLowerCase().includes(q) ||
-    (c.investigating_officer || "").toLowerCase().includes(q) ||
-    (c.case_type || "").toLowerCase().includes(q)
-  );
-  renderCaseGrid(filtered);
-}, 200));
+/* ---------------- dashboard ---------------- */
 
-function caseTile(c) {
-  const el = document.createElement("div");
-  el.className = "case-tile";
-  const pClass = `priority-${(c.priority || "medium").toLowerCase()}`;
-  el.innerHTML = `
-    <div class="case-tile-top">
-      <span class="case-tile-id">${escapeHtml(c.id)}</span>
-      <span class="priority-pill ${pClass}">${escapeHtml(c.priority)}</span>
-    </div>
-    <div class="case-tile-title">${escapeHtml(c.title)}</div>
-    <div class="case-tile-type">${escapeHtml(c.case_type)} · ${escapeHtml(c.status)}</div>
-    <div class="case-tile-foot">
-      <span>${c.document_count} documents</span>
-      <span>${escapeHtml(c.investigating_officer || c.created_by)}</span>
-    </div>
-  `;
-  el.addEventListener("click", () => openCase(c.id));
-  return el;
+.dash-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.dash-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 20px 0 26px; }
+.dash-custom-report { margin-left: auto; }
+
+.insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.insight-card {
+  background: var(--panel-raised); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 22px;
+  display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(2,6,20,0.06), 0 6px 16px rgba(2,6,20,0.05);
+}
+.insight-card h3 { font-family: var(--display); font-size: 16px; font-weight: 600; margin: 0 0 3px; }
+.insight-card .sub { font-size: 12px; margin-bottom: 16px; }
+.insight-card .ghost-btn.full { margin-top: auto; }
+
+.donut-row { display: flex; align-items: center; gap: 20px; margin-bottom: 18px; }
+.donut { width: 108px; height: 108px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; }
+.donut::before { content: ""; position: absolute; inset: 15px; border-radius: 50%; background: var(--panel-raised); }
+.donut-hole { position: relative; text-align: center; z-index: 1; }
+.donut-hole strong { display: block; font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--text); }
+.donut-hole span { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+.donut-legend { list-style: none; margin: 0; padding: 0; font-size: 12.5px; color: var(--text-muted); flex: 1; }
+.donut-legend li { display: flex; align-items: center; gap: 8px; padding: 3px 0; justify-content: space-between; }
+.donut-legend .legend-key { display: flex; align-items: center; gap: 8px; }
+.donut-legend .legend-swatch { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.donut-legend .legend-count { font-family: var(--mono); color: var(--text); font-weight: 600; }
+
+.relationship-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; flex: 1; }
+.relationship-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-muted); }
+.relationship-row .rel-bar { width: 22px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+.relationship-row .rel-label { flex: 1; }
+.relationship-row .rel-count { font-family: var(--mono); color: var(--text); font-weight: 600; }
+
+.gauge-wrap { text-align: center; margin-bottom: 18px; }
+.gauge-svg { width: 100%; max-width: 190px; height: auto; }
+
+.activity-chart-wrap { margin-bottom: 18px; flex: 1; }
+.activity-svg { width: 100%; height: auto; display: block; }
+.activity-axis { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-faint); margin-top: 6px; font-family: var(--mono); }
+.activity-axis span:nth-child(2) { color: var(--text-muted); font-family: var(--sans); }
+
+.vault-type-chart { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.vault-type-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel-raised); font-size: 12px; color: var(--text-muted);
+}
+.vault-type-pill .pill-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.vault-type-pill .pill-count { font-family: var(--mono); font-weight: 600; color: var(--text); }
+.gauge-label strong { display: block; font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--ok); margin-top: -30px; }
+.gauge-label span { font-size: 12px; color: var(--text-muted); }
+.gauge-note {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; padding: 10px 12px;
+  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); border-radius: var(--radius-sm);
+  font-size: 12px; color: var(--ok); text-align: left;
+}
+.gauge-note svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+
+.ai-summary-bar {
+  display: flex; align-items: center; gap: 14px; background: var(--panel-raised); border: 1px solid var(--teal-dim);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.ai-summary-bar > svg { color: var(--teal); flex-shrink: 0; }
+.ai-summary-text { flex: 1; min-width: 200px; }
+.ai-summary-text strong { display: block; font-family: var(--display); font-size: 13.5px; margin-bottom: 2px; }
+.ai-summary-text p { margin: 0; font-size: 12.5px; color: var(--text-muted); }
+
+.reviewer-tip {
+  display: flex; align-items: center; gap: 14px; background: var(--panel-raised); border: 1px dashed var(--thread);
+  border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: var(--text-muted); line-height: 1.5;
+}
+.reviewer-tip svg { width: 20px; height: 20px; color: var(--thread); flex-shrink: 0; }
+
+.quick-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.quick-action {
+  display: flex; align-items: center; gap: 9px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text);
+  cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.qa-icon, .quick-action svg { width: 16px !important; height: 16px !important; color: var(--teal); fill: none !important; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.quick-action:hover { border-color: var(--teal-dim); background: var(--panel-raised); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(2,6,20,0.14); }
+.quick-action:active { transform: translateY(0) scale(0.98); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+.stat-tile {
+  background: var(--panel-raised); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 20px;
+  box-shadow: 0 1px 2px rgba(2,6,20,0.06), 0 6px 16px rgba(2,6,20,0.05);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.stat-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(2,6,20,0.08), 0 10px 22px rgba(2,6,20,0.09); }
+.stat-icon-box {
+  width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px; background: var(--teal-glow);
+}
+.stat-tile:hover { border-color: var(--teal-dim); transform: translateY(-2px); }
+.stat-icon { width: 19px; height: 19px; color: var(--teal-dim); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.stat-num { font-family: var(--display); font-weight: 700; font-size: 30px; color: var(--teal); }
+.stat-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+.stat-caption { font-size: 11px; color: var(--text-muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft); }
+.stat-tile.tone-gold .stat-icon, .stat-tile.tone-gold .stat-num { color: var(--teal); }
+.stat-tile.tone-gold .stat-icon-box { background: var(--teal-glow); }
+.stat-tile.tone-gold-dim .stat-icon, .stat-tile.tone-gold-dim .stat-num { color: var(--teal-dim); }
+.stat-tile.tone-gold-dim .stat-icon-box { background: rgba(102,144,245,0.12); }
+.stat-tile.tone-info .stat-icon, .stat-tile.tone-info .stat-num { color: var(--info); }
+.stat-tile.tone-info .stat-icon-box { background: rgba(139,127,214,0.12); }
+.stat-tile.tone-ok .stat-icon, .stat-tile.tone-ok .stat-num { color: var(--ok); }
+.stat-tile.tone-ok .stat-icon-box { background: rgba(34,197,94,0.12); }
+.stat-tile.tone-rose .stat-icon, .stat-tile.tone-rose .stat-num { color: var(--thread); }
+.stat-tile.tone-rose .stat-icon-box { background: var(--thread-glow); }
+.activity-row {
+  display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
+}
+.activity-time { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); white-space: nowrap; min-width: 150px; }
+.activity-user { color: var(--teal); font-weight: 600; }
+
+/* ---------------- dropzone ---------------- */
+
+.dropzone {
+  display: block; border: 1px dashed var(--line); border-radius: var(--radius); padding: 28px;
+  cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; margin-bottom: 20px;
+}
+.dropzone:hover, .dropzone.drag { border-color: var(--teal-dim); background: var(--teal-glow); }
+.dropzone-inner { display: flex; align-items: center; gap: 16px; }
+.dropzone-glyph { font-size: 22px; color: var(--teal); font-family: var(--display); }
+.muted { color: var(--text-faint); font-size: 12px; margin-top: 3px; }
+
+#upload-status { margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+#processing-pipeline { font-family: var(--mono); font-size: 11.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.9; }
+#processing-pipeline .step-done::before { content: "✓ "; color: var(--ok); }
+
+.vault-controls { display: flex; gap: 10px; margin-bottom: 18px; }
+.vault-controls input, .vault-controls select {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 9px 12px; color: var(--text); font-size: 13px;
+}
+.vault-controls input { flex: 1; }
+
+/* ---------------- exhibit cards ---------------- */
+
+.exhibit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.exhibit-card {
+  position: relative; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 16px 16px; cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.exhibit-card:hover { border-color: var(--teal-dim); transform: translateY(-2px); }
+.exhibit-tag {
+  position: absolute; top: -10px; left: 14px; background: var(--thread); color: #f8fafc;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  padding: 2px 8px; border-radius: 2px; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(2,6,20,0.22);
+}
+.exhibit-name { font-family: var(--display); font-weight: 600; font-size: 16px; margin: 14px 0 4px; word-break: break-word; }
+.exhibit-type { display: inline-block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px; }
+.exhibit-summary { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 12px; }
+.exhibit-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.exhibit-meta { font-family: var(--mono); font-size: 10px; color: var(--text-faint); }
+.remove-btn { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 12px; }
+.remove-btn:hover { color: var(--thread); }
+
+.file-badge {
+  position: absolute; top: 14px; right: 14px; font-family: var(--mono); font-size: 9.5px;
+  font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 7px;
+  border-radius: 4px; background: var(--panel-raised); color: var(--text-faint); border: 1px solid var(--line);
+}
+.file-badge-pdf { color: var(--thread); border-color: var(--thread-glow); background: var(--thread-glow); }
+.file-badge-md, .file-badge-txt { color: var(--teal); border-color: var(--teal-glow); background: var(--teal-glow); }
+
+/* doc detail modal content */
+.doc-hash { font-family: var(--mono); font-size: 11px; color: var(--teal-dim); word-break: break-all; }
+.custody-chain { position: relative; padding-left: 22px; margin-top: 14px; }
+.custody-chain::before { content: ""; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 1px; background: var(--line); }
+.custody-item { position: relative; padding-bottom: 16px; font-size: 12.5px; }
+.custody-item::before { content: ""; position: absolute; left: -19px; top: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); border: 2px solid var(--teal); }
+.custody-time { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); }
+
+/* ---------------- generic card / prose ---------------- */
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 28px; }
+.prose { font-size: 14.5px; line-height: 1.7; color: var(--text); }
+.prose p { margin: 0 0 14px; }
+.prose h1, .prose h2, .prose h3 { font-family: var(--display); font-weight: 600; color: var(--teal); margin: 22px 0 10px; }
+.prose h1:first-child, .prose h2:first-child { margin-top: 0; }
+.prose ul { padding-left: 20px; }
+.prose li { margin-bottom: 6px; }
+.prose code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-raised); padding: 1px 5px; border-radius: 2px; }
+
+/* ---------------- timeline ---------------- */
+
+.timeline-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.timeline-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.timeline-filters { display: flex; gap: 10px; flex-wrap: wrap; }
+.timeline-select {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 8px 30px 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text); cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236e6242' stroke-width='2'%3E%3Cpath d='M5 8l7 7 7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
+}
+.timeline-select:focus { outline: none; border-color: var(--teal-dim); }
+.timeline-toolbar-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.timeline-hint { font-size: 12px; color: var(--text-faint); }
+.view-toggle { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
+.view-toggle-btn { background: transparent; border: none; padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: var(--text-muted); border-radius: 3px; cursor: pointer; transition: background 0.12s ease, color 0.12s ease; }
+.view-toggle-btn.active { background: var(--panel-raised); color: var(--teal); box-shadow: 0 1px 3px rgba(2,6,20,0.15); }
+
+.timeline-list { position: relative; padding-left: 46px; }
+.timeline-list::before { content: ""; position: absolute; left: 17px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.timeline-item {
+  position: relative; padding: 16px 18px; margin-bottom: 14px; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.timeline-item:hover { border-color: var(--teal-dim); transform: translateX(2px); box-shadow: 0 4px 14px rgba(2,6,20,0.12); }
+.timeline-marker {
+  position: absolute; left: -46px; top: 14px; width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(2,6,20,0.25), inset 0 1px 1px rgba(255,255,255,0.25);
+}
+.timeline-marker svg { width: 16px; height: 16px; color: #f8fafc; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.timeline-row { display: flex; align-items: flex-start; gap: 16px; }
+.timeline-date-badge { flex-shrink: 0; width: 54px; text-align: center; }
+.timeline-date-year { font-size: 10px; color: var(--text-faint); font-family: var(--mono); }
+.timeline-date-day { font-family: var(--display); font-weight: 700; font-size: 22px; color: var(--teal); line-height: 1.1; }
+.timeline-date-month { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.timeline-body-text { flex: 1; min-width: 0; }
+.timeline-desc { font-size: 14px; color: var(--text); margin-bottom: 8px; line-height: 1.5; }
+.timeline-source-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.timeline-source { font-size: 11px; color: var(--text-faint); display: inline-flex; align-items: center; gap: 5px; }
+.timeline-source svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.evidence-pill {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600;
+  padding: 3px 9px; border-radius: 20px; background: var(--teal-glow); color: var(--teal); border: 1px solid var(--teal-dim);
+}
+.evidence-pill svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; }
+.gap-marker { margin: -6px 0 14px 46px; padding: 4px 12px; border-left: 2px dashed var(--line); font-size: 11.5px; color: var(--text-faint); font-style: italic; }
+
+.timeline-list.is-list-view { padding-left: 28px; }
+.timeline-list.is-list-view::before { left: 8px; }
+.timeline-list.is-list-view .timeline-item { padding: 0 0 22px; margin-bottom: 0; background: none; border: none; }
+.timeline-list.is-list-view .timeline-item:hover { transform: none; box-shadow: none; }
+.timeline-list.is-list-view .timeline-marker { display: none; }
+.timeline-list.is-list-view .timeline-row { display: block; }
+.timeline-list.is-list-view .timeline-date-badge { display: none; }
+.timeline-list.is-list-view .timeline-item::before {
+  content: ""; position: absolute; left: -22px; top: 5px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--ink); border: 2px solid var(--teal);
+}
+.timeline-list.is-list-view .timeline-date-inline { display: block; font-family: var(--mono); font-size: 11.5px; color: var(--teal); margin-bottom: 4px; }
+.timeline-date-inline { display: none; }
+@media (max-width: 700px) {
+  .timeline-list { padding-left: 0; }
+  .timeline-list::before { display: none; }
+  .timeline-marker { position: static; margin-bottom: 10px; }
+  .timeline-row { flex-direction: column; }
 }
 
-const newCaseModal = document.getElementById("new-case-modal");
-document.getElementById("new-case-btn").addEventListener("click", () => newCaseModal.classList.add("active"));
-document.getElementById("nc-cancel").addEventListener("click", () => newCaseModal.classList.remove("active"));
+/* ---------------- graph ---------------- */
 
-// Close modals on backdrop click or Escape — applies to every .modal-backdrop in the app.
-document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
-  backdrop.addEventListener("click", e => { if (e.target === backdrop) backdrop.classList.remove("active"); });
-});
-document.addEventListener("keydown", e => {
-  if (e.key !== "Escape") return;
-  document.querySelectorAll(".modal-backdrop.active").forEach(m => m.classList.remove("active"));
-});
+.graph-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.graph-hint { font-size: 11.5px; color: var(--text-faint); margin-bottom: 10px; }
+.graph-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none; }
+.graph-toggle input { accent-color: var(--teal); cursor: pointer; width: 14px; height: 14px; }
 
-document.getElementById("new-case-form").addEventListener("submit", async e => {
-  e.preventDefault();
-  const payload = {
-    title: document.getElementById("nc-title").value.trim(),
-    case_type: document.getElementById("nc-type").value,
-    description: document.getElementById("nc-description").value,
-    investigating_officer: document.getElementById("nc-officer").value,
-    status: document.getElementById("nc-status").value,
-    priority: document.getElementById("nc-priority").value,
-  };
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Creating…";
-  let res, data;
-  try {
-    res = await apiFetch("/cases", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
-    });
-    data = await res.json();
-  } catch (err) {
-    showToast(err.message === "SERVER_UNREACHABLE" ? "Could not reach the server — try again in a moment." : "Something went wrong. Please try again.", "error");
-    submitBtn.disabled = false; submitBtn.textContent = "Create Case";
-    return;
-  }
-  if (!res.ok) {
-    showToast(data.detail || "Could not create case.", "error");
-    submitBtn.disabled = false; submitBtn.textContent = "Create Case";
-    return;
-  }
-  submitBtn.disabled = false; submitBtn.textContent = "Create Case";
-  newCaseModal.classList.remove("active");
-  e.target.reset();
-  openCase(data.id);
-});
+.graph-layout { display: flex; gap: 16px; align-items: flex-start; }
+.graph-canvas {
+  flex: 1; min-width: 0; height: 560px; border-radius: var(--radius); position: relative;
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(2,6,20,0.06), 0 6px 16px rgba(2,6,20,0.05);
+  background-color: var(--panel-raised);
+  background-image: radial-gradient(rgba(110,98,66,0.16) 1.4px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+#graph-table-wrap { flex: 1; min-width: 0; max-height: 560px; overflow: auto; }
 
-document.getElementById("demo-case-btn").addEventListener("click", async e => {
-  const btn = e.currentTarget;
-  btn.disabled = true;
-  btn.textContent = "Loading demo case…";
-  try {
-    const res = await apiFetch("/cases/demo", { method: "POST" });
-    const data = await res.json();
-    if (!res.ok) {
-      showToast(data.detail || "Could not load the demo case.", "error");
-      return;
-    }
-    showToast("Demo case loaded — fully analyzed, nothing to upload.", "success");
-    openCase(data.case_id);
-  } catch (err) {
-    showToast(err.message === "SERVER_UNREACHABLE" ? "Could not reach the server — try again in a moment." : "Something went wrong. Please try again.", "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "✨ Load Demo Case";
-  }
-});
+.graph-detail {
+  width: 300px; flex-shrink: 0; background: var(--panel-raised); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); padding: 20px; height: 560px; overflow-y: auto;
+  box-shadow: 0 1px 2px rgba(2,6,20,0.06), 0 6px 16px rgba(2,6,20,0.05);
+}
+.graph-detail .placeholder { font-size: 13px; }
+.detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.detail-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(2,6,20,0.2); }
+.detail-name { font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--text); }
+.detail-type { font-size: 11.5px; color: var(--text-faint); text-transform: capitalize; }
+.detail-section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin: 18px 0 8px; font-weight: 600; }
+.detail-about { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+.rel-line { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.rel-line:last-child { border-bottom: none; }
+.rel-line .rel-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rel-line .rel-verb { color: var(--text-muted); }
+.rel-line .rel-target { color: var(--teal); font-weight: 600; cursor: pointer; margin-left: auto; text-align: right; }
+.rel-line .rel-target:hover { text-decoration: underline; }
+.evidence-line { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 0; color: var(--text-muted); }
+.evidence-line svg { width: 13px; height: 13px; color: var(--text-faint); fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
 
-// ---------------------------------------------------------------------------
-// workspace entry
-// ---------------------------------------------------------------------------
+.legend-icon { width: 15px; height: 15px; border-radius: 50%; display: inline-block; vertical-align: middle; box-shadow: 0 0 0 1px rgba(2,6,20,0.3); }
+.graph-legend { display: flex; gap: 18px; margin-top: 12px; font-size: 11.5px; color: var(--text-muted); flex-wrap: wrap; }
+.graph-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(2,6,20,0.3); }
+.legend-line { width: 16px; height: 2px; display: inline-block; border-radius: 1px; }
 
-const tabs = document.querySelectorAll(".tab");
-const panels = document.querySelectorAll(".panel");
-const loadedTabs = new Set();
+.graph-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.graph-table th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); padding: 10px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel-raised); }
+.graph-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); color: var(--text); vertical-align: top; }
+.graph-table tr:hover td { background: var(--teal-glow); }
+.graph-table .rel-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    panels.forEach(p => p.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
-    window.scrollTo({ top: 0, behavior: "auto" });
-    onTabShown(tab.dataset.tab);
-  });
-});
-
-function onTabShown(name) {
-  if (name === "dashboard") return loadDashboard();
-  if (name === "intelligence") return onIntelSubtabShown(currentIntelSubtab);
-  if (loadedTabs.has(name)) return;
-  if (name === "timeline") loadTimeline();
-  if (name === "graph") loadGraph();
-  if (name === "similar") loadSimilar();
-  if (name === "audit") loadAudit();
+@media (max-width: 900px) {
+  .graph-layout { flex-direction: column; }
+  .graph-detail { width: 100%; height: auto; max-height: 320px; }
 }
 
-document.querySelectorAll("[data-goto]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelector(`.tab[data-tab="${btn.dataset.goto}"]`)?.click();
-  });
-});
+/* ---------------- contradictions ---------------- */
 
-// ---------------------------------------------------------------------------
-// case intelligence (merged: summary, contradictions, arguments, chat)
-// ---------------------------------------------------------------------------
+.contradiction-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--thread); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
+.contradiction-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.conflict-type-pill { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; background: var(--thread-glow); color: var(--thread); padding: 2px 8px; border-radius: 10px; }
+.confidence-pill { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); }
+.contradiction-pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: start; margin-bottom: 12px; }
+.contradiction-claim { font-size: 13.5px; line-height: 1.5; }
+.contradiction-claim .src { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 5px; }
+.contradiction-vs { color: var(--thread); font-family: var(--mono); font-size: 11px; padding-top: 4px; }
+.contradiction-explain { font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.no-contradictions { color: var(--ok); font-size: 14px; }
 
-let currentIntelSubtab = "summary";
-const intelSubtabs = document.querySelectorAll(".subtab-btn");
-const intelSubpanels = document.querySelectorAll(".intel-subpanel");
+/* ---------------- similar cases / arguments ---------------- */
 
-intelSubtabs.forEach(btn => {
-  btn.addEventListener("click", () => {
-    intelSubtabs.forEach(b => b.classList.remove("active"));
-    intelSubpanels.forEach(p => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(`intel-${btn.dataset.subtab}`).classList.add("active");
-    currentIntelSubtab = btn.dataset.subtab;
-    onIntelSubtabShown(currentIntelSubtab);
-  });
-});
+.similar-card, .argument-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
+.similar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.similar-title { font-family: var(--display); font-weight: 600; font-size: 16px; }
+.similarity-pill { font-family: var(--mono); font-size: 11px; color: var(--teal); border: 1px solid var(--teal-dim); padding: 2px 9px; border-radius: 10px; }
+.similar-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.similar-tag { font-size: 10.5px; background: var(--panel-raised); color: var(--text-muted); padding: 2px 8px; border-radius: 10px; }
+.similar-note { font-size: 12.5px; color: var(--text-faint); font-style: italic; margin-top: 8px; }
 
-function onIntelSubtabShown(name) {
-  if (loadedTabs.has(`intel-${name}`)) return;
-  if (name === "summary") loadSummary();
-  if (name === "contradictions") loadContradictions();
-  if (name === "arguments") loadArguments();
-  // "chat" needs no preload — the chat window loads its own history lazily.
+.argument-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--teal-dim); margin-bottom: 4px; }
+.argument-text { font-size: 14px; margin-bottom: 10px; }
+.counter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 4px; margin-top: 10px; }
+.evidence-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.evidence-chip { font-family: var(--mono); font-size: 10.5px; background: var(--teal-glow); color: var(--teal-dim); padding: 2px 8px; border-radius: 2px; }
+
+/* ---------------- case intelligence sub-tabs ---------------- */
+
+.intel-subtabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 14px; flex-wrap: wrap; }
+.subtab-btn { display: inline-flex; align-items: center; gap: 7px; background: var(--panel); border: 1px solid var(--line); color: var(--text-muted); padding: 8px 16px; border-radius: 16px; font-size: 12.5px; cursor: pointer; font-family: var(--sans, inherit); }
+.subtab-btn:hover { color: var(--text); }
+.subtab-btn.active { background: var(--teal-glow); border-color: var(--teal-dim); color: var(--teal); }
+.subtab-icon { width: 13px; height: 13px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.intel-subpanel { display: none; }
+.intel-subpanel.active { display: block; animation: panel-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ---------------- chat ---------------- */
+
+.chat-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.chat-modes { display: flex; gap: 6px; }
+.mode-btn { background: var(--panel); border: 1px solid var(--line); color: var(--text-muted); padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer; }
+.mode-btn.active { background: var(--teal-glow); border-color: var(--teal-dim); color: var(--teal); }
+#chat-lang { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text); padding: 6px 10px; font-size: 12px; }
+
+.chat-window {
+  height: 420px; overflow-y: auto; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 14px;
 }
-async function openCase(caseId) {
-  CURRENT_CASE_ID = caseId;
-  loadedTabs.clear();
-  document.getElementById("case-id").textContent = caseId;
-  tabs.forEach(t => t.classList.remove("active"));
-  panels.forEach(p => p.classList.remove("active"));
-  document.querySelector('.tab[data-tab="dashboard"]').classList.add("active");
-  document.getElementById("panel-dashboard").classList.add("active");
-  intelSubtabs.forEach(b => b.classList.remove("active"));
-  intelSubpanels.forEach(p => p.classList.remove("active"));
-  document.querySelector('.subtab-btn[data-subtab="summary"]').classList.add("active");
-  document.getElementById("intel-summary").classList.add("active");
-  currentIntelSubtab = "summary";
-  showView("workspace");
-  await refreshDocuments();
-  await loadDashboard();
+.chat-msg { max-width: 78%; padding: 9px 14px 11px; border-radius: var(--radius-sm); font-size: 13.5px; line-height: 1.55; }
+.chat-msg.user { align-self: flex-end; background: var(--teal-glow); border: 1px solid var(--teal-dim); }
+.chat-msg.assistant { align-self: flex-start; background: var(--panel-raised); border: 1px solid var(--line); }
+.chat-msg-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.chat-msg-role { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: var(--text-faint); }
+.chat-msg.user .chat-msg-role { color: var(--teal-dim); }
+.chat-msg-time { font-family: var(--mono); font-size: 10px; color: var(--text-faint); }
+.chat-msg-body { color: var(--text); white-space: pre-wrap; }
+
+.typing-dots { display: inline-flex; gap: 4px; align-items: center; padding: 4px 0; }
+.typing-dots span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint);
+  animation: typing-bounce 1.1s infinite ease-in-out;
 }
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing-bounce { 0%, 60%, 100% { opacity: 0.35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
 
-function invalidateCase() { loadedTabs.clear(); }
-
-// ---------------------------------------------------------------------------
-// persistent case context header (title, status/priority pills, quick stats)
-// ---------------------------------------------------------------------------
-
-function renderCaseContextBar(caseObj, counts) {
-  const titleEl = document.getElementById("ccb-title");
-  const idEl = document.getElementById("ccb-id");
-  const statusEl = document.getElementById("ccb-status");
-  const priorityEl = document.getElementById("ccb-priority");
-  const statsEl = document.getElementById("ccb-stats");
-  if (!titleEl) return;
-  titleEl.textContent = caseObj.title;
-  idEl.textContent = `${caseObj.id} · ${caseObj.case_type}`;
-  statusEl.textContent = caseObj.status;
-  statusEl.className = "ccb-pill ccb-status status-" + String(caseObj.status || "").toLowerCase().replace(/\s+/g, "-");
-  priorityEl.textContent = (caseObj.priority || "") + " priority";
-  priorityEl.className = "ccb-pill ccb-priority priority-" + String(caseObj.priority || "").toLowerCase();
-
-  const parts = [];
-  if (counts.documents !== undefined) parts.push([counts.documents, "Documents"]);
-  if (counts.events !== undefined) parts.push([counts.events, "Events"]);
-  if (counts.entities !== undefined) parts.push([counts.entities, "Entities"]);
-  if (counts.conflicts !== undefined) parts.push([counts.conflicts, "Conflicts", counts.conflicts > 0]);
-  statsEl.innerHTML = parts.map(([num, label, warn]) =>
-    `<div class="ccb-stat${warn ? " ccb-stat-warn" : ""}"><span class="ccb-stat-num">${num}</span><span class="ccb-stat-label">${label}</span></div>`
-  ).join("");
+.chat-form { display: flex; gap: 10px; }
+.chat-form input {
+  flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 12px 14px; color: var(--text); font-size: 14px;
 }
+.chat-form input:focus { outline: none; border-color: var(--teal-dim); }
+.chat-form button[type="submit"] { background: var(--teal); color: #f8fafc; border: none; border-radius: var(--radius-sm); padding: 0 20px; font-weight: 600; cursor: pointer; font-size: 13px; }
+#mic-btn { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 16px; cursor: pointer; padding: 0 14px; }
+#mic-btn.recording { background: var(--thread-glow); border-color: var(--thread); }
 
-// ---------------------------------------------------------------------------
-// dashboard
-// ---------------------------------------------------------------------------
+/* ---------------- report ---------------- */
 
-const RELATIONSHIP_CATEGORIES = [
-  { label: "Works at", color: "#2b4864", match: /\b(works? at|employ|joined|hired)/i },
-  { label: "Communicated with", color: "#5c5490", match: /\b(email|communicat|repl|wrote|message)/i },
-  { label: "Vendor of", color: "#3f7a5c", match: /\b(vendor|supplie[rd]|contract)/i },
-  { label: "Asked to process", color: "#a1402f", match: /\b(asked|instructed|requested)/i },
-  { label: "Payment to", color: "#b8842e", match: /\b(payment|paid|invoice|transfer)/i },
-];
-function classifyRelation(text) {
-  const found = RELATIONSHIP_CATEGORIES.find(c => c.match.test(text || ""));
-  return found ? found.label : "Other";
-}
+.report-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.report-actions .ghost-btn, .report-actions .primary-btn { width: auto; }
 
-async function loadDashboard() {
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/dashboard`);
-  const data = await res.json();
-  document.getElementById("dash-title").textContent = data.case.title;
-  document.getElementById("dash-sub").textContent =
-    `${data.case.id} · ${data.case.case_type} · ${data.case.status} · Priority: ${data.case.priority}`;
-  renderCaseContextBar(data.case, {
-    documents: data.document_count, events: data.event_count, conflicts: data.contradiction_count
-  });
+/* ---------------- audit ---------------- */
 
-  // Pull the graph too (cached after first build) so the overview can show
-  // real entity/relationship breakdowns and an evidence-backed confidence
-  // score, not just the flat counts the old dashboard had.
-  let graph = { nodes: [], edges: [] };
-  try {
-    const gRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/graph`);
-    if (gRes.ok) graph = await gRes.json();
-  } catch { /* graph is optional enrichment — dashboard still works without it */ }
+.audit-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.audit-table th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.audit-table td { padding: 9px 10px; border-bottom: 1px solid var(--line-soft); }
+.audit-table td.time { font-family: var(--mono); font-size: 11px; color: var(--text-faint); white-space: nowrap; }
+.audit-table td.user { color: var(--teal); font-weight: 600; }
+.audit-table td.action { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
 
-  const entityTotal = graph.nodes.length;
-  const typeCounts = { person: 0, organization: 0, location: 0, other: 0 };
-  graph.nodes.forEach(n => { typeCounts[n.type] = (typeCounts[n.type] || 0) + 1; });
-  const edgesWithEvidence = graph.edges.filter(e => e.evidence && e.evidence.trim()).length;
-  const evidenceScore = graph.edges.length ? Math.round(100 * edgesWithEvidence / graph.edges.length) : (data.document_count ? 100 : 0);
-
-  document.getElementById("stat-grid").innerHTML = [
-    ["Documents", data.document_count, "icon-folder", "gold", "Total uploaded"],
-    ["Entities", entityTotal, "icon-users", "info", "People, orgs & others"],
-    ["Relationships", graph.edges.length, "icon-link", "ok", "Connections found"],
-    ["Contradictions", data.contradiction_count, "icon-alert", "rose", data.contradiction_count ? "Needs review" : "No issues detected"],
-    ["Events", data.event_count, "icon-calendar", "gold-dim", "Timeline events"],
-    ["Evidence Score", evidenceScore + "%", "icon-award", "ok", "Overall confidence"],
-  ].map(([label, num, icon, tone, caption]) => `
-    <div class="stat-tile tone-${tone}">
-      <div class="stat-icon-box"><svg class="stat-icon"><use href="#${icon}"/></svg></div>
-      <div class="stat-num">${num}</div>
-      <div class="stat-label">${label}</div>
-      <div class="stat-caption">${caption}</div>
-    </div>`).join("");
-
-  renderDonut(typeCounts, entityTotal);
-  renderRelationshipList(graph.edges);
-  renderGauge(evidenceScore);
-  renderCaseContextBar(data.case, {
-    documents: data.document_count, events: data.event_count,
-    entities: entityTotal, conflicts: data.contradiction_count
-  });
-
-  try {
-    const docsRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`);
-    renderActivityChart(docsRes.ok ? await docsRes.json() : []);
-  } catch { renderActivityChart([]); }
-
-  const cachedSummary = await getCachedSummaryPreview();
-  if (cachedSummary) document.getElementById("dash-ai-summary").textContent = cachedSummary;
-
-  const activity = document.getElementById("dash-activity");
-  if (!data.recent_activity.length) {
-    renderEmptyState(activity, "icon-list", "No activity yet", "Upload a document or run an analysis to start the audit trail.");
-  } else {
-    activity.innerHTML = data.recent_activity.map(a => `
-      <div class="activity-row">
-        <span class="activity-time">${fmtTime(a.ts)}</span>
-        <span><span class="activity-user">${escapeHtml(a.user)}</span> — ${escapeHtml(a.detail)}</span>
-      </div>`).join("");
-  }
+@media (max-width: 860px) {
+  .app { flex-direction: column; }
+  .folder-nav { width: 100%; height: auto; position: relative; }
+  .tab-desc { display: none; }
+  .content { padding: 24px; }
+  .cases-content { padding: 24px; }
+  .vault-controls { flex-direction: column; }
+  .chat-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+  .chat-msg { max-width: 92%; }
+  .contradiction-pair { grid-template-columns: 1fr; }
+  .contradiction-vs { padding-top: 0; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-async function getCachedSummaryPreview() {
-  try {
-    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/summary/cached`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.summary) return null;
-    const firstSentence = data.summary.split(/(?<=[.!?])\s/)[0];
-    return firstSentence.length > 200 ? firstSentence.slice(0, 200) + "…" : firstSentence;
-  } catch { return null; }
+/* focus visibility (keyboard nav) */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--teal); outline-offset: 2px;
 }
 
-function renderDonut(typeCounts, total) {
-  const el = document.getElementById("dash-donut-row");
-  if (total === 0) {
-    el.innerHTML = '<p class="placeholder" style="margin:0">No entities extracted yet.</p>';
-    return;
-  }
-  const entries = [["person", "People"], ["organization", "Organizations"], ["location", "Locations"], ["other", "Other"]];
-  let cursor = 0;
-  const stops = entries.map(([key]) => {
-    const pct = (typeCounts[key] / total) * 100;
-    const stop = `${typeColors[key]} ${cursor}% ${cursor + pct}%`;
-    cursor += pct;
-    return stop;
-  }).join(", ");
-  el.innerHTML = `
-    <div class="donut" style="background: conic-gradient(${stops})"><div class="donut-hole"><strong>${total}</strong><span>Entities</span></div></div>
-    <ul class="donut-legend">
-      ${entries.map(([key, label]) => `
-        <li><span class="legend-key"><span class="legend-swatch" style="background:${typeColors[key]}"></span>${label}</span><span class="legend-count">${typeCounts[key] || 0}</span></li>
-      `).join("")}
-    </ul>`;
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
-
-function renderRelationshipList(edges) {
-  const el = document.getElementById("dash-relationship-list");
-  if (!edges.length) {
-    el.innerHTML = '<p class="placeholder" style="margin:0">No relationships found yet.</p>';
-    return;
-  }
-  const counts = {};
-  edges.forEach(e => { const label = classifyRelation(e.relation); counts[label] = (counts[label] || 0) + 1; });
-  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const colorFor = label => (RELATIONSHIP_CATEGORIES.find(c => c.label === label) || { color: "#8a7d5e" }).color;
-  el.innerHTML = rows.map(([label, count]) => `
-    <div class="relationship-row">
-      <span class="rel-bar" style="background:${colorFor(label)}"></span>
-      <span class="rel-label">${escapeHtml(label)}</span>
-      <span class="rel-count">${count}</span>
-    </div>`).join("");
+.perspectives-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+.perspectives-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.perspective-card {
+  background: var(--panel-raised); border: 1px solid var(--line-soft); border-radius: var(--radius);
+  padding: 18px; border-left: 3px solid var(--teal-dim);
+  box-shadow: 0 1px 2px rgba(2,6,20,0.06), 0 6px 16px rgba(2,6,20,0.05);
 }
-
-function renderGauge(score) {
-  const el = document.getElementById("dash-gauge");
-  const level = score >= 80 ? "High Confidence" : score >= 50 ? "Moderate Confidence" : "Low Confidence";
-  const note = score >= 80
-    ? "Most information is well-supported by source documents."
-    : score >= 50
-      ? "Some connections still need supporting evidence."
-      : "Many connections lack cited evidence — review before relying on this graph.";
-  el.innerHTML = `
-    <svg viewBox="0 0 200 118" class="gauge-svg">
-      <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round"/>
-      <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--ok)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="${score} 100"/>
-    </svg>
-    <div class="gauge-label"><strong>${score}%</strong><span>${level}</span></div>
-    <div class="gauge-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-shield"/></svg>${note}</div>`;
+.perspective-card.stance-primary { border-left-color: var(--teal); }
+.perspective-card.stance-alternative_suspect { border-left-color: var(--thread); }
+.perspective-card.stance-innocent_explanation { border-left-color: var(--ok); }
+.perspective-card.stance-gap_in_evidence { border-left-color: var(--info); }
+.perspective-stance-tag {
+  display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+  padding: 3px 8px; border-radius: 3px; margin-bottom: 10px; background: var(--teal-glow); color: var(--teal);
 }
-
-function renderActivityChart(docs) {
-  const el = document.getElementById("dash-activity-chart");
-  if (!docs.length) {
-    el.innerHTML = '<p class="placeholder" style="margin:0">No documents uploaded yet.</p>';
-    return;
-  }
-  const sorted = [...docs].sort((a, b) => new Date(a.uploaded_at) - new Date(b.uploaded_at));
-  const first = new Date(sorted[0].uploaded_at).getTime();
-  const last = new Date(sorted[sorted.length - 1].uploaded_at).getTime();
-  const span = Math.max(last - first, 1);
-  const W = 280, H = 100, PAD = 8;
-
-  const points = sorted.map((d, i) => [
-    PAD + ((new Date(d.uploaded_at).getTime() - first) / span) * (W - PAD * 2),
-    H - PAD - ((i + 1) / sorted.length) * (H - PAD * 2),
-  ]);
-  // uploads that all landed in the same instant (typical demo run) would
-  // collapse to one x position — spread them evenly instead so the trend
-  // is still readable.
-  if (points.length > 1 && points.every(([x]) => Math.abs(x - points[0][0]) < 1)) {
-    points.forEach((p, i) => { p[0] = PAD + (i / (points.length - 1)) * (W - PAD * 2); });
-  }
-
-  const linePath = points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  const areaPath = `${linePath} L${points[points.length - 1][0].toFixed(1)},${H - PAD} L${points[0][0].toFixed(1)},${H - PAD} Z`;
-  const dots = points.map(([x, y], i) => `
-    <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="var(--teal)">
-      <title>${escapeHtml(sorted[i].filename)} — ${fmtTime(sorted[i].uploaded_at)}</title>
-    </circle>`).join("");
-
-  el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" class="activity-svg">
-      <defs>
-        <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.28"/>
-          <stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" stroke="var(--line)" stroke-width="1"/>
-      <path d="${areaPath}" fill="url(#activityFill)"/>
-      <path d="${linePath}" fill="none" stroke="var(--teal)" stroke-width="2"/>
-      ${dots}
-    </svg>
-    <div class="activity-axis">
-      <span>${fmtTime(sorted[0].uploaded_at)}</span>
-      <span>${sorted.length} document${sorted.length === 1 ? "" : "s"} total</span>
-      <span>${fmtTime(sorted[sorted.length - 1].uploaded_at)}</span>
-    </div>`;
-}
-
-function renderVaultTypeChart(docs) {
-  const el = document.getElementById("vault-type-chart");
-  if (!docs.length) { el.innerHTML = ""; return; }
-  const counts = {};
-  docs.forEach(d => { const t = d.doc_type || "Untyped"; counts[t] = (counts[t] || 0) + 1; });
-  const palette = ["#2b4864", "#a1402f", "#3f6b4a", "#5c5490", "#b8842e", "#8a7d5e"];
-  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  el.innerHTML = rows.map(([type, count], i) => `
-    <span class="vault-type-pill">
-      <span class="pill-swatch" style="background:${palette[i % palette.length]}"></span>
-      ${escapeHtml(type)} <span class="pill-count">${count}</span>
-    </span>`).join("");
-}
-
-// ---------------------------------------------------------------------------
-// documents / vault
-// ---------------------------------------------------------------------------
-
-const fileInput = document.getElementById("file-input");
-const dropzone = document.getElementById("dropzone");
-const docList = document.getElementById("doc-list");
-const uploadStatus = document.getElementById("upload-status");
-const pipelineEl = document.getElementById("processing-pipeline");
-
-const PIPELINE_LABELS = {
-  file_validated: "File validated", integrity_hashed: "Integrity hash (SHA-256) generated",
-  text_extracted: "Text extracted", document_classified: "Document classified",
-  entities_extracted: "Entities extracted", events_extracted: "Events extracted",
-  indexed_for_search: "Indexed for search", added_to_evidence_graph: "Added to evidence graph",
-};
-
-fileInput.addEventListener("change", () => uploadFiles(fileInput.files));
-["dragenter", "dragover"].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add("drag"); }));
-["dragleave", "drop"].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove("drag"); }));
-dropzone.addEventListener("drop", e => uploadFiles(e.dataTransfer.files));
-
-async function uploadFiles(files) {
-  for (const file of files) {
-    uploadStatus.innerHTML = `<span class="loading-line"><span class="spinner"></span>Uploading ${escapeHtml(file.name)} …</span>`;
-    pipelineEl.innerHTML = "";
-    const form = new FormData();
-    form.append("file", file);
-    try {
-      const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`, { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Upload failed");
-      uploadStatus.textContent = `${file.name} processed.`;
-      pipelineEl.innerHTML = data.processing_steps.map(s => `<div class="step-done">${PIPELINE_LABELS[s] || s}</div>`).join("");
-      showToast(`${file.name} uploaded and processed.`, "success");
-      invalidateCase();
-      await refreshDocuments();
-      await loadDashboard();
-    } catch (err) {
-      const msg = err.message === "SERVER_UNREACHABLE" ? "Could not reach the server." : err.message;
-      uploadStatus.innerHTML = `<span class="err">${escapeHtml(file.name)}: ${escapeHtml(msg)}</span>`;
-      showToast(`Failed to upload ${file.name}.`, "error");
-    }
-  }
-  fileInput.value = "";
-}
-
-document.getElementById("vault-search").addEventListener("input", debounce(refreshDocuments, 300));
-document.getElementById("vault-filter").addEventListener("change", refreshDocuments);
-
-function debounce(fn, ms) {
-  let t;
-  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-}
-
-async function refreshDocuments() {
-  const q = document.getElementById("vault-search").value.trim();
-  const filter = document.getElementById("vault-filter").value;
-  const params = new URLSearchParams();
-  if (q) params.set("q", q);
-  if (filter && filter !== "All") params.set("doc_type", filter);
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents?${params}`);
-  const docs = await res.json();
-  docList.innerHTML = "";
-  if (docs.length === 0) {
-    const isFiltered = q || (filter && filter !== "All");
-    renderEmptyState(docList, isFiltered ? "icon-folder" : "icon-upload",
-      isFiltered ? "No matching documents" : "No documents yet",
-      isFiltered ? "Try a different search term or filter." : "Drop a file above or click the upload area to add the first document.");
-  } else {
-    docs.forEach((doc, i) => docList.appendChild(exhibitCard(doc, i + 1)));
-  }
-
-  const filterSel = document.getElementById("vault-filter");
-  const current = filterSel.value;
-  const types = [...new Set(docs.map(d => d.doc_type).filter(Boolean))];
-  filterSel.innerHTML = ['All', ...types].map(t => `<option ${t === current ? "selected" : ""}>${escapeHtml(t)}</option>`).join("");
-
-  renderVaultTypeChart(docs);
-}
-
-function exhibitCard(doc, index) {
-  const el = document.createElement("div");
-  el.className = "exhibit-card";
-  const entityCount = (doc.entities || []).length;
-  const eventCount = (doc.events || []).length;
-  const ext = (doc.filename.split(".").pop() || "").toLowerCase();
-  el.innerHTML = `
-    <div class="exhibit-tag">EXHIBIT ${String(index).padStart(3, "0")}</div>
-    <span class="file-badge file-badge-${ext}">${escapeHtml(ext || "file")}</span>
-    <div class="exhibit-name">${escapeHtml(doc.filename)}</div>
-    <div class="exhibit-type">${escapeHtml(doc.doc_type || "document")}</div>
-    <p class="exhibit-summary">${escapeHtml(doc.summary || "")}</p>
-    <div class="exhibit-foot">
-      <span class="exhibit-meta">${entityCount} entities · ${eventCount} events · ${doc.hash ? doc.hash.slice(0, 10) : ""}…</span>
-      <button class="remove-btn" data-id="${doc.id}">remove</button>
-    </div>
-  `;
-  el.addEventListener("click", (e) => {
-    if (e.target.classList.contains("remove-btn")) return;
-    openDocModal(doc.id);
-  });
-  el.querySelector(".remove-btn").addEventListener("click", async (e) => {
-    e.stopPropagation();
-    if (!confirm(`Remove ${doc.filename}?`)) return;
-    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents/${doc.id}`, { method: "DELETE" });
-    if (!res.ok) { const d = await res.json(); showToast(d.detail || "Could not remove document.", "error"); return; }
-    showToast(`${doc.filename} removed.`, "success");
-    invalidateCase();
-    refreshDocuments();
-    loadDashboard();
-  });
-  return el;
-}
-
-const docModal = document.getElementById("doc-modal");
-document.getElementById("doc-modal-close").addEventListener("click", () => docModal.classList.remove("active"));
-
-async function openDocModal(docId) {
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents/${docId}`);
-  const doc = await res.json();
-  const body = document.getElementById("doc-modal-body");
-  body.innerHTML = `
-    <h2>${escapeHtml(doc.filename)}</h2>
-    <p class="sub">${escapeHtml(doc.doc_type)} · v${escapeHtml(doc.version)} · ${escapeHtml(doc.confidentiality)}</p>
-    <p>${escapeHtml(doc.summary)}</p>
-    <div class="section-label">Integrity</div>
-    <div class="doc-hash">SHA-256: ${escapeHtml(doc.hash)}</div>
-    <div class="section-label">Metadata</div>
-    <p style="font-size:12.5px;color:var(--text-muted)">
-      Uploaded by ${escapeHtml(doc.uploaded_by)} on ${fmtTime(doc.uploaded_at)}
-      ${doc.page_count ? ` · ${doc.page_count} pages` : ""} · ${(doc.size_bytes / 1024).toFixed(1)} KB
-    </p>
-    <div class="section-label">Chain of Custody</div>
-    <div class="custody-chain">
-      ${(doc.custody || []).map(c => `
-        <div class="custody-item">
-          <div class="custody-time">${fmtTime(c.ts)}</div>
-          <div>${escapeHtml(c.user)} — ${escapeHtml(c.detail)}</div>
-        </div>`).join("") || '<p class="placeholder">No custody events yet.</p>'}
-    </div>
-  `;
-  docModal.classList.add("active");
-}
-
-// ---------------------------------------------------------------------------
-// case summary
-// ---------------------------------------------------------------------------
-
-async function loadSummary() {
-  const body = document.getElementById("summary-body");
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) return;
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Synthesizing case summary…</p>';
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/summary`);
-  const data = await res.json();
-  if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
-  body.innerHTML = data.summary.split("\n\n").map(p => `<p>${escapeHtml(p)}</p>`).join("");
-  loadedTabs.add("intel-summary");
-}
-
-// ---------------------------------------------------------------------------
-// timeline
-// ---------------------------------------------------------------------------
-
-const TIMELINE_CATEGORIES = [
-  { key: "employment", label: "Employment", icon: "icon-briefcase", color: "#2b4864", match: /\b(began working|joined|hired|appointed|resigned|terminated|employ)/i },
-  { key: "vendor", label: "Vendor / Org", icon: "icon-bank", color: "#3f7a5c", match: /\b(vendor|approved|contract|agreement|registered|onboard)/i },
-  { key: "communication", label: "Communication", icon: "icon-mail", color: "#5c5490", match: /\b(emailed|e-mailed|wrote to|message|contacted)/i },
-  { key: "reply", label: "Reply / Statement", icon: "icon-person", color: "#b8842e", match: /\b(replied|responded|stated|acknowledg|confirmed)/i },
-  { key: "delivery", label: "Delivery", icon: "icon-truck", color: "#4a4f8c", match: /\b(deliver|shipment|warehouse|dispatch|received goods)/i },
-  { key: "financial", label: "Financial", icon: "icon-invoice", color: "#a1402f", match: /\b(invoice|payment|paid|transfer|amount|inr|₹|rs\.)/i },
-  { key: "task", label: "Task / Instruction", icon: "icon-doc-check", color: "#6e6242", match: /\b(asked|requested|instructed|process|task)/i },
-];
-function classifyEvent(description) {
-  const found = TIMELINE_CATEGORIES.find(c => c.match.test(description || ""));
-  return found || { key: "other", label: "Other", icon: "icon-clock", color: "#6e6242" };
-}
-
-let TIMELINE_DATA = null;
-let timelineViewMode = "timeline";
-let timelineVisibleCount = 6;
-const TIMELINE_PAGE_SIZE = 6;
-
-async function loadTimeline() {
-  const body = document.getElementById("timeline-body");
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) return;
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Extracting timeline…</p>';
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/timeline`);
-  const data = await res.json();
-  if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
-
-  TIMELINE_DATA = data;
-  timelineVisibleCount = TIMELINE_PAGE_SIZE;
-  populateTimelineFilters(data);
-  renderTimeline();
-  loadedTabs.add("timeline");
-}
-
-function populateTimelineFilters(data) {
-  const typeSelect = document.getElementById("timeline-filter-type");
-  const timeSelect = document.getElementById("timeline-filter-time");
-  const presentKeys = new Set(data.events.map(ev => classifyEvent(ev.description).key));
-  typeSelect.innerHTML = '<option value="all">All Events</option>' +
-    TIMELINE_CATEGORIES.filter(c => presentKeys.has(c.key))
-      .map(c => `<option value="${c.key}">${c.label}</option>`).join("");
-
-  const years = [...new Set(data.events.map(ev => {
-    const m = (ev.date || "").match(/\b(19|20)\d{2}\b/);
-    return m ? m[0] : null;
-  }).filter(Boolean))].sort();
-  timeSelect.innerHTML = '<option value="all">All Time</option>' + years.map(y => `<option value="${y}">${y}</option>`).join("");
-}
-
-function renderTimeline() {
-  const body = document.getElementById("timeline-body");
-  const loadMoreBtn = document.getElementById("timeline-load-more");
-  const data = TIMELINE_DATA;
-  if (!data) return;
-
-  const typeFilter = document.getElementById("timeline-filter-type").value;
-  const timeFilter = document.getElementById("timeline-filter-time").value;
-  let events = data.events.filter(ev => {
-    if (typeFilter !== "all" && classifyEvent(ev.description).key !== typeFilter) return false;
-    if (timeFilter !== "all" && !(ev.date || "").includes(timeFilter)) return false;
-    return true;
-  });
-
-  document.getElementById("timeline-count").textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
-
-  let html = "";
-  if (events.length) {
-    const shown = events.slice(0, timelineVisibleCount);
-    html += `<div class="timeline-list ${timelineViewMode === "list" ? "is-list-view" : ""}">`;
-    shown.forEach(ev => {
-      const cat = classifyEvent(ev.description);
-      html += `
-        <div class="timeline-item" data-doc="${ev.doc_id}">
-          <div class="timeline-marker" style="background:${cat.color}">
-            <svg width="16" height="16" viewBox="0 0 24 24"><use href="#${cat.icon}"/></svg>
-          </div>
-          <div class="timeline-date-inline">${escapeHtml(ev.date)}</div>
-          <div class="timeline-row">
-            <div class="timeline-date-badge">${formatDateBadge(ev.date)}</div>
-            <div class="timeline-body-text">
-              <div class="timeline-desc">${escapeHtml(ev.description)}</div>
-              <div class="timeline-source-row">
-                <span class="timeline-source"><svg width="12" height="12" viewBox="0 0 24 24"><use href="#icon-folder"/></svg>${escapeHtml(ev.source)}</span>
-                <span class="evidence-pill"><svg width="11" height="11" viewBox="0 0 24 24"><use href="#icon-shield"/></svg>Evidence-backed</span>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      const gap = data.gaps.find(g => g.after === ev.date);
-      if (gap) html += `<div class="gap-marker">Gap of ~${gap.days} days before the next event</div>`;
-    });
-    html += "</div>";
-    loadMoreBtn.style.display = events.length > timelineVisibleCount ? "block" : "none";
-  } else {
-    html += '<p class="placeholder">No events match this filter.</p>';
-    loadMoreBtn.style.display = "none";
-  }
-  if (data.undated.length) {
-    html += '<div class="section-label">Undated events</div><ul>';
-    data.undated.forEach(ev => { html += `<li>${escapeHtml(ev.description)} <span class="timeline-source">— ${escapeHtml(ev.source)}</span></li>`; });
-    html += "</ul>";
-  }
-  body.innerHTML = html;
-  body.querySelectorAll(".timeline-item").forEach(el => el.addEventListener("click", (e) => {
-    if (!e.target.closest(".timeline-source, .evidence-pill")) openDocModal(el.dataset.doc);
-  }));
-}
-
-function formatDateBadge(dateStr) {
-  const trimmed = (dateStr || "").trim();
-  if (/^(19|20)\d{2}$/.test(trimmed)) {
-    return `<div class="timeline-date-year">YEAR</div><div class="timeline-date-day" style="font-size:18px">${trimmed}</div>`;
-  }
-  const parsed = new Date(dateStr);
-  if (isNaN(parsed)) return `<div class="timeline-date-year">${escapeHtml(dateStr)}</div>`;
-  const day = String(parsed.getDate()).padStart(2, "0");
-  const month = parsed.toLocaleString("en-US", { month: "short" }).toUpperCase();
-  const year = parsed.getFullYear();
-  return `<div class="timeline-date-year">${year}</div><div class="timeline-date-day">${day}</div><div class="timeline-date-month">${month}</div>`;
-}
-
-document.getElementById("timeline-filter-type").addEventListener("change", () => { timelineVisibleCount = TIMELINE_PAGE_SIZE; renderTimeline(); });
-document.getElementById("timeline-filter-time").addEventListener("change", () => { timelineVisibleCount = TIMELINE_PAGE_SIZE; renderTimeline(); });
-document.getElementById("timeline-load-more").addEventListener("click", () => { timelineVisibleCount += TIMELINE_PAGE_SIZE; renderTimeline(); });
-document.querySelectorAll(".view-toggle-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".view-toggle-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    timelineViewMode = btn.dataset.timelineView;
-    renderTimeline();
-  });
-});
-document.getElementById("export-timeline-btn").addEventListener("click", () => {
-  if (!TIMELINE_DATA || !TIMELINE_DATA.events.length) { showToast("Nothing to export yet.", "error"); return; }
-  let md = `# Investigation Timeline\n\n`;
-  TIMELINE_DATA.events.forEach(ev => { md += `- **${ev.date}** — ${ev.description} _(source: ${ev.source})_\n`; });
-  if (TIMELINE_DATA.undated.length) {
-    md += `\n## Undated events\n\n`;
-    TIMELINE_DATA.undated.forEach(ev => { md += `- ${ev.description} _(source: ${ev.source})_\n`; });
-  }
-  const blob = new Blob([md], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = `timeline-${CURRENT_CASE_ID}.md`; a.click();
-  URL.revokeObjectURL(url);
-});
-
-// ---------------------------------------------------------------------------
-// graph
-// ---------------------------------------------------------------------------
-
-// Muted, desaturated accents so entity types stay distinguishable at a
-// glance without fighting the app's otherwise beige/navy/red theme.
-const typeColors = { person: "#b8842e", organization: "#3f7a5c", location: "#4a4f8c", other: "#8a7d5e" };
-const EDGE_CATEGORIES = [
-  { key: "employment", label: "Employment", color: "#3f7a5c", match: /\b(works? at|employ|joined|hired)/i },
-  { key: "business", label: "Business", color: "#2b4864", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
-  { key: "communication", label: "Communication", color: "#a1402f", match: /\b(email|communicat|repl(y|ied)|wrote|message|requested|asked)/i },
-  { key: "consultation", label: "Consultation", color: "#5c5490", match: /\b(consult|advis|shared info)/i },
-];
-function classifyEdge(relation) {
-  const found = EDGE_CATEGORIES.find(c => c.match.test(relation || ""));
-  return found || { key: "other", label: "Other", color: "#8a7d5e" };
-}
-
-let GRAPH_DATA = null;
-let GRAPH_DOCS = null;
-let GRAPH_NETWORK = null;
-let graphViewMode = "graph";
-
-// A small white silhouette per entity type, baked onto a colored medallion,
-// rendered as a single flat SVG data-URI so vis-network can drop it straight
-// in as a node image — a person icon for people, a building for
-// organizations, a map pin for locations.
-const typeGlyphs = {
-  person: '<circle cx="30" cy="23" r="9"/><path d="M12 50c2-11 9-17 18-17s16 6 18 17" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>',
-  organization: '<rect x="16" y="12" width="28" height="34" rx="2"/><rect x="21" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="21" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="26" y="38" width="8" height="8" fill="TYPECOLOR"/>',
-  location: '<path d="M30 12c-7.7 0-14 6.1-14 13.6C16 35.5 30 50 30 50s14-14.5 14-24.4C44 18.1 37.7 12 30 12z"/><circle cx="30" cy="25" r="5.5" fill="TYPECOLOR"/>',
-  other: '<circle cx="30" cy="30" r="8"/><circle cx="30" cy="14" r="3.2"/><circle cx="30" cy="46" r="3.2"/><circle cx="14" cy="30" r="3.2"/><circle cx="46" cy="30" r="3.2"/>',
-};
-function nodeIcon(type) {
-  const color = typeColors[type] || typeColors.other;
-  const glyph = (typeGlyphs[type] || typeGlyphs.other).replaceAll("TYPECOLOR", color);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="${color}" stroke="#2a2313" stroke-width="2"/><g fill="#fffcf2">${glyph}</g></svg>`;
-  return "data:image/svg+xml;base64," + btoa(svg);
-}
-
-async function loadGraph() {
-  const canvas = document.getElementById("graph-canvas");
-  const legend = document.getElementById("graph-legend");
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) return;
-  canvas.innerHTML = '<p class="loading-line" style="padding:20px"><span class="spinner"></span>Mapping connections…</p>';
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/graph`);
-  const data = await res.json();
-  if (!res.ok) { canvas.innerHTML = `<p class="err">${data.detail}</p>`; return; }
-
-  GRAPH_DATA = data;
-  GRAPH_DOCS = docs;
-  legend.innerHTML = EDGE_CATEGORIES.concat([{ key: "other", label: "Other", color: "#8a7d5e" }])
-    .map(c => `<span><span class="legend-line" style="background:${c.color}"></span>${c.label}</span>`).join("");
-  populateGraphFilters(data);
-  renderGraphView();
-  loadedTabs.add("graph");
-}
-
-function populateGraphFilters(data) {
-  const typeSelect = document.getElementById("graph-filter-type");
-  const relSelect = document.getElementById("graph-filter-relation");
-  const presentTypes = [...new Set(data.nodes.map(n => n.type))];
-  typeSelect.innerHTML = '<option value="all">All Entities</option>' +
-    presentTypes.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}s</option>`).join("");
-  const presentCats = new Set(data.edges.map(e => classifyEdge(e.relation).key));
-  relSelect.innerHTML = '<option value="all">All Relationship Types</option>' +
-    EDGE_CATEGORIES.concat([{ key: "other", label: "Other" }]).filter(c => presentCats.has(c.key))
-      .map(c => `<option value="${c.key}">${c.label}</option>`).join("");
-}
-
-function renderGraphView() {
-  document.getElementById("graph-canvas").style.display = graphViewMode === "graph" ? "block" : "none";
-  document.getElementById("graph-table-wrap").style.display = graphViewMode === "table" ? "block" : "none";
-  if (graphViewMode === "graph") renderGraph(); else renderGraphTable();
-}
-
-function getFilteredGraph() {
-  const data = GRAPH_DATA;
-  const typeFilter = document.getElementById("graph-filter-type").value;
-  const relFilter = document.getElementById("graph-filter-relation").value;
-  const showIsolated = document.getElementById("graph-show-isolated").checked;
-
-  let nodes = typeFilter === "all" ? data.nodes : data.nodes.filter(n => n.type === typeFilter);
-  let edges = relFilter === "all" ? data.edges : data.edges.filter(e => classifyEdge(e.relation).key === relFilter);
-  edges = edges.filter(e => nodes.some(n => n.id === e.source) && nodes.some(n => n.id === e.target));
-
-  const connectedIds = new Set();
-  edges.forEach(e => { connectedIds.add(e.source); connectedIds.add(e.target); });
-  const visibleNodes = showIsolated ? nodes : nodes.filter(n => connectedIds.has(n.id));
-  return { nodes: visibleNodes, edges, hiddenCount: nodes.length - visibleNodes.length };
-}
-
-function renderGraph() {
-  const canvas = document.getElementById("graph-canvas");
-  if (!GRAPH_DATA) return;
-  const { nodes: visibleNodes, edges: visibleEdges, hiddenCount } = getFilteredGraph();
-
-  canvas.innerHTML = "";
-  if (visibleNodes.length === 0) {
-    canvas.innerHTML = '<p class="placeholder" style="padding:20px">No connections match this filter — check "Show unconnected entities" or widen your filters.</p>';
-    return;
-  }
-
-  const nodes = new vis.DataSet(visibleNodes.map(n => ({
-    id: n.id, label: n.label,
-    shape: "image", image: nodeIcon(n.type), size: 26,
-    font: { color: "#fdf9ee", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#2a2313", vadjust: -30 },
-  })));
-  const edges = new vis.DataSet(visibleEdges.map((e, i) => {
-    const cat = classifyEdge(e.relation);
-    return {
-      id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: cat.color, highlight: "#2a2313", hover: cat.color }, opacity: 0.85,
-      width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
-    };
-  }));
-
-  const network = new vis.Network(canvas, { nodes, edges }, {
-    physics: {
-      solver: "forceAtlas2Based",
-      forceAtlas2Based: { springLength: 190, avoidOverlap: 0.8, gravitationalConstant: -60 },
-      stabilization: { iterations: 150 },
-    },
-    interaction: { hover: true, tooltipDelay: 120 },
-    edges: { font: { size: 0 } }, // relation text lives in the hover tooltip + click detail panel, not always-on canvas text
-  });
-  GRAPH_NETWORK = network;
-  network.once("stabilizationIterationsDone", () => network.fit({ animation: { duration: 400 } }));
-
-  network.on("click", params => {
-    if (params.nodes.length) showEntityDetail(params.nodes[0]);
-  });
-
-  const hintEl = document.querySelector(".graph-hint");
-  if (hintEl && hiddenCount > 0) {
-    hintEl.textContent = `Scroll to zoom · drag to pan · ${hiddenCount} unconnected ${hiddenCount === 1 ? "entity" : "entities"} hidden`;
-  } else if (hintEl) {
-    hintEl.textContent = "Scroll to zoom · drag to pan · drag a dot to reposition it";
-  }
-}
-
-function showEntityDetail(nodeId) {
-  const data = GRAPH_DATA;
-  const node = data.nodes.find(n => n.id === nodeId);
-  const panel = document.getElementById("graph-detail");
-  if (!node) return;
-
-  const related = data.edges.filter(e => e.source === nodeId || e.target === nodeId);
-  const aboutEdge = related.find(e => classifyEdge(e.relation).key === "employment") || related[0];
-  const about = aboutEdge
-    ? `${escapeHtml(aboutEdge.relation)}${aboutEdge.source === nodeId ? " " + escapeHtml(data.nodes.find(n => n.id === aboutEdge.target)?.label || "") : ""}.`
-    : `${related.length} relationship${related.length === 1 ? "" : "s"} found across the case documents.`;
-
-  const relLines = related.map(e => {
-    const outgoing = e.source === nodeId;
-    const otherId = outgoing ? e.target : e.source;
-    const other = data.nodes.find(n => n.id === otherId);
-    const cat = classifyEdge(e.relation);
-    return `<div class="rel-line"><span class="rel-dot" style="background:${cat.color}"></span><span class="rel-verb">${escapeHtml(e.relation)}</span><span class="rel-target" data-node-id="${otherId}">${escapeHtml(other?.label || "Unknown")}</span></div>`;
-  }).join("") || '<p class="placeholder" style="font-size:12.5px">No relationships recorded.</p>';
-
-  const matchingDocs = (GRAPH_DOCS || []).filter(d => (d.entities || []).some(e => e.name === node.label));
-  const evidenceLines = matchingDocs.length
-    ? matchingDocs.map(d => `<div class="evidence-line" data-doc="${d.id}"><svg viewBox="0 0 24 24"><use href="#icon-folder"/></svg>${escapeHtml(d.filename)}</div>`).join("")
-    : '<p class="placeholder" style="font-size:12.5px">No directly matching documents found.</p>';
-
-  panel.innerHTML = `
-    <div class="detail-header">
-      <img class="detail-avatar" src="${nodeIcon(node.type)}" alt=""/>
-      <div><div class="detail-name">${escapeHtml(node.label)}</div><div class="detail-type">${escapeHtml(node.type)}</div></div>
-    </div>
-    <div class="detail-section-label">About</div>
-    <div class="detail-about">${about}</div>
-    <div class="detail-section-label">Key Relationships (${related.length})</div>
-    ${relLines}
-    <div class="detail-section-label">Related Evidence (${matchingDocs.length})</div>
-    ${evidenceLines}
-  `;
-  panel.querySelectorAll(".rel-target").forEach(el => el.addEventListener("click", () => {
-    if (graphViewMode === "graph" && GRAPH_NETWORK) GRAPH_NETWORK.selectNodes([el.dataset.nodeId]);
-    showEntityDetail(el.dataset.nodeId);
-  }));
-  panel.querySelectorAll(".evidence-line[data-doc]").forEach(el => el.addEventListener("click", () => openDocModal(el.dataset.doc)));
-}
-
-function renderGraphTable() {
-  const wrap = document.getElementById("graph-table-wrap");
-  const { edges } = getFilteredGraph();
-  if (!edges.length) { wrap.innerHTML = '<p class="placeholder">No relationships match this filter.</p>'; return; }
-  const nodeName = id => GRAPH_DATA.nodes.find(n => n.id === id)?.label || "Unknown";
-  wrap.innerHTML = `
-    <table class="graph-table">
-      <thead><tr><th>From</th><th>Relationship</th><th>To</th><th>Evidence</th></tr></thead>
-      <tbody>
-        ${edges.map(e => {
-          const cat = classifyEdge(e.relation);
-          return `<tr>
-            <td>${escapeHtml(nodeName(e.source))}</td>
-            <td><span class="rel-chip" style="background:${cat.color}22;color:${cat.color}">${escapeHtml(e.relation)}</span></td>
-            <td>${escapeHtml(nodeName(e.target))}</td>
-            <td>${escapeHtml(e.evidence || "—")}</td>
-          </tr>`;
-        }).join("")}
-      </tbody>
-    </table>`;
-}
-
-document.getElementById("graph-show-isolated").addEventListener("change", () => { if (GRAPH_DATA) renderGraphView(); });
-document.getElementById("graph-filter-type").addEventListener("change", () => { if (GRAPH_DATA) renderGraphView(); });
-document.getElementById("graph-filter-relation").addEventListener("change", () => { if (GRAPH_DATA) renderGraphView(); });
-document.querySelectorAll("[data-graph-view]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll("[data-graph-view]").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    graphViewMode = btn.dataset.graphView;
-    renderGraphView();
-  });
-});
-document.getElementById("export-graph-btn").addEventListener("click", () => {
-  if (!GRAPH_DATA || !GRAPH_DATA.edges.length) { showToast("Nothing to export yet.", "error"); return; }
-  const nodeName = id => GRAPH_DATA.nodes.find(n => n.id === id)?.label || "Unknown";
-  let md = `# Connections\n\n`;
-  GRAPH_DATA.edges.forEach(e => { md += `- **${nodeName(e.source)}** — ${e.relation} → **${nodeName(e.target)}** _(${e.evidence || "no evidence text"})_\n`; });
-  const blob = new Blob([md], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = `connections-${CURRENT_CASE_ID}.md`; a.click();
-  URL.revokeObjectURL(url);
-});
-
-const PERSPECTIVE_LABELS = {
-  primary: "Primary reading", alternative_suspect: "Alternative suspect",
-  innocent_explanation: "Innocent explanation", gap_in_evidence: "Gap in evidence",
-};
-
-async function generatePerspectives() {
-  const body = document.getElementById("perspectives-body");
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Weighing alternative angles…</p>';
-  try {
-    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/perspectives`);
-    const data = await res.json();
-    if (!res.ok) {
-      // A 429 here is Groq's daily free-tier quota, not a bug — show the
-      // server's already-friendly wait-time message as-is rather than a
-      // generic failure, and offer a retry button for when it resets.
-      body.innerHTML = `<p class="err">${escapeHtml(data.detail)}</p>
-        <button class="ghost-btn" id="generate-perspectives-btn" style="margin-top:10px">Try again</button>`;
-      document.getElementById("generate-perspectives-btn").addEventListener("click", generatePerspectives);
-      return;
-    }
-    renderPerspectives(data.perspectives);
-  } catch {
-    body.innerHTML = `<p class="err">Could not reach the server.</p>
-      <button class="ghost-btn" id="generate-perspectives-btn" style="margin-top:10px">Try again</button>`;
-    document.getElementById("generate-perspectives-btn").addEventListener("click", generatePerspectives);
-  }
-}
-
-function renderPerspectives(perspectives) {
-  const body = document.getElementById("perspectives-body");
-  if (!perspectives || !perspectives.length) {
-    body.innerHTML = '<p class="placeholder">No alternative angles could be generated from the current evidence.</p>';
-    return;
-  }
-  body.innerHTML = `<div class="perspectives-grid">${perspectives.map(p => `
-    <div class="perspective-card stance-${p.stance || "other"}">
-      <span class="perspective-stance-tag">${escapeHtml(PERSPECTIVE_LABELS[p.stance] || "Angle")}</span>
-      <h4>${escapeHtml(p.title || "")}</h4>
-      <p class="perspective-summary">${escapeHtml(p.summary || "")}</p>
-      <ul>${(p.points || []).map(pt => `<li>${escapeHtml(pt)}</li>`).join("")}</ul>
-      <div class="perspective-caveat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><use href="#icon-shield"/></svg>${escapeHtml(p.caveat || "Requires further verification.")}</div>
-    </div>`).join("")}</div>`;
-}
-
-document.getElementById("generate-perspectives-btn").addEventListener("click", generatePerspectives);
-
-// ---------------------------------------------------------------------------
-// contradictions
-// ---------------------------------------------------------------------------
-
-async function loadContradictions() {
-  const body = document.getElementById("contradiction-body");
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) return;
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Comparing evidence across documents…</p>';
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/contradictions`);
-  const data = await res.json();
-  if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
-
-  if (!data.contradictions.length) {
-    body.innerHTML = '<p class="no-contradictions">No contradictions detected across the current documents.</p>';
-  } else {
-    body.innerHTML = data.contradictions.map(c => `
-      <div class="contradiction-card">
-        <div class="contradiction-top">
-          <span class="conflict-type-pill">${escapeHtml(c.conflict_type || "conflict")}</span>
-          <span class="confidence-pill">confidence: ${c.confidence ?? "—"}%</span>
-        </div>
-        <div class="contradiction-pair">
-          <div class="contradiction-claim">${escapeHtml(c.claim_a)}<span class="src">${escapeHtml(c.source_a)}</span></div>
-          <div class="contradiction-vs">VS</div>
-          <div class="contradiction-claim">${escapeHtml(c.claim_b)}<span class="src">${escapeHtml(c.source_b)}</span></div>
-        </div>
-        <div class="contradiction-explain">${escapeHtml(c.explanation)}</div>
-      </div>
-    `).join("");
-  }
-  loadedTabs.add("intel-contradictions");
-}
-
-// ---------------------------------------------------------------------------
-// similar cases
-// ---------------------------------------------------------------------------
-
-async function loadSimilar() {
-  const body = document.getElementById("similar-body");
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) return;
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Comparing against the case library…</p>';
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/similar-cases`);
-  const data = await res.json();
-  if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
-
-  if (!data.matches.length) {
-    body.innerHTML = '<p class="placeholder">No sufficiently similar precedents found in the reference library.</p>';
-  } else {
-    body.innerHTML = data.matches.map(m => `
-      <div class="similar-card">
-        <div class="similar-top">
-          <span class="similar-title">${escapeHtml(m.title || m.precedent_id)}</span>
-          <span class="similarity-pill">${m.similarity}% match</span>
-        </div>
-        <p style="font-size:13px;color:var(--text-muted)">${escapeHtml(m.summary || "")}</p>
-        <div class="similar-tags">${(m.key_similarities || []).map(t => `<span class="similar-tag">${escapeHtml(t)}</span>`).join("")}</div>
-        <div class="similar-note">${escapeHtml(m.note || "")}</div>
-      </div>
-    `).join("");
-  }
-  loadedTabs.add("similar");
-}
-
-// ---------------------------------------------------------------------------
-// argument intelligence
-// ---------------------------------------------------------------------------
-
-async function loadArguments() {
-  const body = document.getElementById("arguments-body");
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) return;
-  body.innerHTML = '<p class="loading-line"><span class="spinner"></span>Analyzing evidence for potential arguments…</p>';
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/arguments`);
-  const data = await res.json();
-  if (!res.ok) { body.innerHTML = `<p class="err">${data.detail}</p>`; return; }
-
-  if (!data.arguments.length) {
-    body.innerHTML = '<p class="placeholder">No arguments generated for the current evidence.</p>';
-  } else {
-    body.innerHTML = data.arguments.map(a => `
-      <div class="argument-card">
-        <div class="argument-label">Potential Argument</div>
-        <div class="argument-text">${escapeHtml(a.argument)}</div>
-        <div class="evidence-chips">${(a.supporting_evidence || []).map(e => `<span class="evidence-chip">${escapeHtml(e)}</span>`).join("")}</div>
-        <div class="counter-label">Potential Counterargument</div>
-        <div class="argument-text">${escapeHtml(a.counterargument)}</div>
-        ${(a.related_precedent_ids || []).length ? `<div class="evidence-chips">${a.related_precedent_ids.map(p => `<span class="evidence-chip">${escapeHtml(p)}</span>`).join("")}</div>` : ""}
-      </div>
-    `).join("");
-  }
-  loadedTabs.add("intel-arguments");
-}
-
-// ---------------------------------------------------------------------------
-// chat
-// ---------------------------------------------------------------------------
-
-document.getElementById("chat-modes").addEventListener("click", e => {
-  const btn = e.target.closest(".mode-btn");
-  if (!btn) return;
-  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  chatMode = btn.dataset.mode;
-});
-
-const chatWindow = document.getElementById("chat-window");
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
-
-chatForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const message = chatInput.value.trim();
-  if (!message) return;
-  appendChat("user", message);
-  chatInput.value = "";
-  const thinking = appendChat("assistant", null, true);
-  const lang = document.getElementById("chat-lang").value;
-  try {
-    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/chat`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, mode: chatMode, lang }),
-    });
-    const data = await res.json();
-    setChatBubbleText(thinking, res.ok ? data.answer : (data.detail || "Something went wrong."));
-  } catch {
-    setChatBubbleText(thinking, "Could not reach the server — it may be waking up, please try again.");
-  }
-});
-
-function appendChat(role, text, thinking = false) {
-  const el = document.createElement("div");
-  el.className = `chat-msg ${role}`;
-  const label = role === "user" ? "You" : "Case AI";
-  el.innerHTML = `
-    <div class="chat-msg-head"><span class="chat-msg-role">${label}</span><span class="chat-msg-time">${fmtTime(new Date().toISOString())}</span></div>
-    <div class="chat-msg-body">${thinking ? '<span class="typing-dots"><span></span><span></span><span></span></span>' : escapeHtml(text)}</div>
-  `;
-  chatWindow.appendChild(el);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-  return el;
-}
-
-function setChatBubbleText(el, text) {
-  el.querySelector(".chat-msg-body").textContent = text;
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-// voice input (Web Speech API - Chrome/Edge only, gracefully degrades elsewhere)
-const micBtn = document.getElementById("mic-btn");
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (SpeechRecognition) {
-  const recognizer = new SpeechRecognition();
-  recognizer.continuous = false;
-  recognizer.interimResults = false;
-  micBtn.addEventListener("mousedown", () => {
-    recognizer.lang = document.getElementById("chat-lang").value === "hi" ? "hi-IN" : "en-IN";
-    micBtn.classList.add("recording");
-    try { recognizer.start(); } catch {}
-  });
-  const stop = () => { micBtn.classList.remove("recording"); try { recognizer.stop(); } catch {} };
-  micBtn.addEventListener("mouseup", stop);
-  micBtn.addEventListener("mouseleave", stop);
-  recognizer.addEventListener("result", e => {
-    chatInput.value = e.results[0][0].transcript;
-  });
-} else {
-  micBtn.title = "Voice input not supported in this browser";
-  micBtn.addEventListener("click", () => showToast("Voice input isn't supported in this browser — try Chrome or Edge.", "error"));
-}
-
-// ---------------------------------------------------------------------------
-// report
-// ---------------------------------------------------------------------------
-
-const reportBody = document.getElementById("report-body");
-const generateBtn = document.getElementById("generate-report-btn");
-const downloadBtn = document.getElementById("download-report-btn");
-let lastReport = "";
-
-generateBtn.addEventListener("click", async () => {
-  const docs = await (await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`)).json();
-  if (docs.length === 0) {
-    renderEmptyState(reportBody, "icon-doc-check", "No documents yet", "Upload case documents in the Document Vault before generating a report.");
-    return;
-  }
-  reportBody.innerHTML = '<p class="loading-line"><span class="spinner"></span>Assembling structured case report…</p>';
-  generateBtn.disabled = true;
-  const originalLabel = generateBtn.textContent;
-  generateBtn.textContent = "Generating…";
-  try {
-    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/report`);
-    const text = await res.text();
-    if (!res.ok) {
-      let message = text;
-      try { message = JSON.parse(text).detail || text; } catch { /* not JSON, use raw text */ }
-      reportBody.innerHTML = `<p class="err">${escapeHtml(message)}</p>`;
-      showToast("Could not generate the report.", "error");
-      return;
-    }
-    lastReport = text;
-    reportBody.innerHTML = markdownToHtml(text);
-    downloadBtn.disabled = false;
-    showToast("Case report generated.", "success");
-  } catch (err) {
-    reportBody.innerHTML = `<p class="err">${err.message === "SERVER_UNREACHABLE" ? "Could not reach the server." : "Something went wrong."}</p>`;
-  } finally {
-    generateBtn.disabled = false;
-    generateBtn.textContent = originalLabel;
-  }
-});
-
-downloadBtn.addEventListener("click", () => {
-  const blob = new Blob([lastReport], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${CURRENT_CASE_ID}-report.md`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-function markdownToHtml(md) {
-  const lines = md.split("\n");
-  let html = "", inList = false;
-  for (let line of lines) {
-    line = line.trim();
-    if (!line) { if (inList) { html += "</ul>"; inList = false; } continue; }
-    if (line.startsWith("### ")) { html += `<h3>${inline(line.slice(4))}</h3>`; continue; }
-    if (line.startsWith("## ")) { html += `<h2>${inline(line.slice(3))}</h2>`; continue; }
-    if (line.startsWith("# ")) { html += `<h1>${inline(line.slice(2))}</h1>`; continue; }
-    if (line.startsWith("- ") || line.startsWith("* ")) {
-      if (!inList) { html += "<ul>"; inList = true; }
-      html += `<li>${inline(line.slice(2))}</li>`;
-      continue;
-    }
-    if (inList) { html += "</ul>"; inList = false; }
-    html += `<p>${inline(line)}</p>`;
-  }
-  if (inList) html += "</ul>";
-  return html;
-}
-
-function inline(text) {
-  return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`(.+?)`/g, "<code>$1</code>");
-}
-
-// ---------------------------------------------------------------------------
-// audit trail
-// ---------------------------------------------------------------------------
-
-async function loadAudit() {
-  const body = document.getElementById("audit-body");
-  const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/audit-log`);
-  const data = await res.json();
-  if (!data.log.length) { renderEmptyState(body, "icon-list", "No activity yet", "Every upload, deletion and analysis on this case will show up here."); return; }
-  body.innerHTML = `
-    <table class="audit-table">
-      <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th></tr></thead>
-      <tbody>
-        ${data.log.map(a => `
-          <tr>
-            <td class="time">${fmtTime(a.ts)}</td>
-            <td class="user">${escapeHtml(a.user)}</td>
-            <td class="action">${escapeHtml(a.action)}</td>
-            <td>${escapeHtml(a.detail)}</td>
-          </tr>`).join("")}
-      </tbody>
-    </table>
-  `;
-  loadedTabs.add("audit");
-}
-
-// ---------------------------------------------------------------------------
-// init
-// ---------------------------------------------------------------------------
-
-if (TOKEN) {
-  enterApp();
-} else {
-  showView("landing");
+.perspective-card.stance-alternative_suspect .perspective-stance-tag { background: var(--thread-glow); color: var(--thread); }
+.perspective-card.stance-innocent_explanation .perspective-stance-tag { background: rgba(34,197,94,0.12); color: var(--ok); }
+.perspective-card.stance-gap_in_evidence .perspective-stance-tag { background: rgba(139,127,214,0.12); color: var(--info); }
+.perspective-card h4 { font-family: var(--display); font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+.perspective-card .perspective-summary { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin: 0 0 12px; }
+.perspective-card ul { margin: 0 0 12px; padding-left: 18px; font-size: 12.5px; color: var(--text); line-height: 1.6; }
+.perspective-caveat {
+  display: flex; gap: 7px; align-items: flex-start; font-size: 11.5px; color: var(--text-faint);
+  padding-top: 10px; border-top: 1px solid var(--line-soft); font-style: italic;
 }

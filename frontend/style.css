@@ -1,31 +1,53 @@
 :root {
-  /* ---- Dark navy surfaces — page bg darkest, cards a step lighter, ---- */
-  --ink: #0a0f1c;
-  --panel: #111827;
-  --panel-raised: #161f33;
-  --line: #26314a;
-  --line-soft: #1c2438;
+  /* ==================================================================
+     "CHAMBERS" PALETTE — ink-black case-file surfaces with brass/amber
+     as the primary accent and seal-wax red for conflicts. Chosen over
+     the previous SaaS-blue because the product is a legal investigation
+     record, not a dashboard: brass reads as seal / ledger / judiciary,
+     red is reserved exclusively for contradictions so an analyst can
+     spot a conflict anywhere in the app without reading a word.
+     Variable NAMES are unchanged so every existing rule keeps working.
+     ================================================================== */
 
-  /* ---- Card accent — a slightly lighter navy chip, used where the old
-     theme used a near-white "paper" card (e.g. evidence tags) ---- */
-  --paper: #1b2440;
-  --paper-ink: #eef1f8;
+  /* ---- Surfaces: page darkest, cards one step up, raised cards two ---- */
+  --ink: #0c0d11;
+  --panel: #14161d;
+  --panel-raised: #1b1e27;
+  --line: #2c3040;
+  --line-soft: #1f232e;
 
-  /* ---- Text — near-white on navy, with two muted steps ---- */
-  --text: #eef1f8;
-  --text-muted: #93a0bf;
-  --text-faint: #5c6a8a;
+  /* ---- Card accent chip ---- */
+  --paper: #232734;
+  --paper-ink: #f3f0e8;
 
-  /* ---- Accents — a confident SaaS blue as the primary accent, a clear
-     red for alerts/high-priority, green for verified/ok, amber/purple
-     for secondary categories ---- */
-  --teal: #3b6df0;
-  --teal-dim: #6690f5;
-  --teal-glow: rgba(59, 109, 240, 0.16);
-  --thread: #ef4444;
-  --thread-glow: rgba(239, 68, 68, 0.14);
-  --ok: #22c55e;
-  --info: #8b7fd6;
+  /* ---- Text: warm off-white (paper), two muted steps ---- */
+  --text: #f3f0e8;
+  --text-muted: #9c9a92;
+  --text-faint: #6b6a64;
+
+  /* ---- Accents. --teal is the historical name of the primary accent
+     variable; it now carries brass. --thread is the conflict red and is
+     used for nothing else. ---- */
+  --teal: #d9a441;
+  --teal-dim: #eabf72;
+  --teal-glow: rgba(217, 164, 65, 0.16);
+  --thread: #e05a4e;
+  --thread-glow: rgba(224, 90, 78, 0.15);
+  --ok: #4f9d76;
+  --info: #8f8bc4;
+
+  /* ---- Categorical chart ramp. Use these (not raw hex) for any new
+     chart so a future palette change is a one-line edit. ---- */
+  --chart-1: #d9a441;
+  --chart-2: #8f8bc4;
+  --chart-3: #4f9d76;
+  --chart-4: #c9705f;
+  --chart-5: #4a7fb5;
+  --chart-6: #9a8f6e;
+
+  --sev-high: #e05a4e;
+  --sev-med: #d9a441;
+  --sev-low: #7d8794;
 
   --radius: 10px;
   --radius-sm: 4px;
@@ -41,18 +63,19 @@ body {
   margin: 0;
   background: var(--ink);
   background-image:
-    radial-gradient(circle at 14% -8%, rgba(59, 109, 240, 0.16), transparent 42%),
-    radial-gradient(circle at 92% 6%, rgba(139, 127, 214, 0.10), transparent 40%);
+    radial-gradient(circle at 12% -10%, rgba(217, 164, 65, 0.13), transparent 44%),
+    radial-gradient(circle at 94% 4%, rgba(143, 139, 196, 0.09), transparent 40%),
+    radial-gradient(circle at 50% 110%, rgba(224, 90, 78, 0.05), transparent 45%);
   color: var(--text);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* A thin letterhead ribbon at the very top of the page — blue fading into
-   indigo, echoing an official case-file cover sheet in the new palette. */
+/* A thin letterhead ribbon at the very top of the page — brass fading
+   through to indigo, echoing an official case-file cover sheet. */
 body::before {
   content: ""; position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 500;
-  background: linear-gradient(90deg, var(--teal) 0%, var(--teal) 40%, var(--info) 100%);
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal) 34%, var(--chart-4) 64%, var(--info) 100%);
 }
 
 ::selection { background: var(--teal-glow); color: var(--text); }
@@ -163,9 +186,9 @@ img { max-width: 100%; display: block; }
   border-radius: 18px; overflow: hidden;
   background-color: var(--panel);
   background-image:
-    linear-gradient(160deg, rgba(4,9,22,0.88) 10%, rgba(4,9,22,0.55) 55%, rgba(4,9,22,0.85) 100%),
+    linear-gradient(160deg, rgba(10,11,15,0.88) 10%, rgba(10,11,15,0.55) 55%, rgba(10,11,15,0.85) 100%),
     url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=70");
-  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
+  background-size: cover; background-position: center; filter: grayscale(0.7) sepia(0.2) saturate(1.12) contrast(1.1) brightness(0.72);
 }
 .ev-card {
   position: absolute; width: 168px; background: var(--paper); color: var(--paper-ink);
@@ -238,9 +261,9 @@ img { max-width: 100%; display: block; }
   min-height: 190px; display: flex; align-items: flex-end;
   background-color: var(--panel);
   background-image:
-    linear-gradient(0deg, rgba(4,9,22,0.92) 0%, rgba(4,9,22,0.35) 55%, rgba(4,9,22,0.08) 100%),
+    linear-gradient(0deg, rgba(10,11,15,0.92) 0%, rgba(10,11,15,0.35) 55%, rgba(10,11,15,0.08) 100%),
     url("https://images.unsplash.com/photo-1758873268745-dd2cf0d677b5?auto=format&fit=crop&w=1600&q=70");
-  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
+  background-size: cover; background-position: center; filter: grayscale(0.7) sepia(0.2) saturate(1.12) contrast(1.1) brightness(0.72);
 }
 .photo-band-caption { padding: 22px 28px; max-width: 560px; }
 .photo-band-caption .landing-kicker { margin-bottom: 6px; }
@@ -254,9 +277,9 @@ img { max-width: 100%; display: block; }
 .landing-cta-band {
   background-color: var(--panel);
   background-image:
-    linear-gradient(135deg, rgba(4,9,22,0.93) 0%, rgba(4,9,22,0.82) 55%, rgba(4,9,22,0.93) 100%),
+    linear-gradient(135deg, rgba(10,11,15,0.93) 0%, rgba(10,11,15,0.82) 55%, rgba(10,11,15,0.93) 100%),
     url("https://images.unsplash.com/photo-1589994965851-a8f479c573a9?auto=format&fit=crop&w=1600&q=70");
-  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
+  background-size: cover; background-position: center; filter: grayscale(0.7) sepia(0.2) saturate(1.12) contrast(1.1) brightness(0.72);
   border-top: 1px solid var(--line-soft);
 }
 .landing-cta-band-inner {
@@ -397,7 +420,7 @@ img { max-width: 100%; display: block; }
 /* ---------------- modal ---------------- */
 
 .modal-backdrop {
-  display: none; position: fixed; inset: 0; background: rgba(4,9,22,0.74);
+  display: none; position: fixed; inset: 0; background: rgba(10,11,15,0.74);
   align-items: center; justify-content: center; z-index: 100;
 }
 .modal-backdrop.active { display: flex; animation: modal-fade 0.18s ease; }
@@ -1019,4 +1042,273 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .perspective-caveat {
   display: flex; gap: 7px; align-items: flex-start; font-size: 11.5px; color: var(--text-faint);
   padding-top: 10px; border-top: 1px solid var(--line-soft); font-style: italic;
+}
+
+
+/* ==================================================================
+   PAGE BANNERS
+   Each workspace page opens with a titled banner carrying an original
+   inline-SVG motif. Deliberately abstract/diagrammatic rather than a
+   stock photograph: this is an evidence tool, and decorative imagery
+   of people or documents risks reading as case material.
+   ================================================================== */
+
+.page-banner {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+  background: linear-gradient(120deg, var(--panel-raised), var(--panel) 62%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  margin-bottom: 24px;
+}
+.page-banner::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
+  background: linear-gradient(180deg, var(--teal), transparent);
+}
+.page-banner::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: linear-gradient(90deg, transparent 20%, #000 100%);
+}
+.page-banner > * { position: relative; z-index: 1; }
+.banner-copy h1 { margin: 0 0 8px; font-size: 27px; letter-spacing: -0.4px; }
+.banner-copy p  { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-muted); max-width: 62ch; }
+.banner-eyebrow {
+  display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.3px;
+  text-transform: uppercase; color: var(--teal); margin-bottom: 10px;
+}
+.banner-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.banner-art { width: 200px; height: 118px; flex: none; opacity: 0.92; }
+.banner-art .ba-stroke { fill: none; stroke: var(--teal); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.banner-art .ba-soft   { fill: none; stroke: var(--line); stroke-width: 1.2; }
+.banner-art .ba-fill   { fill: var(--teal); opacity: 0.12; }
+.banner-art .ba-accent { fill: none; stroke: var(--thread); stroke-width: 1.6; stroke-linecap: round; }
+.banner-art .ba-dot    { fill: var(--teal); }
+.banner-art .ba-dot-alt{ fill: var(--info); }
+
+.page-banner.banner-alert { background: linear-gradient(120deg, #241a1a, var(--panel) 62%); }
+.page-banner.banner-alert::before { background: linear-gradient(180deg, var(--thread), transparent); }
+.page-banner.banner-alert .banner-eyebrow { color: var(--thread); }
+.page-banner.banner-alert .banner-art .ba-stroke { stroke: var(--thread); }
+.page-banner.banner-alert .banner-art .ba-dot { fill: var(--thread); }
+
+@media (max-width: 880px) {
+  .page-banner { grid-template-columns: 1fr; }
+  .banner-art { display: none; }
+}
+
+/* ==================================================================
+   SHARED CHART PRIMITIVES
+   Horizontal bar chart, mini column chart and severity donut — reused
+   by Contradictions, Timeline, Connections, Similar Cases and Audit so
+   every page gets a visual without five separate implementations.
+   ================================================================== */
+
+.hbar-chart { display: flex; flex-direction: column; gap: 11px; }
+.hbar-row { display: grid; grid-template-columns: minmax(74px, 34%) 1fr auto; gap: 12px; align-items: center; }
+.hbar-name {
+  font-size: 12px; color: var(--text-muted); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.hbar-track { height: 8px; background: var(--line-soft); border-radius: 20px; overflow: hidden; }
+.hbar-fill {
+  height: 100%; border-radius: 20px; background: var(--teal);
+  animation: hbar-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left center;
+}
+.hbar-val { font-family: var(--mono); font-size: 11.5px; color: var(--text); min-width: 38px; text-align: right; }
+@keyframes hbar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.col-chart { display: flex; align-items: flex-end; gap: 6px; height: 112px; padding-top: 6px; }
+.col-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.col-bar-wrap { width: 100%; height: 88px; display: flex; align-items: flex-end; }
+.col-bar {
+  width: 100%; border-radius: 3px 3px 0 0; background: var(--teal); min-height: 3px;
+  animation: col-grow 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: bottom center;
+}
+.col-bar:hover { filter: brightness(1.18); }
+.col-label {
+  font-family: var(--mono); font-size: 9.5px; color: var(--text-faint);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.col-chart-foot {
+  display: flex; justify-content: space-between; font-size: 11px;
+  color: var(--text-faint); margin-top: 10px; border-top: 1px solid var(--line-soft); padding-top: 8px;
+}
+@keyframes col-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+.chart-card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 20px; margin-bottom: 20px;
+}
+.chart-card h3 { margin: 0 0 3px; font-size: 14px; letter-spacing: -0.1px; }
+.chart-card > .sub { margin: 0 0 16px; font-size: 12px; }
+
+/* ==================================================================
+   CONTRADICTIONS — now a top-level feature with its own page
+   ================================================================== */
+
+.contra-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px; margin-bottom: 22px;
+}
+.contra-stat {
+  background: var(--panel); border: 1px solid var(--line);
+  border-top: 2px solid var(--line); border-radius: var(--radius); padding: 16px 18px;
+}
+.contra-stat.sev-high { border-top-color: var(--sev-high); }
+.contra-stat.sev-med  { border-top-color: var(--sev-med); }
+.contra-stat.sev-low  { border-top-color: var(--sev-low); }
+.contra-stat.sev-neutral { border-top-color: var(--teal); }
+.contra-stat-num { font-family: var(--display); font-size: 27px; font-weight: 800; line-height: 1; }
+.contra-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 7px; }
+.contra-stat-cap { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+
+.contra-charts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+
+.contra-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 12px 0 16px; border-bottom: 1px solid var(--line-soft); margin-bottom: 18px;
+}
+.contra-toolbar .timeline-hint { margin-left: auto; }
+
+.contradiction-card { position: relative; }
+.contradiction-card.sev-high { border-left-color: var(--sev-high); }
+.contradiction-card.sev-med  { border-left-color: var(--sev-med); }
+.contradiction-card.sev-low  { border-left-color: var(--sev-low); }
+.sev-pill {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase;
+  padding: 2px 9px; border-radius: 10px; border: 1px solid currentColor;
+}
+.sev-pill.sev-high { color: var(--sev-high); }
+.sev-pill.sev-med  { color: var(--sev-med); }
+.sev-pill.sev-low  { color: var(--sev-low); }
+
+.contra-confidence-bar { height: 4px; background: var(--line-soft); border-radius: 20px; margin-top: 14px; overflow: hidden; }
+.contra-confidence-bar span { display: block; height: 100%; border-radius: 20px; }
+
+.contra-review-note {
+  display: flex; gap: 11px; align-items: flex-start;
+  background: var(--panel-raised); border: 1px solid var(--line);
+  border-left: 3px solid var(--teal); border-radius: var(--radius);
+  padding: 13px 16px; margin-bottom: 20px; font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
+}
+.contra-review-note svg { width: 17px; height: 17px; flex: none; color: var(--teal); margin-top: 1px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+
+/* Severity donut reuses .donut/.donut-hole from the dashboard. */
+.sev-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+
+/* ==================================================================
+   PER-PAGE CHART BLOCKS
+   ================================================================== */
+
+.timeline-density { margin: 0 0 22px; }
+.graph-insights {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; margin-top: 22px;
+}
+.similar-chart-wrap { margin-bottom: 22px; }
+.audit-chart-wrap { margin-bottom: 22px; }
+
+.readiness-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.readiness-item { display: flex; gap: 12px; align-items: center; }
+.readiness-ring { width: 46px; height: 46px; flex: none; }
+.readiness-ring circle { fill: none; stroke-width: 5; stroke-linecap: round; }
+.readiness-ring .rr-track { stroke: var(--line-soft); }
+.readiness-ring .rr-val { stroke: var(--teal); transform: rotate(-90deg); transform-origin: 50% 50%; }
+.readiness-copy strong { display: block; font-size: 13px; }
+.readiness-copy span { display: block; font-size: 11.5px; color: var(--text-faint); margin-top: 2px; }
+
+/* Vault type chart upgraded from pills to a labelled bar row */
+.vault-type-chart.as-bars { display: block; }
+
+/* ==================================================================
+   CONTRADICTIONS NAV TAB
+   The only nav item allowed to use the conflict red, plus a live count
+   badge so an unreviewed conflict is visible from any page.
+   ================================================================== */
+
+.tab-alert.active { color: var(--thread); background: var(--thread-glow); border-left-color: var(--thread); }
+.tab-alert.active .tab-title,
+.tab-alert.active .tab-num,
+.tab-alert.active .tab-desc { color: var(--thread); }
+.tab-alert.active .tab-desc { opacity: 0.8; }
+
+.tab-badge {
+  margin-left: auto; align-self: center; flex: none;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; line-height: 1;
+  min-width: 19px; padding: 4px 6px; border-radius: 10px; text-align: center;
+  background: var(--thread); color: #fff;
+  animation: badge-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.tab-badge[hidden] { display: none; }
+@keyframes badge-in { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+
+/* ==================================================================
+   LANDING — CONTRADICTION FEATURE BAND
+   Contradiction detection is the differentiator of this submission, so
+   it gets a band of its own on the landing page rather than sitting as
+   one of nine equal feature cards.
+   ================================================================== */
+
+.contra-band { max-width: 1240px; margin: 56px auto 0; padding: 0 48px; }
+.contra-band-inner {
+  display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center;
+  border: 1px solid var(--line); border-radius: 18px;
+  background: linear-gradient(120deg, #241a1a 0%, var(--panel) 58%);
+  padding: 38px 42px; position: relative; overflow: hidden;
+}
+.contra-band-inner::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(circle at 78% 50%, #000, transparent 70%);
+}
+.contra-band-copy { position: relative; z-index: 1; }
+.contra-band-copy .landing-kicker { color: var(--thread); }
+.contra-band-copy h3 { font-family: var(--display); font-size: 25px; font-weight: 700; margin: 8px 0 12px; letter-spacing: -0.4px; }
+.contra-band-copy p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0 0 18px; }
+.contra-band-points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.contra-band-points li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text-muted); }
+.contra-band-points svg { width: 16px; height: 16px; flex: none; margin-top: 1px; fill: none; stroke: var(--thread); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The mock conflict card — a real-looking sample of what the feature
+   produces, so the value is visible before anyone signs in. */
+.contra-demo { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
+.contra-demo-card {
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--thread);
+  border-radius: var(--radius); padding: 15px 17px;
+}
+.contra-demo-head { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.contra-demo-tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.6px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 10px; border: 1px solid var(--thread); color: var(--thread);
+}
+.contra-demo-conf { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-left: auto; }
+.contra-demo-claim {
+  font-size: 12.5px; color: var(--text); line-height: 1.55;
+  background: var(--panel-raised); border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm); padding: 9px 11px;
+}
+.contra-demo-claim span { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-faint); margin-top: 6px; }
+.contra-demo-vs {
+  text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
+  color: var(--thread); margin: 8px 0;
+}
+.contra-demo-bar { height: 4px; background: var(--line-soft); border-radius: 20px; margin-top: 13px; overflow: hidden; }
+.contra-demo-bar span { display: block; height: 100%; width: 88%; background: var(--thread); border-radius: 20px; }
+
+@media (max-width: 900px) {
+  .contra-band { padding: 0 24px; }
+  .contra-band-inner { grid-template-columns: 1fr; gap: 28px; padding: 28px 24px; }
 }

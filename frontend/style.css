@@ -1,56 +1,67 @@
 :root {
   /* ==================================================================
-     "CHAMBERS" PALETTE — ink-black case-file surfaces with brass/amber
-     as the primary accent and seal-wax red for conflicts. Chosen over
-     the previous SaaS-blue because the product is a legal investigation
-     record, not a dashboard: brass reads as seal / ledger / judiciary,
-     red is reserved exclusively for contradictions so an analyst can
-     spot a conflict anywhere in the app without reading a word.
-     Variable NAMES are unchanged so every existing rule keeps working.
+     THEME — "Ink & Brass"
+     A case-file palette rather than a SaaS one: archival ink-charcoal
+     surfaces with a warm cast, brass/gold as the primary accent (court
+     brass, scales, evidence tags), crimson reserved almost exclusively
+     for contradictions and alerts, verdigris for verified/OK, steel
+     blue for neutral secondary categories.
+     Rationale: the old cobalt blue competed with the red conflict
+     signal and read like a generic dashboard. Brass on ink is warmer,
+     more authoritative, and leaves red free to mean exactly one thing.
      ================================================================== */
 
-  /* ---- Surfaces: page darkest, cards one step up, raised cards two ---- */
-  --ink: #0c0d11;
-  --panel: #14161d;
-  --panel-raised: #1b1e27;
-  --line: #2c3040;
-  --line-soft: #1f232e;
+  /* ---- surfaces: page darkest, cards a step lighter ---- */
+  --ink: #0a0d14;
+  --ink-deep: #06080d;
+  --panel: #111620;
+  --panel-raised: #18202d;
+  --line: #2a3346;
+  --line-soft: #1d2535;
 
-  /* ---- Card accent chip ---- */
-  --paper: #232734;
-  --paper-ink: #f3f0e8;
+  /* ---- card accent (evidence tags, chips) ---- */
+  --paper: #1c2536;
+  --paper-ink: #f2ede2;
 
-  /* ---- Text: warm off-white (paper), two muted steps ---- */
-  --text: #f3f0e8;
-  --text-muted: #9c9a92;
-  --text-faint: #6b6a64;
+  /* ---- text: warm off-white (archival paper) on ink ---- */
+  --text: #f1ece2;
+  --text-muted: #9aa4b6;
+  --text-faint: #636d82;
 
-  /* ---- Accents. --teal is the historical name of the primary accent
-     variable; it now carries brass. --thread is the conflict red and is
-     used for nothing else. ---- */
-  --teal: #d9a441;
-  --teal-dim: #eabf72;
-  --teal-glow: rgba(217, 164, 65, 0.16);
-  --thread: #e05a4e;
-  --thread-glow: rgba(224, 90, 78, 0.15);
-  --ok: #4f9d76;
-  --info: #8f8bc4;
+  /* ---- accents ---- */
+  --brass: #d9a441;
+  --brass-dim: #eec37a;
+  --brass-deep: #8a6412;
+  --brass-glow: rgba(217, 164, 65, 0.15);
+  --crimson: #e2574f;
+  --crimson-glow: rgba(226, 87, 79, 0.15);
+  --verdigris: #46a97f;
+  --steel: #6f93c4;
+  --on-accent: #17120a;
 
-  /* ---- Categorical chart ramp. Use these (not raw hex) for any new
-     chart so a future palette change is a one-line edit. ---- */
-  --chart-1: #d9a441;
-  --chart-2: #8f8bc4;
-  --chart-3: #4f9d76;
-  --chart-4: #c9705f;
-  --chart-5: #4a7fb5;
-  --chart-6: #9a8f6e;
+  /* ---- chart series (used by both CSS and app.js) ---- */
+  --c1: #d9a441;
+  --c2: #6f93c4;
+  --c3: #46a97f;
+  --c4: #b98bd6;
+  --c5: #e2574f;
+  --c6: #8d97ab;
 
-  --sev-high: #e05a4e;
-  --sev-med: #d9a441;
-  --sev-low: #7d8794;
+  /* ---- legacy aliases: older rules still reference these names ---- */
+  --teal: var(--brass);
+  --teal-dim: var(--brass-dim);
+  --teal-glow: var(--brass-glow);
+  --thread: var(--crimson);
+  --thread-glow: var(--crimson-glow);
+  --ok: var(--verdigris);
+  --info: var(--steel);
 
-  --radius: 10px;
-  --radius-sm: 4px;
+  --radius: 12px;
+  --radius-sm: 5px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 18px 46px rgba(0, 0, 0, 0.42);
 
   --display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -64,18 +75,19 @@ body {
   background: var(--ink);
   background-image:
     radial-gradient(circle at 12% -10%, rgba(217, 164, 65, 0.13), transparent 44%),
-    radial-gradient(circle at 94% 4%, rgba(143, 139, 196, 0.09), transparent 40%),
-    radial-gradient(circle at 50% 110%, rgba(224, 90, 78, 0.05), transparent 45%);
+    radial-gradient(circle at 90% 4%, rgba(111, 147, 196, 0.09), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015) 0%, transparent 30%);
   color: var(--text);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* A thin letterhead ribbon at the very top of the page — brass fading
-   through to indigo, echoing an official case-file cover sheet. */
+
+/* A thin letterhead ribbon at the very top of the page — blue fading into
+   indigo, echoing an official case-file cover sheet in the new palette. */
 body::before {
   content: ""; position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 500;
-  background: linear-gradient(90deg, var(--teal) 0%, var(--teal) 34%, var(--chart-4) 64%, var(--info) 100%);
+  background: linear-gradient(90deg, var(--brass-deep) 0%, var(--brass) 28%, var(--brass-dim) 46%, var(--brass) 64%, var(--crimson) 100%);
 }
 
 ::selection { background: var(--teal-glow); color: var(--text); }
@@ -128,8 +140,8 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.01em;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.primary-btn { background: var(--teal); color: #f8fafc; border: 1px solid var(--teal); box-shadow: 0 1px 2px rgba(2,6,20,0.15), 0 4px 14px rgba(59,109,240,0.18); }
-.primary-btn:hover { background: #2f5fe0; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(2,6,20,0.18), 0 8px 20px rgba(59,109,240,0.24); }
+.primary-btn { background: linear-gradient(180deg, var(--brass-dim), var(--brass)); color: var(--on-accent); border: 1px solid var(--brass-dim); box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 18px rgba(217,164,65,0.20); }
+.primary-btn:hover { background: linear-gradient(180deg, #f5d08b, var(--brass-dim)); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.32), 0 12px 26px rgba(217,164,65,0.28); }
 .primary-btn:active { transform: translateY(0) scale(0.98); box-shadow: 0 1px 2px rgba(2,6,20,0.15); }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 .primary-btn.full { width: 100%; margin-top: 6px; }
@@ -186,9 +198,9 @@ img { max-width: 100%; display: block; }
   border-radius: 18px; overflow: hidden;
   background-color: var(--panel);
   background-image:
-    linear-gradient(160deg, rgba(10,11,15,0.88) 10%, rgba(10,11,15,0.55) 55%, rgba(10,11,15,0.85) 100%),
+    linear-gradient(160deg, rgba(4,9,22,0.88) 10%, rgba(4,9,22,0.55) 55%, rgba(4,9,22,0.85) 100%),
     url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=70");
-  background-size: cover; background-position: center; filter: grayscale(0.7) sepia(0.2) saturate(1.12) contrast(1.1) brightness(0.72);
+  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
 }
 .ev-card {
   position: absolute; width: 168px; background: var(--paper); color: var(--paper-ink);
@@ -261,9 +273,9 @@ img { max-width: 100%; display: block; }
   min-height: 190px; display: flex; align-items: flex-end;
   background-color: var(--panel);
   background-image:
-    linear-gradient(0deg, rgba(10,11,15,0.92) 0%, rgba(10,11,15,0.35) 55%, rgba(10,11,15,0.08) 100%),
+    linear-gradient(0deg, rgba(4,9,22,0.92) 0%, rgba(4,9,22,0.35) 55%, rgba(4,9,22,0.08) 100%),
     url("https://images.unsplash.com/photo-1758873268745-dd2cf0d677b5?auto=format&fit=crop&w=1600&q=70");
-  background-size: cover; background-position: center; filter: grayscale(0.7) sepia(0.2) saturate(1.12) contrast(1.1) brightness(0.72);
+  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
 }
 .photo-band-caption { padding: 22px 28px; max-width: 560px; }
 .photo-band-caption .landing-kicker { margin-bottom: 6px; }
@@ -277,9 +289,9 @@ img { max-width: 100%; display: block; }
 .landing-cta-band {
   background-color: var(--panel);
   background-image:
-    linear-gradient(135deg, rgba(10,11,15,0.93) 0%, rgba(10,11,15,0.82) 55%, rgba(10,11,15,0.93) 100%),
+    linear-gradient(135deg, rgba(4,9,22,0.93) 0%, rgba(4,9,22,0.82) 55%, rgba(4,9,22,0.93) 100%),
     url("https://images.unsplash.com/photo-1589994965851-a8f479c573a9?auto=format&fit=crop&w=1600&q=70");
-  background-size: cover; background-position: center; filter: grayscale(0.7) sepia(0.2) saturate(1.12) contrast(1.1) brightness(0.72);
+  background-size: cover; background-position: center; filter: grayscale(0.55) saturate(1.05) contrast(1.08) brightness(0.75);
   border-top: 1px solid var(--line-soft);
 }
 .landing-cta-band-inner {
@@ -345,10 +357,10 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 .case-mark-glyph.big {
-  font-family: var(--display); font-size: 34px; font-weight: 600; color: #f8fafc;
+  font-family: var(--display); font-size: 34px; font-weight: 700; color: var(--on-accent);
   width: 62px; height: 62px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
-  background: radial-gradient(circle at 32% 28%, #6690f5 0%, var(--teal) 55%, #14213d 100%);
+  background: radial-gradient(circle at 30% 26%, var(--brass-dim) 0%, var(--brass) 54%, var(--brass-deep) 100%);
   box-shadow:
     0 3px 8px rgba(2,6,20,0.35),
     0 10px 22px rgba(59,109,240,0.28),
@@ -420,7 +432,7 @@ img { max-width: 100%; display: block; }
 /* ---------------- modal ---------------- */
 
 .modal-backdrop {
-  display: none; position: fixed; inset: 0; background: rgba(10,11,15,0.74);
+  display: none; position: fixed; inset: 0; background: rgba(4,9,22,0.74);
   align-items: center; justify-content: center; z-index: 100;
 }
 .modal-backdrop.active { display: flex; animation: modal-fade 0.18s ease; }
@@ -497,10 +509,10 @@ img { max-width: 100%; display: block; }
 .case-mark { display: flex; align-items: center; gap: 12px; padding: 24px 20px; border-bottom: 1px solid var(--line-soft); }
 .case-mark.clickable { cursor: pointer; }
 .case-mark-glyph {
-  font-family: var(--display); font-size: 17px; font-weight: 600; color: #f8fafc;
+  font-family: var(--display); font-size: 17px; font-weight: 700; color: var(--on-accent);
   width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(circle at 32% 28%, #6690f5 0%, var(--teal) 55%, #14213d 100%);
+  background: radial-gradient(circle at 30% 26%, var(--brass-dim) 0%, var(--brass) 54%, var(--brass-deep) 100%);
   box-shadow: 0 2px 5px rgba(2,6,20,0.3), inset 0 1px 1px rgba(255,255,255,0.25), inset 0 -2px 4px rgba(0,0,0,0.22);
 }
 .case-mark-title { font-size: 11px; letter-spacing: 0.12em; color: var(--text-muted); font-weight: 600; }
@@ -538,8 +550,8 @@ img { max-width: 100%; display: block; }
 }
 .whoami-avatar {
   width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center;
-  justify-content: center; font-family: var(--display); font-weight: 700; font-size: 13px; color: #f8fafc;
-  background: radial-gradient(circle at 32% 28%, #6690f5 0%, var(--teal) 55%, #14213d 100%);
+  justify-content: center; font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--on-accent);
+  background: radial-gradient(circle at 30% 26%, var(--brass-dim) 0%, var(--brass) 54%, var(--brass-deep) 100%);
 }
 .whoami-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .whoami-name { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -809,7 +821,7 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(2,6,20,0.25), inset 0 1px 1px rgba(255,255,255,0.25);
 }
-.timeline-marker svg { width: 16px; height: 16px; color: #f8fafc; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.timeline-marker svg { width: 16px; height: 16px; color: #fdf8ec; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .timeline-row { display: flex; align-items: flex-start; gap: 16px; }
 .timeline-date-badge { flex-shrink: 0; width: 54px; text-align: center; }
 .timeline-date-year { font-size: 10px; color: var(--text-faint); font-family: var(--mono); }
@@ -903,19 +915,6 @@ img { max-width: 100%; display: block; }
   .graph-detail { width: 100%; height: auto; max-height: 320px; }
 }
 
-/* ---------------- contradictions ---------------- */
-
-.contradiction-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--thread); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
-.contradiction-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.conflict-type-pill { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; background: var(--thread-glow); color: var(--thread); padding: 2px 8px; border-radius: 10px; }
-.confidence-pill { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); }
-.contradiction-pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: start; margin-bottom: 12px; }
-.contradiction-claim { font-size: 13.5px; line-height: 1.5; }
-.contradiction-claim .src { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 5px; }
-.contradiction-vs { color: var(--thread); font-family: var(--mono); font-size: 11px; padding-top: 4px; }
-.contradiction-explain { font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--line-soft); padding-top: 10px; }
-.no-contradictions { color: var(--ok); font-size: 14px; }
-
 /* ---------------- similar cases / arguments ---------------- */
 
 .similar-card, .argument-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
@@ -978,7 +977,7 @@ img { max-width: 100%; display: block; }
   padding: 12px 14px; color: var(--text); font-size: 14px;
 }
 .chat-form input:focus { outline: none; border-color: var(--teal-dim); }
-.chat-form button[type="submit"] { background: var(--teal); color: #f8fafc; border: none; border-radius: var(--radius-sm); padding: 0 20px; font-weight: 600; cursor: pointer; font-size: 13px; }
+.chat-form button[type="submit"] { background: linear-gradient(180deg, var(--brass-dim), var(--brass)); color: var(--on-accent); border: none; border-radius: var(--radius-sm); padding: 0 20px; font-weight: 600; cursor: pointer; font-size: 13px; }
 #mic-btn { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 16px; cursor: pointer; padding: 0 14px; }
 #mic-btn.recording { background: var(--thread-glow); border-color: var(--thread); }
 
@@ -1044,271 +1043,271 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   padding-top: 10px; border-top: 1px solid var(--line-soft); font-style: italic;
 }
 
-
 /* ==================================================================
-   PAGE BANNERS
-   Each workspace page opens with a titled banner carrying an original
-   inline-SVG motif. Deliberately abstract/diagrammatic rather than a
-   stock photograph: this is an evidence tool, and decorative imagery
-   of people or documents risks reading as case material.
+   ADDED IN THE VISUAL PASS
+   Page hero art, reusable chart primitives, and the Contradictions
+   page (promoted out of Case Intelligence into its own feature).
    ================================================================== */
 
-.page-banner {
-  position: relative; overflow: hidden;
+/* ---------------- panel hero banners ----------------
+   Each workspace page gets an illustrated header band so pages are
+   recognisable at a glance instead of being a wall of identical
+   headings. Art is inline SVG — nothing is loaded over the network,
+   and no photographic imagery is used inside the case workspace so
+   nothing can be mistaken for real evidence. */
+
+.page-hero {
+  position: relative;
   display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
-  background: linear-gradient(120deg, var(--panel-raised), var(--panel) 62%);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 26px 28px;
-  margin-bottom: 24px;
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px 26px; margin-bottom: 22px; overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 20%, var(--hero-glow, var(--brass-glow)), transparent 62%),
+    linear-gradient(135deg, var(--panel-raised) 0%, var(--panel) 62%);
 }
-.page-banner::before {
-  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
-  background: linear-gradient(180deg, var(--teal), transparent);
-}
-.page-banner::after {
+.page-hero::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background-image:
-    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
   background-size: 26px 26px;
-  mask-image: linear-gradient(90deg, transparent 20%, #000 100%);
+  mask-image: linear-gradient(105deg, transparent 38%, #000 100%);
+  -webkit-mask-image: linear-gradient(105deg, transparent 38%, #000 100%);
 }
-.page-banner > * { position: relative; z-index: 1; }
-.banner-copy h1 { margin: 0 0 8px; font-size: 27px; letter-spacing: -0.4px; }
-.banner-copy p  { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-muted); max-width: 62ch; }
-.banner-eyebrow {
-  display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.3px;
-  text-transform: uppercase; color: var(--teal); margin-bottom: 10px;
+.page-hero::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, var(--hero-accent, var(--brass)), transparent);
 }
-.banner-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-.banner-art { width: 200px; height: 118px; flex: none; opacity: 0.92; }
-.banner-art .ba-stroke { fill: none; stroke: var(--teal); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-.banner-art .ba-soft   { fill: none; stroke: var(--line); stroke-width: 1.2; }
-.banner-art .ba-fill   { fill: var(--teal); opacity: 0.12; }
-.banner-art .ba-accent { fill: none; stroke: var(--thread); stroke-width: 1.6; stroke-linecap: round; }
-.banner-art .ba-dot    { fill: var(--teal); }
-.banner-art .ba-dot-alt{ fill: var(--info); }
+.page-hero-copy { position: relative; z-index: 1; min-width: 0; }
+.page-hero-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--hero-accent, var(--brass));
+  border: 1px solid color-mix(in srgb, var(--hero-accent, var(--brass)) 42%, transparent);
+  background: var(--hero-glow, var(--brass-glow));
+  padding: 4px 10px; border-radius: 20px; margin-bottom: 11px;
+}
+.page-hero-kicker svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.page-hero h1 { font-family: var(--display); font-size: 25px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.015em; }
+.page-hero .sub { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; margin: 0; max-width: 62ch; }
+.page-hero-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.page-hero-actions .ghost-btn, .page-hero-actions .primary-btn { width: auto; }
+.page-hero-art { position: relative; z-index: 1; width: 188px; flex-shrink: 0; opacity: 0.95; }
+.page-hero-art svg { width: 100%; height: auto; display: block; }
+@media (max-width: 1080px) { .page-hero-art { display: none; } .page-hero { grid-template-columns: 1fr; } }
 
-.page-banner.banner-alert { background: linear-gradient(120deg, #241a1a, var(--panel) 62%); }
-.page-banner.banner-alert::before { background: linear-gradient(180deg, var(--thread), transparent); }
-.page-banner.banner-alert .banner-eyebrow { color: var(--thread); }
-.page-banner.banner-alert .banner-art .ba-stroke { stroke: var(--thread); }
-.page-banner.banner-alert .banner-art .ba-dot { fill: var(--thread); }
+/* ---------------- reusable chart primitives ---------------- */
 
-@media (max-width: 880px) {
-  .page-banner { grid-template-columns: 1fr; }
-  .banner-art { display: none; }
-}
-
-/* ==================================================================
-   SHARED CHART PRIMITIVES
-   Horizontal bar chart, mini column chart and severity donut — reused
-   by Contradictions, Timeline, Connections, Similar Cases and Audit so
-   every page gets a visual without five separate implementations.
-   ================================================================== */
-
-.hbar-chart { display: flex; flex-direction: column; gap: 11px; }
-.hbar-row { display: grid; grid-template-columns: minmax(74px, 34%) 1fr auto; gap: 12px; align-items: center; }
-.hbar-name {
-  font-size: 12px; color: var(--text-muted); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.hbar-track { height: 8px; background: var(--line-soft); border-radius: 20px; overflow: hidden; }
-.hbar-fill {
-  height: 100%; border-radius: 20px; background: var(--teal);
-  animation: hbar-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  transform-origin: left center;
-}
-.hbar-val { font-family: var(--mono); font-size: 11.5px; color: var(--text); min-width: 38px; text-align: right; }
-@keyframes hbar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-
-.col-chart { display: flex; align-items: flex-end; gap: 6px; height: 112px; padding-top: 6px; }
-.col-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
-.col-bar-wrap { width: 100%; height: 88px; display: flex; align-items: flex-end; }
-.col-bar {
-  width: 100%; border-radius: 3px 3px 0 0; background: var(--teal); min-height: 3px;
-  animation: col-grow 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: bottom center;
-}
-.col-bar:hover { filter: brightness(1.18); }
-.col-label {
-  font-family: var(--mono); font-size: 9.5px; color: var(--text-faint);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
-}
-.col-chart-foot {
-  display: flex; justify-content: space-between; font-size: 11px;
-  color: var(--text-faint); margin-top: 10px; border-top: 1px solid var(--line-soft); padding-top: 8px;
-}
-@keyframes col-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-bottom: 22px; }
+.chart-grid.two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
 
 .chart-card {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 18px 20px; margin-bottom: 20px;
+  background: linear-gradient(170deg, var(--panel-raised) 0%, var(--panel) 68%);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 20px 20px; position: relative; overflow: hidden;
+  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
-.chart-card h3 { margin: 0 0 3px; font-size: 14px; letter-spacing: -0.1px; }
-.chart-card > .sub { margin: 0 0 16px; font-size: 12px; }
+.chart-card:hover { border-color: var(--line); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.chart-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.chart-card-head h3 { font-family: var(--display); font-size: 14px; font-weight: 650; margin: 0 0 3px; letter-spacing: -0.005em; }
+.chart-card-head .sub { font-size: 11.5px; color: var(--text-faint); margin: 0; line-height: 1.45; }
+.chart-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+  background: var(--brass-glow); color: var(--brass); border: 1px solid color-mix(in srgb, var(--brass) 34%, transparent);
+}
+.chart-badge.alert { background: var(--crimson-glow); color: var(--crimson); border-color: color-mix(in srgb, var(--crimson) 36%, transparent); }
+.chart-badge.ok { background: color-mix(in srgb, var(--verdigris) 14%, transparent); color: var(--verdigris); border-color: color-mix(in srgb, var(--verdigris) 34%, transparent); }
+
+/* horizontal bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 11px; }
+.bar-row { display: grid; grid-template-columns: minmax(84px, 34%) 1fr auto; gap: 10px; align-items: center; }
+.bar-row-label { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 8px; border-radius: 20px; background: var(--line-soft); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 20px; transform-origin: left; animation: bar-in 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes bar-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.bar-row-value { font-family: var(--mono); font-size: 11.5px; color: var(--text); min-width: 30px; text-align: right; }
+
+/* column / histogram chart */
+.col-chart { display: flex; align-items: flex-end; gap: 4px; height: 108px; padding-top: 6px; }
+.col-item { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; }
+.col-bar {
+  width: 100%; max-width: 30px; border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, var(--brass-dim), var(--brass));
+  min-height: 3px; transform-origin: bottom; animation: col-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: default;
+}
+.col-bar.muted { background: linear-gradient(180deg, var(--line), var(--line-soft)); }
+.col-bar.alert { background: linear-gradient(180deg, #f08078, var(--crimson)); }
+@keyframes col-in { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.col-label { font-family: var(--mono); font-size: 9.5px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.chart-footnote { font-size: 11.5px; color: var(--text-faint); margin: 12px 0 0; display: flex; justify-content: space-between; gap: 10px; }
+
+/* radial score ring */
+.ring-wrap { display: flex; align-items: center; gap: 18px; }
+.ring-svg { width: 104px; height: 104px; flex-shrink: 0; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: var(--line-soft); stroke-width: 9; }
+.ring-value { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dasharray 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.ring-center { display: flex; flex-direction: column; }
+.ring-center strong { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1.05; }
+.ring-center span { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+.ring-center .ring-note { font-size: 11.5px; color: var(--text-faint); margin-top: 8px; line-height: 1.5; }
+
+/* small inline legend */
+.chip-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 14px; }
+.chip-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); }
+.chip-legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
 
 /* ==================================================================
-   CONTRADICTIONS — now a top-level feature with its own page
+   CONTRADICTIONS — now a standalone feature, not an Intelligence tab
    ================================================================== */
 
-.contra-stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 14px; margin-bottom: 22px;
-}
-.contra-stat {
-  background: var(--panel); border: 1px solid var(--line);
-  border-top: 2px solid var(--line); border-radius: var(--radius); padding: 16px 18px;
-}
-.contra-stat.sev-high { border-top-color: var(--sev-high); }
-.contra-stat.sev-med  { border-top-color: var(--sev-med); }
-.contra-stat.sev-low  { border-top-color: var(--sev-low); }
-.contra-stat.sev-neutral { border-top-color: var(--teal); }
-.contra-stat-num { font-family: var(--display); font-size: 27px; font-weight: 800; line-height: 1; }
-.contra-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 7px; }
-.contra-stat-cap { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+.contra-page { --hero-accent: var(--crimson); --hero-glow: var(--crimson-glow); }
 
-.contra-charts {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px; margin-bottom: 24px;
+.contra-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.contra-stat {
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
+  background: linear-gradient(170deg, var(--panel-raised), var(--panel));
 }
+.contra-stat-num { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1.1; }
+.contra-stat-label { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+.contra-stat.sev-high .contra-stat-num { color: var(--crimson); }
+.contra-stat.sev-med .contra-stat-num { color: var(--brass); }
+.contra-stat.sev-low .contra-stat-num { color: var(--steel); }
 
 .contra-toolbar {
-  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-  padding: 12px 0 16px; border-bottom: 1px solid var(--line-soft); margin-bottom: 18px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
 }
-.contra-toolbar .timeline-hint { margin-left: auto; }
-
-.contradiction-card { position: relative; }
-.contradiction-card.sev-high { border-left-color: var(--sev-high); }
-.contradiction-card.sev-med  { border-left-color: var(--sev-med); }
-.contradiction-card.sev-low  { border-left-color: var(--sev-low); }
-.sev-pill {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase;
-  padding: 2px 9px; border-radius: 10px; border: 1px solid currentColor;
+.contra-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.contra-chip {
+  font-size: 12px; padding: 7px 14px; border-radius: 20px; cursor: pointer;
+  background: transparent; border: 1px solid var(--line); color: var(--text-muted);
+  transition: all 0.15s ease;
 }
-.sev-pill.sev-high { color: var(--sev-high); }
-.sev-pill.sev-med  { color: var(--sev-med); }
-.sev-pill.sev-low  { color: var(--sev-low); }
+.contra-chip:hover { color: var(--text); border-color: var(--text-faint); }
+.contra-chip.active { background: var(--crimson-glow); border-color: var(--crimson); color: var(--crimson); font-weight: 600; }
+.contra-count-hint { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); }
 
-.contra-confidence-bar { height: 4px; background: var(--line-soft); border-radius: 20px; margin-top: 14px; overflow: hidden; }
-.contra-confidence-bar span { display: block; height: 100%; border-radius: 20px; }
-
-.contra-review-note {
-  display: flex; gap: 11px; align-items: flex-start;
-  background: var(--panel-raised); border: 1px solid var(--line);
-  border-left: 3px solid var(--teal); border-radius: var(--radius);
-  padding: 13px 16px; margin-bottom: 20px; font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
+/* upgraded contradiction card — severity-coded, with a confidence meter */
+.contradiction-card {
+  background: linear-gradient(170deg, var(--panel-raised) 0%, var(--panel) 70%);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--sev, var(--crimson));
+  border-radius: var(--radius);
+  padding: 18px 20px; margin-bottom: 14px; position: relative; overflow: hidden;
+  transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
-.contra-review-note svg { width: 17px; height: 17px; flex: none; color: var(--teal); margin-top: 1px; fill: none; stroke: currentColor; stroke-width: 1.7; }
-
-/* Severity donut reuses .donut/.donut-hole from the dashboard. */
-.sev-donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-
-/* ==================================================================
-   PER-PAGE CHART BLOCKS
-   ================================================================== */
-
-.timeline-density { margin: 0 0 22px; }
-.graph-insights {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px; margin-top: 22px;
+.contradiction-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.contradiction-card.sev-high { --sev: var(--crimson); }
+.contradiction-card.sev-med { --sev: var(--brass); }
+.contradiction-card.sev-low { --sev: var(--steel); }
+.contradiction-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.contra-top-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.conflict-type-pill {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  background: color-mix(in srgb, var(--sev, var(--crimson)) 16%, transparent);
+  color: var(--sev, var(--crimson));
+  border: 1px solid color-mix(in srgb, var(--sev, var(--crimson)) 36%, transparent);
+  padding: 3px 9px; border-radius: 10px;
 }
-.similar-chart-wrap { margin-bottom: 22px; }
-.audit-chart-wrap { margin-bottom: 22px; }
-
-.readiness-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
-.readiness-item { display: flex; gap: 12px; align-items: center; }
-.readiness-ring { width: 46px; height: 46px; flex: none; }
-.readiness-ring circle { fill: none; stroke-width: 5; stroke-linecap: round; }
-.readiness-ring .rr-track { stroke: var(--line-soft); }
-.readiness-ring .rr-val { stroke: var(--teal); transform: rotate(-90deg); transform-origin: 50% 50%; }
-.readiness-copy strong { display: block; font-size: 13px; }
-.readiness-copy span { display: block; font-size: 11.5px; color: var(--text-faint); margin-top: 2px; }
-
-/* Vault type chart upgraded from pills to a labelled bar row */
-.vault-type-chart.as-bars { display: block; }
-
-/* ==================================================================
-   CONTRADICTIONS NAV TAB
-   The only nav item allowed to use the conflict red, plus a live count
-   badge so an unreviewed conflict is visible from any page.
-   ================================================================== */
-
-.tab-alert.active { color: var(--thread); background: var(--thread-glow); border-left-color: var(--thread); }
-.tab-alert.active .tab-title,
-.tab-alert.active .tab-num,
-.tab-alert.active .tab-desc { color: var(--thread); }
-.tab-alert.active .tab-desc { opacity: 0.8; }
-
-.tab-badge {
-  margin-left: auto; align-self: center; flex: none;
-  font-family: var(--mono); font-size: 10px; font-weight: 600; line-height: 1;
-  min-width: 19px; padding: 4px 6px; border-radius: 10px; text-align: center;
-  background: var(--thread); color: #fff;
-  animation: badge-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+.severity-pill {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-faint); border: 1px solid var(--line); padding: 3px 9px; border-radius: 10px;
 }
-.tab-badge[hidden] { display: none; }
-@keyframes badge-in { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.confidence-meter { display: flex; align-items: center; gap: 8px; }
+.confidence-meter .cm-track { width: 66px; height: 5px; border-radius: 20px; background: var(--line-soft); overflow: hidden; }
+.confidence-meter .cm-fill { height: 100%; border-radius: 20px; background: var(--sev, var(--crimson)); }
+.confidence-pill { font-family: var(--mono); font-size: 10.5px; color: var(--text-muted); }
 
+.contradiction-pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: stretch; margin-bottom: 14px; }
+.contradiction-claim {
+  font-size: 13.5px; line-height: 1.55; background: var(--ink);
+  border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.contradiction-claim .src { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line); }
+.contradiction-vs {
+  align-self: center; color: var(--sev, var(--crimson)); font-family: var(--mono); font-size: 10.5px;
+  font-weight: 600; letter-spacing: 0.08em;
+  border: 1px solid color-mix(in srgb, var(--sev, var(--crimson)) 40%, transparent);
+  background: color-mix(in srgb, var(--sev, var(--crimson)) 12%, transparent);
+  border-radius: 20px; padding: 5px 9px; white-space: nowrap;
+}
+.contradiction-explain { font-size: 13px; color: var(--text-muted); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+.contra-verify-note {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  font-size: 11.5px; color: var(--text-faint);
+}
+.contra-verify-note svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-/* ==================================================================
-   LANDING — CONTRADICTION FEATURE BAND
-   Contradiction detection is the differentiator of this submission, so
-   it gets a band of its own on the landing page rather than sitting as
-   one of nine equal feature cards.
-   ================================================================== */
+.no-contradictions {
+  display: flex; align-items: center; gap: 12px; color: var(--verdigris); font-size: 14px;
+  background: color-mix(in srgb, var(--verdigris) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verdigris) 28%, transparent);
+  border-radius: var(--radius); padding: 18px 20px;
+}
+.no-contradictions svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-.contra-band { max-width: 1240px; margin: 56px auto 0; padding: 0 48px; }
-.contra-band-inner {
-  display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center;
-  border: 1px solid var(--line); border-radius: 18px;
-  background: linear-gradient(120deg, #241a1a 0%, var(--panel) 58%);
-  padding: 38px 42px; position: relative; overflow: hidden;
+@media (max-width: 760px) {
+  .contradiction-pair { grid-template-columns: 1fr; }
+  .contradiction-vs { justify-self: start; }
 }
-.contra-band-inner::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 30px 30px;
-  mask-image: radial-gradient(circle at 78% 50%, #000, transparent 70%);
-}
-.contra-band-copy { position: relative; z-index: 1; }
-.contra-band-copy .landing-kicker { color: var(--thread); }
-.contra-band-copy h3 { font-family: var(--display); font-size: 25px; font-weight: 700; margin: 8px 0 12px; letter-spacing: -0.4px; }
-.contra-band-copy p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0 0 18px; }
-.contra-band-points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.contra-band-points li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text-muted); }
-.contra-band-points svg { width: 16px; height: 16px; flex: none; margin-top: 1px; fill: none; stroke: var(--thread); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
-/* The mock conflict card — a real-looking sample of what the feature
-   produces, so the value is visible before anyone signs in. */
-.contra-demo { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
-.contra-demo-card {
-  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--thread);
-  border-radius: var(--radius); padding: 15px 17px;
-}
-.contra-demo-head { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-.contra-demo-tag {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.6px; text-transform: uppercase;
-  padding: 2px 8px; border-radius: 10px; border: 1px solid var(--thread); color: var(--thread);
-}
-.contra-demo-conf { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-left: auto; }
-.contra-demo-claim {
-  font-size: 12.5px; color: var(--text); line-height: 1.55;
-  background: var(--panel-raised); border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm); padding: 9px 11px;
-}
-.contra-demo-claim span { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-faint); margin-top: 6px; }
-.contra-demo-vs {
-  text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
-  color: var(--thread); margin: 8px 0;
-}
-.contra-demo-bar { height: 4px; background: var(--line-soft); border-radius: 20px; margin-top: 13px; overflow: hidden; }
-.contra-demo-bar span { display: block; height: 100%; width: 88%; background: var(--thread); border-radius: 20px; }
+/* ---------------- similar cases: score bars ---------------- */
+.similar-score { display: flex; align-items: center; gap: 10px; margin: 10px 0 12px; }
+.similar-score .ss-track { flex: 1; height: 7px; border-radius: 20px; background: var(--line-soft); overflow: hidden; }
+.similar-score .ss-fill { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--brass), var(--brass-dim)); }
+.similar-score .ss-val { font-family: var(--mono); font-size: 11.5px; color: var(--brass); }
 
+/* ---------------- document vault: type chart ---------------- */
+.vault-type-chart { margin: 20px 0 8px; }
+
+/* ---------------- graph page: top entities ---------------- */
+.graph-side-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 22px; }
+
+/* ---------------- audit page chart ---------------- */
+.audit-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-bottom: 22px; }
+
+/* ---------------- landing: illustrated analysis band ---------------- */
+.landing-showcase { max-width: 1240px; margin: 0 auto; padding: 12px 48px 0; }
+.landing-showcase-inner {
+  border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background: linear-gradient(140deg, var(--panel-raised) 0%, var(--panel) 60%, var(--ink) 100%);
+  display: grid; grid-template-columns: 1fr 1.15fr; gap: 0; align-items: center;
+}
+.landing-showcase-copy { padding: 30px 34px; }
+.landing-showcase-copy h3 { font-family: var(--display); font-size: 21px; font-weight: 650; margin: 8px 0 8px; }
+.landing-showcase-copy p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; margin: 0 0 16px; }
+.showcase-metrics { display: flex; gap: 22px; flex-wrap: wrap; }
+.showcase-metric strong { display: block; font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--brass); }
+.showcase-metric span { font-size: 11.5px; color: var(--text-faint); }
+.landing-showcase-art { padding: 22px 26px 22px 0; }
+.landing-showcase-art svg { width: 100%; height: auto; display: block; }
 @media (max-width: 900px) {
-  .contra-band { padding: 0 24px; }
-  .contra-band-inner { grid-template-columns: 1fr; gap: 28px; padding: 28px 24px; }
+  .landing-showcase { padding: 12px 24px 0; }
+  .landing-showcase-inner { grid-template-columns: 1fr; }
+  .landing-showcase-art { padding: 0 22px 22px; }
+}
+
+/* ---------------- card / tile polish pass ---------------- */
+.stat-tile, .insight-card, .exhibit-card, .similar-card, .argument-card, .case-tile {
+  background: linear-gradient(170deg, var(--panel-raised) 0%, var(--panel) 68%);
+}
+.stat-tile { transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease; }
+.stat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.section-label::after {
+  content: ""; display: block; width: 34px; height: 2px; margin-top: 7px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--brass), transparent);
+}
+
+/* ---------------- sidebar: live contradiction count badge ---------------- */
+.tab-count {
+  margin-left: auto; align-self: center;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  min-width: 20px; padding: 2px 7px; border-radius: 20px; text-align: center;
+  opacity: 0; transition: opacity 0.2s ease;
+}
+.tab-count.on {
+  opacity: 1; background: var(--crimson-glow); color: var(--crimson);
+  border: 1px solid color-mix(in srgb, var(--crimson) 38%, transparent);
 }

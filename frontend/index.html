@@ -1,356 +1,1118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Case Report</title>
-<meta name="description" content="Secure, multi-case investigation platform — document vault with chain of custody, AI-generated timelines, evidence graphs, contradiction detection and exportable case reports." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LAW1 — Secure Investigation Workspace</title>
+
+<meta name="description"
+      content="LAW1 is a secure digital investigation workspace for evidence management, chain of custody, timelines, connections, contradiction analysis and case reporting.">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap"
+      rel="stylesheet">
+
+<link rel="stylesheet" href="style.css?v=4">
 </head>
+
 <body>
 
-<!-- Icon sprite (original inline SVG icons, no external assets) -->
+<!-- =========================================================
+     ICON SPRITE
+========================================================= -->
 <svg style="display:none" aria-hidden="true">
-  <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
-  <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6z"/></symbol>
-  <symbol id="icon-brain" viewBox="0 0 24 24"><path d="M8 4a3 3 0 0 0-3 3v.3A3.5 3.5 0 0 0 3.5 10.5 3.5 3.5 0 0 0 5 13.3V15a3 3 0 0 0 3 3 3 3 0 0 0 3-3V7a3 3 0 0 0-3-3z"/><path d="M16 4a3 3 0 0 1 3 3v.3a3.5 3.5 0 0 1 1.5 3.2A3.5 3.5 0 0 1 19 13.3V15a3 3 0 0 1-3 3 3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/></symbol>
-  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
-  <symbol id="icon-network" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7l7-.5M8.5 8.5L11 16M15.5 8.5L13 16"/></symbol>
-  <symbol id="icon-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
-  <symbol id="icon-doc-check" viewBox="0 0 24 24"><path d="M6 2h8l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13l2 2 4-4"/></symbol>
-  <symbol id="icon-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></symbol>
-  <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2l8 3.5v6c0 5-3.4 8.5-8 10.5-4.6-2-8-5.5-8-10.5v-6L12 2z"/></symbol>
-  <symbol id="icon-scale" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 8h4M15 8h4M5 8L3 13a2.5 2.5 0 0 0 5 0L5 8zM19 8l-2 5a2.5 2.5 0 0 0 5 0l-2-5z"/><circle cx="12" cy="4" r="1.4"/></symbol>
-  <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.6"/></symbol>
-  <symbol id="icon-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
-  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
-  <symbol id="icon-link" viewBox="0 0 24 24"><path d="M9 15l6-6M8 12l-2 2a3.5 3.5 0 0 0 5 5l2-2M16 12l2-2a3.5 3.5 0 0 0-5-5l-2 2"/></symbol>
-  <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 3v13"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></symbol>
-  <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
-  <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></symbol>
-  <symbol id="icon-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6.5l9 6.5 9-6.5"/></symbol>
-  <symbol id="icon-briefcase" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></symbol>
-  <symbol id="icon-truck" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></symbol>
-  <symbol id="icon-invoice" viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/><path d="M9 8h6M9 12h6"/></symbol>
-  <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="M5 8l7 7 7-7"/></symbol>
-  <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M4 19v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></symbol>
-  <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"/></symbol>
-  <symbol id="icon-bank" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><rect x="4" y="10" width="16" height="9" rx="0.5"/><path d="M2 21h20M7 10v9M12 10v9M17 10v9"/></symbol>
-  <symbol id="icon-rows" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="10.5" width="18" height="5" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></symbol>
-  <symbol id="icon-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17.5" cy="9" r="2.6"/><path d="M15.5 14.2c2.5.3 4.5 2.4 4.5 5.3"/></symbol>
-  <symbol id="icon-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5.5"/><path d="M8.5 12.8L7 21l5-3 5 3-1.5-8.2"/></symbol>
-  <symbol id="icon-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></symbol>
-  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
-  <symbol id="icon-bar-chart" viewBox="0 0 24 24"><path d="M4 21V10M10 21V4M16 21v-8M22 21H2"/></symbol>
-  <symbol id="icon-split" viewBox="0 0 24 24"><path d="M3 6h4l5 6 5-6h4M3 18h4l5-6"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3"/></symbol>
-  <symbol id="icon-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/><path d="M19 15l0.8 2.2L22 18l-2.2 0.8L19 21l-0.8-2.2L16 18l2.2-0.8L19 15z"/></symbol>
+  <symbol id="icon-grid" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="7" height="7" rx="1"/>
+    <rect x="14" y="3" width="7" height="7" rx="1"/>
+    <rect x="3" y="14" width="7" height="7" rx="1"/>
+    <rect x="14" y="14" width="7" height="7" rx="1"/>
+  </symbol>
+
+  <symbol id="icon-folder" viewBox="0 0 24 24">
+    <path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6z"/>
+  </symbol>
+
+  <symbol id="icon-brain" viewBox="0 0 24 24">
+    <path d="M8 4a3 3 0 0 0-3 3v.3A3.5 3.5 0 0 0 3.5 10.5 3.5 3.5 0 0 0 5 13.3V15a3 3 0 0 0 3 3 3 3 0 0 0 3-3V7A3 3 0 0 0 8 4z"/>
+    <path d="M16 4a3 3 0 0 1 3 3v.3a3.5 3.5 0 0 1 1.5 3.2A3.5 3.5 0 0 1 19 13.3V15a3 3 0 0 1-3 3 3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/>
+  </symbol>
+
+  <symbol id="icon-clock" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M12 7v5l3.5 2"/>
+  </symbol>
+
+  <symbol id="icon-network" viewBox="0 0 24 24">
+    <circle cx="6" cy="6" r="2.5"/>
+    <circle cx="18" cy="6" r="2.5"/>
+    <circle cx="12" cy="18" r="2.5"/>
+    <path d="M8 7l7-.5M8.5 8.5L11 16M15.5 8.5L13 16"/>
+  </symbol>
+
+  <symbol id="icon-layers" viewBox="0 0 24 24">
+    <path d="M12 3l9 5-9 5-9-5 9-5z"/>
+    <path d="M3 13l9 5 9-5"/>
+  </symbol>
+
+  <symbol id="icon-doc-check" viewBox="0 0 24 24">
+    <path d="M6 2h8l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
+    <path d="M9 13l2 2 4-4"/>
+  </symbol>
+
+  <symbol id="icon-list" viewBox="0 0 24 24">
+    <path d="M8 6h13M8 12h13M8 18h13"/>
+    <circle cx="3.5" cy="6" r="1"/>
+    <circle cx="3.5" cy="12" r="1"/>
+    <circle cx="3.5" cy="18" r="1"/>
+  </symbol>
+
+  <symbol id="icon-shield" viewBox="0 0 24 24">
+    <path d="M12 2l8 3.5v6c0 5-3.4 8.5-8 10.5-4.6-2-8-5.5-8-10.5v-6L12 2z"/>
+  </symbol>
+
+  <symbol id="icon-scale" viewBox="0 0 24 24">
+    <path d="M12 3v18M7 21h10M5 8h4M15 8h4"/>
+    <path d="M5 8L3 13a2.5 2.5 0 0 0 5 0L5 8z"/>
+    <path d="M19 8l-2 5a2.5 2.5 0 0 0 5 0l-2-5z"/>
+    <circle cx="12" cy="4" r="1.4"/>
+  </symbol>
+
+  <symbol id="icon-alert" viewBox="0 0 24 24">
+    <path d="M12 3l10 18H2L12 3z"/>
+    <path d="M12 10v4"/>
+    <circle cx="12" cy="17" r=".6"/>
+  </symbol>
+
+  <symbol id="icon-person" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
+  </symbol>
+
+  <symbol id="icon-calendar" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="16" rx="2"/>
+    <path d="M3 10h18M8 3v4M16 3v4"/>
+  </symbol>
+
+  <symbol id="icon-link" viewBox="0 0 24 24">
+    <path d="M9 15l6-6M8 12l-2 2a3.5 3.5 0 0 0 5 5l2-2M16 12l2-2a3.5 3.5 0 0 0-5-5l-2 2"/>
+  </symbol>
+
+  <symbol id="icon-upload" viewBox="0 0 24 24">
+    <path d="M12 3v13"/>
+    <path d="M7 8l5-5 5 5"/>
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+  </symbol>
+
+  <symbol id="icon-lock" viewBox="0 0 24 24">
+    <rect x="4" y="11" width="16" height="10" rx="2"/>
+    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+  </symbol>
+
+  <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+    <path d="M4 12h16"/>
+    <path d="M13 5l7 7-7 7"/>
+  </symbol>
+
+  <symbol id="icon-mail" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="14" rx="2"/>
+    <path d="M3 6.5l9 6.5 9-6.5"/>
+  </symbol>
+
+  <symbol id="icon-briefcase" viewBox="0 0 24 24">
+    <rect x="3" y="8" width="18" height="12" rx="2"/>
+    <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+    <path d="M3 13h18"/>
+  </symbol>
+
+  <symbol id="icon-truck" viewBox="0 0 24 24">
+    <rect x="2" y="8" width="12" height="8" rx="1"/>
+    <path d="M14 11h4l3 3v2h-7z"/>
+    <circle cx="7" cy="18" r="1.6"/>
+    <circle cx="17.5" cy="18" r="1.6"/>
+  </symbol>
+
+  <symbol id="icon-invoice" viewBox="0 0 24 24">
+    <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/>
+    <path d="M9 8h6M9 12h6"/>
+  </symbol>
+
+  <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+    <path d="M5 8l7 7 7-7"/>
+  </symbol>
+
+  <symbol id="icon-download" viewBox="0 0 24 24">
+    <path d="M12 3v13"/>
+    <path d="M7 11l5 5 5-5"/>
+    <path d="M4 19v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+  </symbol>
+
+  <symbol id="icon-filter" viewBox="0 0 24 24">
+    <path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"/>
+  </symbol>
+
+  <symbol id="icon-bank" viewBox="0 0 24 24">
+    <path d="M3 10l9-6 9 6"/>
+    <rect x="4" y="10" width="16" height="9" rx=".5"/>
+    <path d="M2 21h20M7 10v9M12 10v9M17 10v9"/>
+  </symbol>
+
+  <symbol id="icon-rows" viewBox="0 0 24 24">
+    <rect x="3" y="4" width="18" height="5" rx="1"/>
+    <rect x="3" y="10.5" width="18" height="5" rx="1"/>
+    <rect x="3" y="17" width="18" height="4" rx="1"/>
+  </symbol>
+
+  <symbol id="icon-users" viewBox="0 0 24 24">
+    <circle cx="9" cy="8" r="3.2"/>
+    <path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/>
+    <circle cx="17.5" cy="9" r="2.6"/>
+    <path d="M15.5 14.2c2.5.3 4.5 2.4 4.5 5.3"/>
+  </symbol>
+
+  <symbol id="icon-award" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="5.5"/>
+    <path d="M8.5 12.8L7 21l5-3 5 3-1.5-8.2"/>
+  </symbol>
+
+  <symbol id="icon-check-circle" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M8.5 12.5l2.5 2.5 4.5-5"/>
+  </symbol>
+
+  <symbol id="icon-search" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="6.5"/>
+    <path d="M16 16l4.5 4.5"/>
+  </symbol>
+
+  <symbol id="icon-bar-chart" viewBox="0 0 24 24">
+    <path d="M4 21V10M10 21V4M16 21v-8M22 21H2"/>
+  </symbol>
+
+  <symbol id="icon-split" viewBox="0 0 24 24">
+    <path d="M3 6h4l5 6 5-6h4M3 18h4l5-6"/>
+    <path d="M18 3l3 3-3 3M18 15l3 3-3 3"/>
+  </symbol>
+
+  <symbol id="icon-sparkle" viewBox="0 0 24 24">
+    <path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/>
+    <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/>
+  </symbol>
 </svg>
 
-<!-- ==================== LANDING VIEW ==================== -->
+
+<!-- =========================================================
+     LANDING
+========================================================= -->
 <div class="view active" id="view-landing">
 
   <nav class="landing-nav">
+
     <div class="case-mark">
       <span class="case-mark-glyph">§</span>
       <div>
-        <div class="case-mark-title">AI CASE REPORT</div>
+        <div class="case-mark-title">LAW1</div>
+        <div class="case-mark-id">SECURE CASE SYSTEM</div>
       </div>
     </div>
+
     <div class="landing-nav-links">
       <a href="#how-it-works">How it works</a>
-      <a href="#features">Features</a>
-      <button class="primary-btn" id="landing-nav-signin">Sign in</button>
+      <a href="#features">Capabilities</a>
+      <button class="primary-btn" id="landing-nav-signin">
+        Sign in
+      </button>
     </div>
+
   </nav>
 
-  <section class="landing-hero">
-    <div>
-      <div class="landing-eyebrow">Smart India Hackathon submission</div>
-      <h1>Every document hashed.<br/>Every claim <em>traceable</em>.<br/>Nothing accused without evidence.</h1>
-      <p class="landing-lede">
-        A secure, multi-case investigation workspace for investigators and legal
-        professionals. Upload the case file and let the platform build the
-        timeline, map the connections, flag contradictions, and draft the
-        report — every conclusion linked back to its source document.
-      </p>
-      <div class="landing-cta-row">
-        <button class="primary-btn" id="landing-get-started">Open the workspace</button>
-        <a class="text-link" href="#how-it-works">See how it works ↓</a>
-      </div>
-      <div class="landing-trust">
-        <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-shield"/></svg>Role-based access control</div>
-        <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-lock"/></svg>SHA-256 document hashing</div>
-        <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg>Full audit trail</div>
-      </div>
-    </div>
 
-    <div class="evidence-board" aria-hidden="true">
-      <div class="board-bg"></div>
-      <svg class="thread-lines" viewBox="0 0 400 380">
-        <path d="M70,90 C120,120 150,140 190,150"/>
-        <path d="M300,110 C260,140 230,150 190,150"/>
-        <path d="M190,150 C170,200 150,230 130,255"/>
-        <path d="M190,150 C230,210 260,230 290,270"/>
-        <circle cx="70" cy="90" r="3.5"/>
-        <circle cx="300" cy="110" r="3.5"/>
-        <circle cx="190" cy="150" r="3.5"/>
-        <circle cx="130" cy="255" r="3.5"/>
-        <circle cx="290" cy="270" r="3.5"/>
-      </svg>
-      <div class="ev-card c1"><span class="ev-tag">EXHIBIT 01</span><span class="ev-pin"></span>
-        <div class="ev-title">Witness Statement</div>
-        <div class="ev-line"></div><div class="ev-line"></div><div class="ev-line"></div>
-      </div>
-      <div class="ev-card c2"><span class="ev-tag">EXHIBIT 02</span><span class="ev-pin"></span>
-        <div class="ev-title">Transaction Log</div>
-        <div class="ev-line"></div><div class="ev-line"></div>
-      </div>
-      <div class="ev-card c3"><span class="ev-tag">EXHIBIT 03</span><span class="ev-pin"></span>
-        <div class="ev-title">Site Report</div>
-        <div class="ev-line"></div><div class="ev-line"></div><div class="ev-line"></div>
-      </div>
-      <div class="ev-card c4"><span class="ev-tag">FLAGGED</span><span class="ev-pin"></span>
-        <div class="ev-title">Timeline Conflict</div>
-        <div class="ev-line"></div><div class="ev-line"></div>
-      </div>
-    </div>
-  </section>
+  <main>
 
-  <div class="landing-strip">
-    <div class="landing-strip-inner">
-      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-brain"/></svg><div class="strip-stat-label"><strong>AI case intelligence</strong>Summary, timeline &amp; graph</div></div>
-      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg><div class="strip-stat-label"><strong>Contradiction detection</strong>Always human-verified</div></div>
-      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-scale"/></svg><div class="strip-stat-label"><strong>Argument intelligence</strong>For internal analysis</div></div>
-      <div class="strip-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg><div class="strip-stat-label"><strong>Audit trail</strong>Who, what, when</div></div>
-    </div>
-  </div>
+    <!-- HERO -->
+    <section class="landing-hero">
 
-  <div class="landing-showcase">
-    <div class="landing-showcase-inner">
-      <div class="landing-showcase-copy">
-        <div class="landing-kicker">Inside a case file</div>
-        <h3>The whole investigation, charted</h3>
-        <p>Entity breakdowns, conflict severity, upload cadence and evidence-backing scores are computed from the case's own documents — so you can see where the file is thin before you act on it.</p>
-        <div class="showcase-metrics">
-          <div class="showcase-metric"><strong>10</strong><span>Case views</span></div>
-          <div class="showcase-metric"><strong>12</strong><span>Report sections</span></div>
-          <div class="showcase-metric"><strong>4</strong><span>Access roles</span></div>
+      <div class="landing-hero-copy">
+
+        <div class="landing-eyebrow">
+          SECURE DIGITAL INVESTIGATION WORKSPACE
         </div>
+
+        <h1>
+          Evidence first.<br>
+          <em>Every claim traceable.</em>
+        </h1>
+
+        <p class="landing-lede">
+          LAW1 brings documents, evidence integrity, investigation timelines,
+          entity connections, contradiction review and case reporting into one
+          controlled workspace.
+        </p>
+
+        <div class="landing-cta-row">
+          <button class="primary-btn" id="landing-get-started">
+            Open workspace
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <use href="#icon-arrow-right"/>
+            </svg>
+          </button>
+
+          <a class="text-link" href="#how-it-works">
+            See how it works ↓
+          </a>
+        </div>
+
+        <div class="landing-trust">
+
+          <div class="landing-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <use href="#icon-shield"/>
+            </svg>
+            Role-based access
+          </div>
+
+          <div class="landing-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <use href="#icon-lock"/>
+            </svg>
+            SHA-256 integrity
+          </div>
+
+          <div class="landing-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <use href="#icon-list"/>
+            </svg>
+            Immutable audit trail
+          </div>
+
+        </div>
+
       </div>
-      <div class="landing-showcase-art" aria-hidden="true">
-        <svg viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="scBar" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" style="stop-color:var(--brass-dim, #eec37a)"/><stop offset="100%" style="stop-color:var(--brass, #d9a441)"/>
-            </linearGradient>
-            <linearGradient id="scArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-opacity="0.34" style="stop-color:var(--brass, #d9a441)"/>
-              <stop offset="100%" stop-opacity="0" style="stop-color:var(--brass, #d9a441)"/>
-            </linearGradient>
-          </defs>
-          <rect x="8" y="10" width="404" height="240" rx="14" style="fill:var(--ink, #0a0d14);stroke:var(--line, #2a3346)"/>
-          <rect x="8" y="10" width="404" height="30" rx="14" style="fill:var(--panel-raised, #18202d)"/>
-          <rect x="8" y="30" width="404" height="10" style="fill:var(--panel-raised, #18202d)"/>
-          <circle cx="28" cy="25" r="3.4" style="fill:var(--crimson, #e2574f)"/><circle cx="41" cy="25" r="3.4" style="fill:var(--brass, #d9a441)"/><circle cx="54" cy="25" r="3.4" style="fill:var(--verdigris, #46a97f)"/>
-          <!-- column chart -->
-          <rect x="26" y="58" width="168" height="94" rx="9" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
-          <rect x="38" y="118" width="17" height="24" rx="3" fill="url(#scBar)"/>
-          <rect x="62" y="102" width="17" height="40" rx="3" fill="url(#scBar)"/>
-          <rect x="86" y="86" width="17" height="56" rx="3" fill="url(#scBar)"/>
-          <rect x="110" y="110" width="17" height="32" rx="3" fill="url(#scBar)"/>
-          <rect x="134" y="94" width="17" height="48" rx="3" fill="url(#scBar)"/>
-          <rect x="158" y="78" width="17" height="64" rx="3" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
-          <rect x="38" y="70" width="52" height="5" rx="2.5" style="fill:var(--line, #2a3346)"/>
-          <!-- donut -->
-          <rect x="204" y="58" width="190" height="94" rx="9" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
-          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" style="stroke:var(--line-soft, #1d2535)"/>
-          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" stroke-dasharray="72 170" transform="rotate(-90 248 105)" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
-          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" stroke-dasharray="42 170" stroke-dashoffset="-76" transform="rotate(-90 248 105)" stroke-linecap="round" style="stroke:var(--steel, #6f93c4)"/>
-          <circle cx="248" cy="105" r="27" fill="none" stroke-width="11" stroke-dasharray="28 170" stroke-dashoffset="-122" transform="rotate(-90 248 105)" stroke-linecap="round" style="stroke:var(--verdigris, #46a97f)"/>
-          <rect x="292" y="84" width="70" height="6" rx="3" opacity="0.8" style="fill:var(--brass, #d9a441)"/>
-          <rect x="292" y="99" width="54" height="6" rx="3" opacity="0.8" style="fill:var(--steel, #6f93c4)"/>
-          <rect x="292" y="114" width="42" height="6" rx="3" opacity="0.8" style="fill:var(--verdigris, #46a97f)"/>
-          <!-- area line -->
-          <rect x="26" y="164" width="368" height="70" rx="9" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
-          <path d="M42,214 L96,198 L150,206 L204,182 L258,190 L312,172 L372,180 L372,224 L42,224 Z" fill="url(#scArea)"/>
-          <path d="M42,214 L96,198 L150,206 L204,182 L258,190 L312,172 L372,180" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--brass, #d9a441)"/>
-          <circle cx="204" cy="182" r="3.2" style="fill:var(--brass, #d9a441)"/>
-          <circle cx="312" cy="172" r="3.2" style="fill:var(--brass, #d9a441)"/>
+
+
+      <!-- EVIDENCE BOARD -->
+      <div class="evidence-board" aria-hidden="true">
+
+        <div class="board-bg"></div>
+
+        <svg class="thread-lines" viewBox="0 0 400 380">
+          <path d="M70 90C120 120 150 140 190 150"/>
+          <path d="M300 110C260 140 230 150 190 150"/>
+          <path d="M190 150C170 200 150 230 130 255"/>
+          <path d="M190 150C230 210 260 230 290 270"/>
+
+          <circle cx="70" cy="90" r="3.5"/>
+          <circle cx="300" cy="110" r="3.5"/>
+          <circle cx="190" cy="150" r="3.5"/>
+          <circle cx="130" cy="255" r="3.5"/>
+          <circle cx="290" cy="270" r="3.5"/>
         </svg>
-      </div>
-    </div>
-  </div>
 
-  <section class="landing-section compact" id="how-it-works">
-    <div class="landing-section-head">
-      <div class="landing-kicker">How it works</div>
-      <h2>From raw case file to structured report</h2>
-      <p>Four steps, all grounded in the documents you upload — nothing is invented that isn't traceable to a source.</p>
-    </div>
-    <div class="steps-row">
-      <div class="step-card">
-        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-upload"/></svg>
-        <div class="step-index">01</div>
-        <h3>Upload the case file</h3>
-        <p>.txt, .md or .pdf. Each document is validated, SHA-256 hashed and logged to the chain of custody.</p>
-      </div>
-      <div class="step-card">
-        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-brain"/></svg>
-        <div class="step-index">02</div>
-        <h3>AI reads &amp; organizes</h3>
-        <p>Entities, dated events and factual claims are extracted from every document automatically.</p>
-      </div>
-      <div class="step-card">
-        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-network"/></svg>
-        <div class="step-index">03</div>
-        <h3>Timeline, graph &amp; conflicts</h3>
-        <p>A chronological timeline, an evidence connection graph, and any contradictions across documents.</p>
-      </div>
-      <div class="step-card">
-        <svg class="step-icon" viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg>
-        <div class="step-index">04</div>
-        <h3>Structured report</h3>
-        <p>A 12-section exportable Markdown report, ready to hand off — with a full audit trail behind it.</p>
-      </div>
-    </div>
-  </section>
+        <div class="ev-card c1">
+          <span class="ev-tag">EXHIBIT 01</span>
+          <span class="ev-pin"></span>
+          <div class="ev-title">Witness Statement</div>
+          <div class="ev-line"></div>
+          <div class="ev-line"></div>
+          <div class="ev-line"></div>
+        </div>
 
-  <div class="photo-band">
-    <div class="photo-band-inner">
-      <div class="photo-band-caption">
-        <div class="landing-kicker">Built for the field, not just the demo</div>
-        <h3>One workspace your whole investigating team can actually use</h3>
-        <p>Investigators upload, reviewers verify, admins manage access — everyone works from the same case file instead of scattered folders, group chats and printed reports.</p>
+        <div class="ev-card c2">
+          <span class="ev-tag">EXHIBIT 02</span>
+          <span class="ev-pin"></span>
+          <div class="ev-title">Transaction Log</div>
+          <div class="ev-line"></div>
+          <div class="ev-line"></div>
+        </div>
+
+        <div class="ev-card c3">
+          <span class="ev-tag">EXHIBIT 03</span>
+          <span class="ev-pin"></span>
+          <div class="ev-title">Site Report</div>
+          <div class="ev-line"></div>
+          <div class="ev-line"></div>
+          <div class="ev-line"></div>
+        </div>
+
+        <div class="ev-card c4">
+          <span class="ev-tag">REVIEW</span>
+          <span class="ev-pin"></span>
+          <div class="ev-title">Timeline Conflict</div>
+          <div class="ev-line"></div>
+          <div class="ev-line"></div>
+        </div>
+
       </div>
-    </div>
-  </div>
 
-  <section class="landing-section compact" id="features">
-    <div class="landing-section-head">
-      <div class="landing-kicker">What's inside</div>
-      <h2>Built for the whole investigation, not one document</h2>
-      <p>Every feature below is grounded in the case's own documents and framed as analysis, never as a verdict.</p>
-    </div>
-    <div class="feature-grid">
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-folder"/></svg><h3>Secure Document Vault</h3><p>Hash-verified uploads with version and confidentiality tracking, searchable and filterable by type.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-clock"/></svg><h3>Investigation Timeline</h3><p>Chronological, evidence-linked events with automatic gap detection across 30+ day silences.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-network"/></svg><h3>Connections graph</h3><p>People, organizations and locations mapped — click any connection to see the evidence behind it.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg><h3>Contradiction detection</h3><p>Conflicting claims surfaced with a conflict type and confidence score — always flagged for human review.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-layers"/></svg><h3>Similar cases</h3><p>Pattern matches against a reference case library, framed as similarity — never an outcome prediction.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-brain"/></svg><h3>Case chat</h3><p>Case, Evidence and Legal Knowledge modes, with a Hindi toggle and hold-to-speak voice input.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-shield"/></svg><h3>Role-based access</h3><p>Admin, Investigator, Reviewer and Viewer roles gate case creation, uploads and deletion server-side.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg><h3>Audit trail</h3><p>Every sensitive action on a case — who did it, what it was, and when — in one searchable log.</p></div>
-      <div class="feature-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg><h3>Exportable report</h3><p>A structured 12-section Markdown case report, generated on demand and downloadable in one click.</p></div>
-    </div>
-  </section>
+    </section>
 
-  <div class="landing-cta-band">
-    <div class="landing-cta-band-inner">
-      <h2>Ready to open a case file?</h2>
-      <p>Sign in with a demo account to see the whole workflow — upload, timeline, graph, report — in minutes.</p>
-      <button class="primary-btn" id="landing-cta-signin">Sign in <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;display:inline;vertical-align:-2px;margin-left:2px"><use href="#icon-arrow-right"/></svg></button>
-    </div>
-  </div>
+
+    <!-- TRUST STRIP -->
+    <section class="landing-strip">
+
+      <div class="landing-strip-inner">
+
+        <div class="strip-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-folder"/>
+          </svg>
+          <div class="strip-stat-label">
+            <strong>Evidence vault</strong>
+            Secure document management
+          </div>
+        </div>
+
+        <div class="strip-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-network"/>
+          </svg>
+          <div class="strip-stat-label">
+            <strong>Case intelligence</strong>
+            Timeline and connections
+          </div>
+        </div>
+
+        <div class="strip-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-alert"/>
+          </svg>
+          <div class="strip-stat-label">
+            <strong>Verification</strong>
+            Conflicts for human review
+          </div>
+        </div>
+
+        <div class="strip-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-list"/>
+          </svg>
+          <div class="strip-stat-label">
+            <strong>Accountability</strong>
+            Complete activity history
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SHOWCASE -->
+    <section class="landing-showcase">
+
+      <div class="landing-showcase-inner">
+
+        <div class="landing-showcase-copy">
+
+          <div class="landing-kicker">
+            ONE CASE FILE
+          </div>
+
+          <h3>
+            From scattered evidence to a structured investigation.
+          </h3>
+
+          <p>
+            Documents, events, people, relationships and review findings stay
+            connected to the case file. Investigators can move from an exhibit
+            to the event it supports, the entity it mentions, or the action
+            taken on it.
+          </p>
+
+          <div class="showcase-metrics">
+
+            <div class="showcase-metric">
+              <strong>01</strong>
+              <span>Secure vault</span>
+            </div>
+
+            <div class="showcase-metric">
+              <strong>02</strong>
+              <span>Evidence timeline</span>
+            </div>
+
+            <div class="showcase-metric">
+              <strong>03</strong>
+              <span>Audit history</span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="landing-showcase-art" aria-hidden="true">
+
+          <svg viewBox="0 0 420 260">
+
+            <rect x="8" y="10" width="404" height="240" rx="14"
+                  style="fill:var(--ink);stroke:var(--line)"/>
+
+            <rect x="8" y="10" width="404" height="30" rx="14"
+                  style="fill:var(--panel-raised)"/>
+
+            <circle cx="28" cy="25" r="3.4"
+                    style="fill:var(--crimson)"/>
+            <circle cx="41" cy="25" r="3.4"
+                    style="fill:var(--brass)"/>
+            <circle cx="54" cy="25" r="3.4"
+                    style="fill:var(--verdigris)"/>
+
+
+            <rect x="26" y="58" width="168" height="94" rx="9"
+                  style="fill:var(--panel);stroke:var(--line)"/>
+
+            <rect x="38" y="118" width="17" height="24" rx="3"
+                  style="fill:var(--brass)"/>
+            <rect x="62" y="102" width="17" height="40" rx="3"
+                  style="fill:var(--brass)"/>
+            <rect x="86" y="86" width="17" height="56" rx="3"
+                  style="fill:var(--brass)"/>
+            <rect x="110" y="110" width="17" height="32" rx="3"
+                  style="fill:var(--brass)"/>
+            <rect x="134" y="94" width="17" height="48" rx="3"
+                  style="fill:var(--brass)"/>
+            <rect x="158" y="78" width="17" height="64" rx="3"
+                  style="fill:var(--crimson)"/>
+
+
+            <rect x="204" y="58" width="190" height="94" rx="9"
+                  style="fill:var(--panel);stroke:var(--line)"/>
+
+            <circle cx="248" cy="105" r="27"
+                    fill="none"
+                    stroke-width="11"
+                    style="stroke:var(--line-soft)"/>
+
+            <circle cx="248" cy="105" r="27"
+                    fill="none"
+                    stroke-width="11"
+                    stroke-dasharray="72 170"
+                    transform="rotate(-90 248 105)"
+                    stroke-linecap="round"
+                    style="stroke:var(--brass)"/>
+
+            <circle cx="248" cy="105" r="27"
+                    fill="none"
+                    stroke-width="11"
+                    stroke-dasharray="42 170"
+                    stroke-dashoffset="-76"
+                    transform="rotate(-90 248 105)"
+                    stroke-linecap="round"
+                    style="stroke:var(--steel)"/>
+
+            <circle cx="248" cy="105" r="27"
+                    fill="none"
+                    stroke-width="11"
+                    stroke-dasharray="28 170"
+                    stroke-dashoffset="-122"
+                    transform="rotate(-90 248 105)"
+                    stroke-linecap="round"
+                    style="stroke:var(--verdigris)"/>
+
+
+            <rect x="292" y="84" width="70" height="6" rx="3"
+                  style="fill:var(--brass)"/>
+
+            <rect x="292" y="99" width="54" height="6" rx="3"
+                  style="fill:var(--steel)"/>
+
+            <rect x="292" y="114" width="42" height="6" rx="3"
+                  style="fill:var(--verdigris)"/>
+
+
+            <rect x="26" y="164" width="368" height="70" rx="9"
+                  style="fill:var(--panel);stroke:var(--line)"/>
+
+            <path d="M42 214L96 198L150 206L204 182L258 190L312 172L372 180"
+                  fill="none"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="stroke:var(--brass)"/>
+
+            <circle cx="204" cy="182" r="3.2"
+                    style="fill:var(--brass)"/>
+
+            <circle cx="312" cy="172" r="3.2"
+                    style="fill:var(--brass)"/>
+
+          </svg>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- HOW IT WORKS -->
+    <section class="landing-section compact" id="how-it-works">
+
+      <div class="landing-section-head">
+
+        <div class="landing-kicker">
+          WORKFLOW
+        </div>
+
+        <h2>
+          A case file with a clear chain of evidence.
+        </h2>
+
+        <p>
+          LAW1 connects the investigation from the first upload through
+          verification and reporting.
+        </p>
+
+      </div>
+
+
+      <div class="steps-row">
+
+        <div class="step-card">
+          <svg class="step-icon" viewBox="0 0 24 24">
+            <use href="#icon-upload"/>
+          </svg>
+          <div class="step-index">01</div>
+          <h3>Secure the evidence</h3>
+          <p>
+            Upload documents, validate them and record their SHA-256 hash
+            within the case chain of custody.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <svg class="step-icon" viewBox="0 0 24 24">
+            <use href="#icon-brain"/>
+          </svg>
+          <div class="step-index">02</div>
+          <h3>Structure the file</h3>
+          <p>
+            Extract relevant entities, events and claims from the evidence
+            so the investigation can be reviewed systematically.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <svg class="step-icon" viewBox="0 0 24 24">
+            <use href="#icon-network"/>
+          </svg>
+          <div class="step-index">03</div>
+          <h3>Connect the evidence</h3>
+          <p>
+            Follow chronology, relationships and conflicting claims across
+            the documents in the case.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <svg class="step-icon" viewBox="0 0 24 24">
+            <use href="#icon-doc-check"/>
+          </svg>
+          <div class="step-index">04</div>
+          <h3>Prepare the record</h3>
+          <p>
+            Generate a structured case report while retaining the underlying
+            evidence and audit history.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- FIELD BAND -->
+    <section class="photo-band">
+
+      <div class="photo-band-inner">
+
+        <div class="photo-band-caption">
+
+          <div class="landing-kicker">
+            DESIGNED AROUND THE CASE FILE
+          </div>
+
+          <h3>
+            One workspace for evidence, review and accountability.
+          </h3>
+
+          <p>
+            Investigators work from the same controlled record instead of
+            disconnected folders, messages and spreadsheets.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- FEATURES -->
+    <section class="landing-section compact" id="features">
+
+      <div class="landing-section-head">
+
+        <div class="landing-kicker">
+          CAPABILITIES
+        </div>
+
+        <h2>
+          Everything around the evidence.
+        </h2>
+
+        <p>
+          Each capability is designed to support investigation and review,
+          while keeping human judgment at the center.
+        </p>
+
+      </div>
+
+
+      <div class="feature-grid">
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-folder"/>
+          </svg>
+          <h3>Secure Document Vault</h3>
+          <p>
+            Validated uploads, hashing, versions and document-level
+            confidentiality tracking.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-clock"/>
+          </svg>
+          <h3>Investigation Timeline</h3>
+          <p>
+            Chronological events linked to the documents that support them.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-network"/>
+          </svg>
+          <h3>Evidence Connections</h3>
+          <p>
+            Explore relationships between people, organisations and locations.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-alert"/>
+          </svg>
+          <h3>Contradiction Review</h3>
+          <p>
+            Surface conflicting claims for human verification rather than
+            automatically resolving them.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-layers"/>
+          </svg>
+          <h3>Similar Cases</h3>
+          <p>
+            Compare factual and legal patterns against a reference library.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-brain"/>
+          </svg>
+          <h3>Case Intelligence</h3>
+          <p>
+            Evidence-grounded summaries, arguments and case-specific chat.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-shield"/>
+          </svg>
+          <h3>Role-Based Access</h3>
+          <p>
+            Access controls for investigators, reviewers, administrators and
+            viewers.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-list"/>
+          </svg>
+          <h3>Audit Trail</h3>
+          <p>
+            A chronological record of sensitive actions performed on the case.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-doc-check"/>
+          </svg>
+          <h3>Case Report</h3>
+          <p>
+            Export a structured report based on the documents and analysis
+            stored within the case.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CTA -->
+    <section class="landing-cta-band">
+
+      <div class="landing-cta-band-inner">
+
+        <h2>
+          Open the case file.
+        </h2>
+
+        <p>
+          Explore the complete LAW1 investigation workflow using the demo
+          workspace.
+        </p>
+
+        <button class="primary-btn" id="landing-cta-signin">
+          Sign in
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <use href="#icon-arrow-right"/>
+          </svg>
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
 
   <footer class="landing-footer">
-    <span>AI Case Report — Smart India Hackathon submission</span>
-    <span>Demo-scale prototype · see README for production notes</span>
+    <span>LAW1 · Secure Digital Investigation Workspace</span>
+    <span>Smart India Hackathon · Demo-scale prototype</span>
   </footer>
+
 </div>
 
-<!-- ==================== LOGIN VIEW ==================== -->
+
+<!-- =========================================================
+     LOGIN
+========================================================= -->
 <div class="view" id="view-login">
+
   <div class="login-page">
 
     <div class="login-hero">
+
       <div class="login-hero-inner">
-        <a class="login-back" id="login-back">← Back to overview</a>
-        <svg class="hero-illustration" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+
+        <a class="login-back" id="login-back">
+          ← Back to overview
+        </a>
+
+        <div class="login-overline">
+          LAW1 / SECURE ACCESS
+        </div>
+
+        <svg class="hero-illustration"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="1.1"
+             stroke-linecap="round"
+             stroke-linejoin="round">
           <use href="#icon-scale"/>
         </svg>
-        <h2>Built for investigators,<br/>not spreadsheets.</h2>
-        <p class="hero-lede">Every document hashed. Every action logged. Every claim traceable to its source.</p>
+
+        <h2>
+          The case file,<br>
+          under control.
+        </h2>
+
+        <p class="hero-lede">
+          A secure workspace for evidence management, investigation analysis
+          and accountable case review.
+        </p>
+
         <ul class="hero-features">
-          <li><svg class="hf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-shield"/></svg>
-            <span>Role-based access control with a full audit trail on every case</span></li>
-          <li><svg class="hf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-brain"/></svg>
-            <span>AI-generated summaries, timelines and evidence connection graphs</span></li>
-          <li><svg class="hf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-alert"/></svg>
-            <span>Contradiction detection — always flagged for human verification</span></li>
+
+          <li>
+            <svg class="hf-icon"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-shield"/>
+            </svg>
+            <span>
+              Role-based access with case-level controls and audit history.
+            </span>
+          </li>
+
+          <li>
+            <svg class="hf-icon"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-lock"/>
+            </svg>
+            <span>
+              Document integrity through hashing and chain-of-custody records.
+            </span>
+          </li>
+
+          <li>
+            <svg class="hf-icon"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-network"/>
+            </svg>
+            <span>
+              Timelines, connections and review findings grounded in case
+              evidence.
+            </span>
+          </li>
+
         </ul>
+
       </div>
+
     </div>
+
 
     <div class="login-panel">
+
       <div class="login-card">
-        <div class="case-mark-glyph big">§</div>
-        <h1>AI Case Report</h1>
-        <p class="sub">Secure investigation case management</p>
-        <form id="login-form">
-          <label>Username<input type="text" id="login-username" autocomplete="username" required /></label>
-          <label>Password<input type="password" id="login-password" autocomplete="current-password" required /></label>
-          <button type="submit" class="primary-btn full">Sign in</button>
-          <div id="login-error" class="err"></div>
-        </form>
-        <div class="demo-creds">
-          <div class="demo-creds-title">Demo accounts — tap a row to fill it in</div>
-          <table id="demo-creds-table">
-            <tr class="demo-cred-row" data-user="admin" data-pass="admin123"><td>admin / admin123</td><td>Admin</td></tr>
-            <tr class="demo-cred-row" data-user="investigator" data-pass="investigator123"><td>investigator / investigator123</td><td>Investigator</td></tr>
-            <tr class="demo-cred-row" data-user="reviewer" data-pass="reviewer123"><td>reviewer / reviewer123</td><td>Reviewer</td></tr>
-            <tr class="demo-cred-row" data-user="viewer" data-pass="viewer123"><td>viewer / viewer123</td><td>Viewer</td></tr>
-          </table>
-          <p class="demo-creds-note">First sign-in after a while can take up to a minute — the server is waking up, not stuck.</p>
+
+        <div class="login-brand">
+          <span class="case-mark-glyph big">§</span>
+
+          <div>
+            <strong>LAW1</strong>
+            <span>Secure case system</span>
+          </div>
         </div>
+
+        <h1>Sign in</h1>
+
+        <p class="sub">
+          Access your investigation workspace.
+        </p>
+
+
+        <form id="login-form">
+
+          <label>
+            Username
+            <input
+              type="text"
+              id="login-username"
+              autocomplete="username"
+              required
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              id="login-password"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+
+          <button type="submit" class="primary-btn full">
+            Sign in
+          </button>
+
+          <div id="login-error" class="err"></div>
+
+        </form>
+
+
+        <div class="demo-creds">
+
+          <div class="demo-creds-title">
+            Demo access
+          </div>
+
+          <table id="demo-creds-table">
+
+            <tr class="demo-cred-row"
+                data-user="admin"
+                data-pass="admin123">
+              <td>admin / admin123</td>
+              <td>Admin</td>
+            </tr>
+
+            <tr class="demo-cred-row"
+                data-user="investigator"
+                data-pass="investigator123">
+              <td>investigator / investigator123</td>
+              <td>Investigator</td>
+            </tr>
+
+            <tr class="demo-cred-row"
+                data-user="reviewer"
+                data-pass="reviewer123">
+              <td>reviewer / reviewer123</td>
+              <td>Reviewer</td>
+            </tr>
+
+            <tr class="demo-cred-row"
+                data-user="viewer"
+                data-pass="viewer123">
+              <td>viewer / viewer123</td>
+              <td>Viewer</td>
+            </tr>
+
+          </table>
+
+          <p class="demo-creds-note">
+            Click a row to fill the credentials.
+            The demo server may take a moment to wake.
+          </p>
+
+        </div>
+
       </div>
+
     </div>
 
   </div>
+
 </div>
 
-<!-- ==================== MY CASES VIEW ==================== -->
+
+<!-- =========================================================
+     CASE SELECTION
+========================================================= -->
 <div class="view" id="view-cases">
+
   <div class="cases-topbar">
+
     <div class="case-mark">
+
       <span class="case-mark-glyph">§</span>
+
       <div>
-        <div class="case-mark-title">AI CASE REPORT</div>
+        <div class="case-mark-title">LAW1</div>
         <div class="case-mark-id" id="whoami">—</div>
       </div>
+
     </div>
-    <button id="logout-btn-cases" class="ghost-btn small">Log out</button>
+
+    <button id="logout-btn-cases" class="ghost-btn small">
+      Log out
+    </button>
+
   </div>
 
-  <div class="cases-content">
+
+  <main class="cases-content">
+
     <header class="panel-head">
-      <h1>My Cases</h1>
-      <p class="sub">Open an existing investigation or start a new one.</p>
+
+      <div>
+        <div class="landing-kicker">
+          CASE MANAGEMENT
+        </div>
+
+        <h1>My Cases</h1>
+
+        <p class="sub">
+          Select an investigation or create a new case file.
+        </p>
+      </div>
+
     </header>
 
+
     <div class="reviewer-tip">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-sparkle"/></svg>
-      <div><strong>Reviewing for the first time?</strong> Click <em class="hl">Load Demo Case</em> below for a fully populated investigation — documents, timeline, evidence graph, contradictions and report already generated.</div>
+
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <use href="#icon-sparkle"/>
+      </svg>
+
+      <div>
+        <strong>Reviewing LAW1 for the first time?</strong>
+        Load the demo case to explore a populated investigation with
+        evidence, timeline, connections, contradictions and reporting.
+      </div>
+
     </div>
+
 
     <div class="cases-actions">
-      <button id="demo-case-btn" class="primary-btn">✨ Load Demo Case</button>
-      <button id="new-case-btn" class="ghost-btn">+ New Investigation</button>
-      <input type="text" id="case-search" class="case-search-input" placeholder="Search cases by title, ID or officer…" />
+
+      <button id="demo-case-btn" class="primary-btn">
+        Load Demo Case
+      </button>
+
+      <button id="new-case-btn" class="ghost-btn">
+        + New Investigation
+      </button>
+
+      <input
+        type="text"
+        id="case-search"
+        class="case-search-input"
+        placeholder="Search cases by title, ID or officer…"
+      />
+
     </div>
 
+
     <div class="case-grid" id="case-grid"></div>
-  </div>
+
+  </main>
+
 </div>
 
-<!-- New case modal -->
+
+<!-- =========================================================
+     NEW CASE MODAL
+========================================================= -->
 <div class="modal-backdrop" id="new-case-modal">
+
   <div class="modal-card">
+
+    <div class="modal-kicker">
+      NEW CASE
+    </div>
+
     <h2>New Investigation</h2>
+
+    <p class="sub">
+      Create the initial case record.
+    </p>
+
+
     <form id="new-case-form">
-      <label>Case Title<input type="text" id="nc-title" required /></label>
-      <label>Case Type
+
+      <label>
+        Case Title
+        <input type="text" id="nc-title" required>
+      </label>
+
+      <label>
+        Case Type
+
         <select id="nc-type">
           <option>Financial Fraud</option>
           <option>Cyber Crime</option>
@@ -358,636 +1120,2440 @@
           <option>Tenancy Dispute</option>
           <option>General</option>
         </select>
+
       </label>
-      <label>Description<textarea id="nc-description" rows="3"></textarea></label>
-      <label>Investigating Officer<input type="text" id="nc-officer" /></label>
+
+      <label>
+        Description
+        <textarea id="nc-description" rows="3"></textarea>
+      </label>
+
+      <label>
+        Investigating Officer
+        <input type="text" id="nc-officer">
+      </label>
+
+
       <div class="modal-row">
-        <label>Status
-          <select id="nc-status"><option>Active</option><option>Under Review</option><option>Closed</option></select>
+
+        <label>
+          Status
+
+          <select id="nc-status">
+            <option>Active</option>
+            <option>Under Review</option>
+            <option>Closed</option>
+          </select>
+
         </label>
-        <label>Priority
-          <select id="nc-priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
+
+        <label>
+          Priority
+
+          <select id="nc-priority">
+            <option>High</option>
+            <option selected>Medium</option>
+            <option>Low</option>
+          </select>
+
         </label>
+
       </div>
+
+
       <div class="modal-actions">
-        <button type="button" class="ghost-btn" id="nc-cancel">Cancel</button>
-        <button type="submit" class="primary-btn">Create Case</button>
+
+        <button
+          type="button"
+          class="ghost-btn"
+          id="nc-cancel">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn">
+          Create Case
+        </button>
+
       </div>
+
     </form>
+
   </div>
+
 </div>
 
-<!-- ==================== CASE WORKSPACE VIEW ==================== -->
+
+<!-- =========================================================
+     WORKSPACE
+========================================================= -->
 <div class="view" id="view-workspace">
-<div class="app">
 
-  <aside class="folder-nav">
-    <div class="case-mark clickable" id="back-to-cases">
-      <span class="case-mark-glyph">§</span>
-      <div>
-        <div class="case-mark-title">CASE FILE</div>
-        <div class="case-mark-id" id="case-id">—</div>
-      </div>
-    </div>
+  <div class="app">
 
-    <nav class="tabs" id="tabs">
-      <div class="nav-group-label">Case</div>
-      <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span><span class="tab-text"><span class="tab-title">Overview</span><span class="tab-desc">Charts, counts &amp; quick actions</span></span></button>
-      <button class="tab" data-tab="documents"><svg class="tab-icon"><use href="#icon-folder"/></svg><span class="tab-num">01</span><span class="tab-text"><span class="tab-title">Evidence</span><span class="tab-desc">Upload, hash, chain of custody</span></span></button>
-      <button class="tab" data-tab="intelligence"><svg class="tab-icon"><use href="#icon-brain"/></svg><span class="tab-num">02</span><span class="tab-text"><span class="tab-title">Intelligence</span><span class="tab-desc">AI summary, arguments, chat</span></span></button>
-      <div class="nav-group-label">Verification</div>
-      <button class="tab" data-tab="contradictions"><svg class="tab-icon"><use href="#icon-alert"/></svg><span class="tab-num">03</span><span class="tab-text"><span class="tab-title">Contradictions</span><span class="tab-desc">Conflicting claims, human-verified</span></span><span class="tab-count" id="tab-count-contradictions"></span></button>
-      <div class="nav-group-label">Analysis</div>
-      <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">04</span><span class="tab-text"><span class="tab-title">Timeline</span><span class="tab-desc">Chronological, evidence-linked</span></span></button>
-      <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">05</span><span class="tab-text"><span class="tab-title">Connections</span><span class="tab-desc">Entity relationship graph</span></span></button>
-      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
-      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
-      <div class="nav-group-label">Security</div>
-      <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">08</span><span class="tab-text"><span class="tab-title">Audit Trail</span><span class="tab-desc">Who did what, and when</span></span></button>
-    </nav>
 
-    <div class="nav-footer">
-      <div class="whoami-pill" id="whoami-workspace-pill">
-        <span class="whoami-avatar" id="whoami-avatar"></span>
-        <span class="whoami-info">
-          <span class="whoami-name" id="whoami-workspace"></span>
-          <span class="whoami-role" id="whoami-role-workspace"></span>
-        </span>
-      </div>
-      <div class="nav-footer-actions">
-        <button id="logout-btn" class="ghost-btn small">Log out</button>
-      </div>
-    </div>
-  </aside>
+    <!-- SIDEBAR -->
+    <aside class="folder-nav">
 
-  <main class="content">
+      <div class="case-mark clickable" id="back-to-cases">
 
-    <div class="case-context-bar" id="case-context-bar">
-      <div class="ccb-left">
-        <div class="ccb-title-row">
-          <h2 id="ccb-title">—</h2>
-          <span class="ccb-pill ccb-status" id="ccb-status">—</span>
-          <span class="ccb-pill ccb-priority" id="ccb-priority">—</span>
-        </div>
-        <div class="ccb-id" id="ccb-id">—</div>
-      </div>
-      <div class="ccb-stats" id="ccb-stats"></div>
-    </div>
+        <span class="case-mark-glyph">§</span>
 
-    <!-- DASHBOARD -->
-    <section class="panel active" id="panel-dashboard">
-      <header class="law-case-header">
-        <div class="law-case-copy">
-          <div class="law-kicker"><span></span>CASE OVERVIEW</div>
-          <div class="law-title-line">
-            <h1 id="dash-title">Case Overview</h1>
-            <span class="law-pill status">Active</span>
-            <span class="law-pill priority">High priority</span>
-          </div>
-          <p id="dash-sub" class="law-case-sub"></p>
-          <div class="law-case-meta"><span>LAW1</span><span>•</span><span>Secure investigation workspace</span></div>
-        </div>
-        <div class="law-header-actions">
-          <button class="law-btn" data-goto="contradictions"><svg viewBox="0 0 24 24"><use href="#icon-alert"/></svg>Review conflicts</button>
-          <button class="law-btn primary" data-goto="documents"><svg viewBox="0 0 24 24"><use href="#icon-folder"/></svg>Add evidence</button>
-        </div>
-      </header>
-
-      <div class="stat-grid" id="stat-grid"></div>
-
-      <div class="law-dashboard-grid">
-        <div class="law-dashboard-main">
-          <section class="law-card">
-            <div class="law-card-head">
-              <div><span class="law-section-label">CASE ACTIVITY</span><h2>Recent activity</h2><p>Latest evidence and investigation actions.</p></div>
-              <button class="law-link" data-goto="audit">Audit trail →</button>
-            </div>
-            <div id="dash-activity" class="law-activity-list"></div>
-          </section>
-
-          <section class="law-ai-summary">
-            <div class="law-ai-mark"><svg viewBox="0 0 24 24"><use href="#icon-sparkle"/></svg></div>
-            <div class="law-ai-copy"><span>CASE INTELLIGENCE</span><strong>Evidence-grounded summary</strong><p id="dash-ai-summary">Open Case Intelligence to generate a summary of this case.</p></div>
-            <button class="law-btn" data-goto="intelligence">Open intelligence →</button>
-          </section>
+        <div>
+          <div class="case-mark-title">CASE FILE</div>
+          <div class="case-mark-id" id="case-id">—</div>
         </div>
 
-        <aside class="law-dashboard-side">
-          <section class="law-card">
-            <div class="law-card-head compact"><div><span class="law-section-label">ACTIONS</span><h2>Case tools</h2></div></div>
-            <button class="law-action" data-goto="documents"><span class="law-action-icon green"><svg viewBox="0 0 24 24"><use href="#icon-folder"/></svg></span><span><b>Upload evidence</b><small>Add documents to the vault</small></span><em>→</em></button>
-            <button class="law-action" data-goto="contradictions"><span class="law-action-icon amber"><svg viewBox="0 0 24 24"><use href="#icon-alert"/></svg></span><span><b>Review conflicts</b><small>Check inconsistent claims</small></span><em>→</em></button>
-            <button class="law-action" data-goto="report"><span class="law-action-icon blue"><svg viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg></span><span><b>Generate report</b><small>Create the case report</small></span><em>→</em></button>
-          </section>
-
-          <section class="law-card law-insights">
-            <div class="law-card-head compact"><div><span class="law-section-label">INVESTIGATION</span><h2>Evidence insights</h2></div><button class="law-link" data-goto="graph">Explore →</button></div>
-            <div id="dash-donut-row" class="donut-row"></div>
-            <div class="law-divider"></div>
-            <div class="law-rel-title">Relationship types</div>
-            <div id="dash-relationship-list" class="relationship-list"></div>
-          </section>
-        </aside>
       </div>
 
-      <div class="law-lower-grid">
-        <section class="law-card"><div class="law-card-head compact"><div><span class="law-section-label">RELIABILITY</span><h2>Evidence integrity</h2></div><button class="law-link" data-goto="documents">Details →</button></div><div id="dash-gauge" class="gauge-wrap"></div></section>
-        <section class="law-card"><div class="law-card-head compact"><div><span class="law-section-label">DOCUMENT ACTIVITY</span><h2>Evidence added</h2></div><button class="law-link" data-goto="documents">Vault →</button></div><div id="dash-activity-chart" class="activity-chart-wrap"></div></section>
-      </div>
 
-      <!-- Existing dashboard controls are retained for app.js compatibility. -->
-      <div class="law-legacy-dashboard-controls" aria-hidden="true">
-        <select id="dash-filter-docs"><option>All Documents</option></select>
-        <select id="dash-filter-entities"><option>All Entities</option></select>
-        <select id="dash-filter-relationships"><option>All Relationships</option></select>
-        <select id="dash-filter-time"><option>All Time</option></select>
-        <button class="dash-custom-report" data-goto="report">Custom Report</button>
-      </div>
-    </section>
+      <nav class="tabs" id="tabs">
 
-    <!-- DOCUMENTS / VAULT -->
-    <section class="panel" id="panel-documents">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-lock"/></svg>Secure Vault</div>
-          <h1>Document Vault</h1>
-          <p class="sub">Upload the case file. Each document is validated, SHA-256 hashed and analyzed automatically — with a full chain of custody behind every exhibit.</p>
+        <div class="nav-group-label">
+          CASE
         </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <rect x="34" y="34" width="96" height="104" rx="8" transform="rotate(-7 82 86)" style="fill:var(--panel, #111620);stroke:var(--line, #2a3346)"/>
-            <rect x="48" y="26" width="96" height="104" rx="8" transform="rotate(3 96 78)" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="56" y="22" width="96" height="106" rx="8" stroke-opacity="0.5" style="fill:var(--ink, #0a0d14);stroke:var(--brass, #d9a441)"/>
-            <rect x="70" y="40" width="58" height="5" rx="2.5" style="fill:var(--brass, #d9a441)"/>
-            <rect x="70" y="54" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="70" y="64" width="62" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="70" y="74" width="66" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="70" y="84" width="40" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="70" y="100" width="68" height="16" rx="5" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <path d="M78 108l3.5 3.5 7-7.5" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--verdigris, #46a97f)"/>
-            <rect x="94" y="106" width="36" height="4" rx="2" opacity="0.6" style="fill:var(--verdigris, #46a97f)"/>
-            <circle cx="160" cy="112" r="17" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <path d="M153 112v-4a7 7 0 0 1 14 0v4" fill="none" stroke-width="2" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
-            <rect x="151" y="112" width="18" height="12" rx="3" opacity="0.9" style="fill:var(--brass, #d9a441)"/>
+
+        <button class="tab active" data-tab="dashboard">
+          <svg class="tab-icon">
+            <use href="#icon-grid"/>
           </svg>
-        </div>
-      </div>
 
-      <label class="dropzone" id="dropzone">
-        <input type="file" id="file-input" multiple hidden accept=".txt,.md,.pdf" />
-        <div class="dropzone-inner">
-          <span class="dropzone-glyph">＋</span>
-          <div>
-            <strong>Add documents</strong>
-            <div class="muted">.txt, .md or .pdf &middot; max 15MB &middot; drop files or click to browse</div>
-          </div>
-        </div>
-      </label>
+          <span class="tab-num">00</span>
 
-      <div id="upload-status"></div>
-      <div id="processing-pipeline"></div>
+          <span class="tab-text">
+            <span class="tab-title">Overview</span>
+            <span class="tab-desc">Case status and activity</span>
+          </span>
+        </button>
 
-      <div class="chart-grid two vault-type-chart">
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <div><h3>Evidence mix</h3><p class="sub">How the vault breaks down by document type.</p></div>
-            <span class="chart-badge" id="vault-total-badge">—</span>
-          </div>
-          <div id="vault-type-bars"></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <div><h3>Upload cadence</h3><p class="sub">When evidence entered the vault.</p></div>
-            <span class="chart-badge" id="vault-cadence-badge">—</span>
-          </div>
-          <div id="vault-cadence-chart"></div>
-        </div>
-      </div>
 
-      <div class="vault-controls">
-        <input type="text" id="vault-search" placeholder="Search documents…" />
-        <select id="vault-filter"><option>All</option></select>
-      </div>
+        <button class="tab" data-tab="documents">
 
-      <div class="exhibit-grid" id="doc-list"></div>
-    </section>
-
-    <!-- Document detail / custody modal -->
-    <div class="modal-backdrop" id="doc-modal">
-      <div class="modal-card wide">
-        <div id="doc-modal-body"></div>
-        <div class="modal-actions"><button class="ghost-btn" id="doc-modal-close">Close</button></div>
-      </div>
-    </div>
-
-    <!-- CASE INTELLIGENCE (merged: summary, contradictions, argument intel, chat) -->
-    <section class="panel" id="panel-intelligence">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-sparkle"/></svg>AI Analysis</div>
-          <h1>Case Intelligence</h1>
-          <p class="sub">Narrative summary, argument intelligence and grounded case chat — every output traceable to an uploaded document. Conflicting claims now live in their own <em class="hl">Contradictions</em> workspace.</p>
-        </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="100" cy="76" r="50" fill="none" stroke-dasharray="3 6" style="stroke:var(--line, #2a3346)"/>
-            <circle cx="100" cy="76" r="33" stroke-opacity="0.45" style="fill:var(--panel, #111620);stroke:var(--brass, #d9a441)"/>
-            <path d="M88 62a8 8 0 0 1 12 0 8 8 0 0 1 12 0M88 90a8 8 0 0 0 12 0 8 8 0 0 0 12 0M100 62v28" fill="none" stroke-width="2.2" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
-            <circle cx="100" cy="26" r="6" style="fill:var(--brass, #d9a441)"/>
-            <circle cx="150" cy="76" r="6" style="fill:var(--steel, #6f93c4)"/>
-            <circle cx="100" cy="126" r="6" style="fill:var(--verdigris, #46a97f)"/>
-            <circle cx="50" cy="76" r="6" opacity="0.6" style="fill:var(--brass, #d9a441)"/>
-            <path d="M100 32v11M144 76h-11M100 120v-11M56 76h11" stroke-width="1.6" style="stroke:var(--line, #2a3346)"/>
-            <rect x="24" y="132" width="152" height="4" rx="2" style="fill:var(--line-soft, #1d2535)"/>
-            <rect x="24" y="132" width="96" height="4" rx="2" style="fill:var(--brass, #d9a441)"/>
+          <svg class="tab-icon">
+            <use href="#icon-folder"/>
           </svg>
-        </div>
-      </div>
 
-      <nav class="intel-subtabs" id="intel-subtabs">
-        <button class="subtab-btn active" data-subtab="summary"><svg class="subtab-icon"><use href="#icon-doc-check"/></svg>Summary</button>
-        <button class="subtab-btn" data-subtab="arguments"><svg class="subtab-icon"><use href="#icon-scale"/></svg>Argument Intel</button>
-        <button class="subtab-btn" data-subtab="chat"><svg class="subtab-icon"><use href="#icon-brain"/></svg>Chat</button>
+          <span class="tab-num">01</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Evidence</span>
+            <span class="tab-desc">Documents and custody</span>
+          </span>
+
+        </button>
+
+
+        <button class="tab" data-tab="intelligence">
+
+          <svg class="tab-icon">
+            <use href="#icon-brain"/>
+          </svg>
+
+          <span class="tab-num">02</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Intelligence</span>
+            <span class="tab-desc">Summary and case analysis</span>
+          </span>
+
+        </button>
+
+
+        <div class="nav-group-label">
+          VERIFICATION
+        </div>
+
+
+        <button class="tab" data-tab="contradictions">
+
+          <svg class="tab-icon">
+            <use href="#icon-alert"/>
+          </svg>
+
+          <span class="tab-num">03</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Contradictions</span>
+            <span class="tab-desc">Claims requiring review</span>
+          </span>
+
+          <span
+            class="tab-count"
+            id="tab-count-contradictions"></span>
+
+        </button>
+
+
+        <div class="nav-group-label">
+          ANALYSIS
+        </div>
+
+
+        <button class="tab" data-tab="timeline">
+
+          <svg class="tab-icon">
+            <use href="#icon-clock"/>
+          </svg>
+
+          <span class="tab-num">04</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Timeline</span>
+            <span class="tab-desc">Chronology and events</span>
+          </span>
+
+        </button>
+
+
+        <button class="tab" data-tab="graph">
+
+          <svg class="tab-icon">
+            <use href="#icon-network"/>
+          </svg>
+
+          <span class="tab-num">05</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Connections</span>
+            <span class="tab-desc">Entity relationships</span>
+          </span>
+
+        </button>
+
+
+        <button class="tab" data-tab="similar">
+
+          <svg class="tab-icon">
+            <use href="#icon-layers"/>
+          </svg>
+
+          <span class="tab-num">06</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Similar Cases</span>
+            <span class="tab-desc">Reference patterns</span>
+          </span>
+
+        </button>
+
+
+        <button class="tab" data-tab="report">
+
+          <svg class="tab-icon">
+            <use href="#icon-doc-check"/>
+          </svg>
+
+          <span class="tab-num">07</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Report</span>
+            <span class="tab-desc">Structured case report</span>
+          </span>
+
+        </button>
+
+
+        <div class="nav-group-label">
+          SECURITY
+        </div>
+
+
+        <button class="tab" data-tab="audit">
+
+          <svg class="tab-icon">
+            <use href="#icon-list"/>
+          </svg>
+
+          <span class="tab-num">08</span>
+
+          <span class="tab-text">
+            <span class="tab-title">Audit Trail</span>
+            <span class="tab-desc">Activity and accountability</span>
+          </span>
+
+        </button>
+
       </nav>
 
-      <!-- Summary sub-panel -->
-      <div class="intel-subpanel active" id="intel-summary">
-        <div class="card prose" id="summary-body">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-sparkle"/></svg>
-            <div class="empty-state-title">No summary yet</div>
-            <div class="empty-state-sub">Upload at least one case document and this tab auto-generates a narrative summary — every sentence traceable back to its source.</div>
-            <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
-          </div>
+
+      <div class="nav-footer">
+
+        <div class="whoami-pill" id="whoami-workspace-pill">
+
+          <span
+            class="whoami-avatar"
+            id="whoami-avatar"></span>
+
+          <span class="whoami-info">
+
+            <span
+              class="whoami-name"
+              id="whoami-workspace"></span>
+
+            <span
+              class="whoami-role"
+              id="whoami-role-workspace"></span>
+
+          </span>
+
         </div>
+
+
+        <div class="nav-footer-actions">
+
+          <button
+            id="logout-btn"
+            class="ghost-btn small">
+            Log out
+          </button>
+
+        </div>
+
       </div>
 
-      <!-- Argument Intelligence sub-panel -->
-      <div class="intel-subpanel" id="intel-arguments">
-        <div id="arguments-body">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-scale"/></svg>
-            <div class="empty-state-title">No analysis yet</div>
-            <div class="empty-state-sub">Evidence-grounded potential arguments and fair counterarguments for internal case-building — not a courtroom simulator, and not a verdict.</div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+
+
+      <!-- CASE CONTEXT -->
+      <div class="case-context-bar" id="case-context-bar">
+
+        <div class="ccb-left">
+
+          <div class="ccb-title-row">
+
+            <h2 id="ccb-title">—</h2>
+
+            <span
+              class="ccb-pill ccb-status"
+              id="ccb-status">—</span>
+
+            <span
+              class="ccb-pill ccb-priority"
+              id="ccb-priority">—</span>
+
           </div>
+
+          <div class="ccb-id" id="ccb-id">—</div>
+
         </div>
+
+        <div class="ccb-stats" id="ccb-stats"></div>
+
       </div>
 
-      <!-- Chat sub-panel -->
-      <div class="intel-subpanel" id="intel-chat">
-        <div class="chat-controls">
-          <div class="chat-modes" id="chat-modes">
-            <button class="mode-btn active" data-mode="case">Case</button>
-            <button class="mode-btn" data-mode="evidence">Evidence</button>
-            <button class="mode-btn" data-mode="legal">Legal Knowledge</button>
+
+      <!-- =====================================================
+           DASHBOARD
+      ====================================================== -->
+      <section
+        class="panel active"
+        id="panel-dashboard">
+
+
+        <header class="law-case-header">
+
+          <div class="law-case-copy">
+
+            <div class="law-kicker">
+              <span></span>
+              CASE OVERVIEW
+            </div>
+
+            <div class="law-title-line">
+
+              <h1 id="dash-title">
+                Case Overview
+              </h1>
+
+              <span class="law-pill status">
+                Active
+              </span>
+
+              <span class="law-pill priority">
+                High priority
+              </span>
+
+            </div>
+
+            <p
+              id="dash-sub"
+              class="law-case-sub"></p>
+
+            <div class="law-case-meta">
+              <span>LAW1</span>
+              <span>•</span>
+              <span>Secure investigation workspace</span>
+            </div>
+
           </div>
-          <select id="chat-lang">
-            <option value="en">English</option>
-            <option value="hi">हिंदी (Hindi)</option>
+
+
+          <div class="law-header-actions">
+
+            <button
+              class="law-btn"
+              data-goto="contradictions">
+
+              <svg viewBox="0 0 24 24">
+                <use href="#icon-alert"/>
+              </svg>
+
+              Review conflicts
+
+            </button>
+
+
+            <button
+              class="law-btn primary"
+              data-goto="documents">
+
+              <svg viewBox="0 0 24 24">
+                <use href="#icon-folder"/>
+              </svg>
+
+              Add evidence
+
+            </button>
+
+          </div>
+
+        </header>
+
+
+        <div
+          class="stat-grid"
+          id="stat-grid"></div>
+
+
+        <div class="law-dashboard-grid">
+
+          <div class="law-dashboard-main">
+
+
+            <section class="law-card">
+
+              <div class="law-card-head">
+
+                <div>
+                  <span class="law-section-label">
+                    CASE ACTIVITY
+                  </span>
+
+                  <h2>Recent activity</h2>
+
+                  <p>
+                    Latest evidence and investigation actions.
+                  </p>
+                </div>
+
+                <button
+                  class="law-link"
+                  data-goto="audit">
+                  Audit trail →
+                </button>
+
+              </div>
+
+              <div
+                id="dash-activity"
+                class="law-activity-list"></div>
+
+            </section>
+
+
+            <section class="law-ai-summary">
+
+              <div class="law-ai-mark">
+                <svg viewBox="0 0 24 24">
+                  <use href="#icon-sparkle"/>
+                </svg>
+              </div>
+
+              <div class="law-ai-copy">
+
+                <span>CASE INTELLIGENCE</span>
+
+                <strong>
+                  Evidence-grounded summary
+                </strong>
+
+                <p id="dash-ai-summary">
+                  Open Case Intelligence to generate a summary of this case.
+                </p>
+
+              </div>
+
+              <button
+                class="law-btn"
+                data-goto="intelligence">
+                Open intelligence →
+              </button>
+
+            </section>
+
+          </div>
+
+
+          <aside class="law-dashboard-side">
+
+
+            <section class="law-card">
+
+              <div class="law-card-head compact">
+
+                <div>
+                  <span class="law-section-label">
+                    ACTIONS
+                  </span>
+
+                  <h2>Case tools</h2>
+                </div>
+
+              </div>
+
+
+              <button
+                class="law-action"
+                data-goto="documents">
+
+                <span class="law-action-icon green">
+                  <svg viewBox="0 0 24 24">
+                    <use href="#icon-folder"/>
+                  </svg>
+                </span>
+
+                <span>
+                  <b>Upload evidence</b>
+                  <small>Add documents to the vault</small>
+                </span>
+
+                <em>→</em>
+
+              </button>
+
+
+              <button
+                class="law-action"
+                data-goto="contradictions">
+
+                <span class="law-action-icon amber">
+                  <svg viewBox="0 0 24 24">
+                    <use href="#icon-alert"/>
+                  </svg>
+                </span>
+
+                <span>
+                  <b>Review conflicts</b>
+                  <small>Check inconsistent claims</small>
+                </span>
+
+                <em>→</em>
+
+              </button>
+
+
+              <button
+                class="law-action"
+                data-goto="report">
+
+                <span class="law-action-icon blue">
+                  <svg viewBox="0 0 24 24">
+                    <use href="#icon-doc-check"/>
+                  </svg>
+                </span>
+
+                <span>
+                  <b>Generate report</b>
+                  <small>Create the case report</small>
+                </span>
+
+                <em>→</em>
+
+              </button>
+
+            </section>
+
+
+            <section class="law-card law-insights">
+
+              <div class="law-card-head compact">
+
+                <div>
+                  <span class="law-section-label">
+                    INVESTIGATION
+                  </span>
+
+                  <h2>Evidence insights</h2>
+                </div>
+
+                <button
+                  class="law-link"
+                  data-goto="graph">
+                  Explore →
+                </button>
+
+              </div>
+
+              <div
+                id="dash-donut-row"
+                class="donut-row"></div>
+
+              <div class="law-divider"></div>
+
+              <div class="law-rel-title">
+                Relationship types
+              </div>
+
+              <div
+                id="dash-relationship-list"
+                class="relationship-list"></div>
+
+            </section>
+
+          </aside>
+
+        </div>
+
+
+        <div class="law-lower-grid">
+
+          <section class="law-card">
+
+            <div class="law-card-head compact">
+
+              <div>
+                <span class="law-section-label">
+                  RELIABILITY
+                </span>
+
+                <h2>Evidence integrity</h2>
+              </div>
+
+              <button
+                class="law-link"
+                data-goto="documents">
+                Details →
+              </button>
+
+            </div>
+
+            <div
+              id="dash-gauge"
+              class="gauge-wrap"></div>
+
+          </section>
+
+
+          <section class="law-card">
+
+            <div class="law-card-head compact">
+
+              <div>
+                <span class="law-section-label">
+                  DOCUMENT ACTIVITY
+                </span>
+
+                <h2>Evidence added</h2>
+              </div>
+
+              <button
+                class="law-link"
+                data-goto="documents">
+                Vault →
+              </button>
+
+            </div>
+
+            <div
+              id="dash-activity-chart"
+              class="activity-chart-wrap"></div>
+
+          </section>
+
+        </div>
+
+
+        <!-- JS compatibility controls -->
+        <div
+          class="law-legacy-dashboard-controls"
+          aria-hidden="true">
+
+          <select id="dash-filter-docs">
+            <option>All Documents</option>
           </select>
+
+          <select id="dash-filter-entities">
+            <option>All Entities</option>
+          </select>
+
+          <select id="dash-filter-relationships">
+            <option>All Relationships</option>
+          </select>
+
+          <select id="dash-filter-time">
+            <option>All Time</option>
+          </select>
+
+          <button
+            class="dash-custom-report"
+            data-goto="report">
+            Custom Report
+          </button>
+
         </div>
 
-        <div class="chat-window" id="chat-window"></div>
-        <form id="chat-form" class="chat-form">
-          <button type="button" id="mic-btn" title="Hold to speak">🎤</button>
-          <input type="text" id="chat-input" placeholder="How is Person A connected to Person B?" autocomplete="off" />
-          <button type="submit">Ask</button>
-        </form>
-      </div>
-    </section>
+      </section>
 
-    <!-- CONTRADICTIONS (standalone feature) -->
-    <section class="panel contra-page" id="panel-contradictions">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-alert"/></svg>Verification</div>
-          <h1>Contradiction Analysis</h1>
-          <p class="sub">Claims that conflict across the case file, ranked by severity and scored for confidence. Every finding is a <em class="hl">prompt for human verification</em> — nothing here is resolved, decided, or treated as proof.</p>
-          <div class="page-hero-actions">
-            <button class="ghost-btn" id="recheck-contradictions-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-search"/></svg> Re-run check</button>
-            <button class="ghost-btn" id="export-contradictions-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export findings</button>
+
+      <!-- =====================================================
+           DOCUMENT VAULT
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-documents">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-lock"/>
+              </svg>
+              SECURE VAULT
+            </div>
+
+            <h1>Evidence</h1>
+
+            <p class="sub">
+              Add documents to the case. Files are validated, hashed and
+              processed with their chain-of-custody record retained.
+            </p>
+
           </div>
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <rect x="34" y="34"
+                    width="96"
+                    height="104"
+                    rx="8"
+                    transform="rotate(-7 82 86)"
+                    style="fill:var(--panel);stroke:var(--line)"/>
+
+              <rect x="48" y="26"
+                    width="96"
+                    height="104"
+                    rx="8"
+                    transform="rotate(3 96 78)"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <rect x="56" y="22"
+                    width="96"
+                    height="106"
+                    rx="8"
+                    style="fill:var(--ink);stroke:var(--brass)"/>
+
+              <rect x="70" y="40"
+                    width="58"
+                    height="5"
+                    rx="2.5"
+                    style="fill:var(--brass)"/>
+
+              <rect x="70" y="54"
+                    width="68"
+                    height="4"
+                    rx="2"
+                    style="fill:var(--line)"/>
+
+              <rect x="70" y="64"
+                    width="62"
+                    height="4"
+                    rx="2"
+                    style="fill:var(--line)"/>
+
+              <rect x="70" y="74"
+                    width="66"
+                    height="4"
+                    rx="2"
+                    style="fill:var(--line)"/>
+
+              <rect x="70" y="100"
+                    width="68"
+                    height="16"
+                    rx="5"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <path
+                d="M78 108l3.5 3.5 7-7.5"
+                fill="none"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="stroke:var(--verdigris)"/>
+
+              <circle cx="160" cy="112" r="17"
+                      style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <path
+                d="M153 112v-4a7 7 0 0 1 14 0v4"
+                fill="none"
+                stroke-width="2"
+                style="stroke:var(--brass)"/>
+
+              <rect x="151" y="112"
+                    width="18"
+                    height="12"
+                    rx="3"
+                    style="fill:var(--brass)"/>
+
+            </svg>
+
+          </div>
+
         </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <rect x="14" y="34" width="70" height="82" rx="8" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="116" y="34" width="70" height="82" rx="8" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="26" y="48" width="42" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="26" y="58" width="46" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="26" y="68" width="34" height="4" rx="2" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
-            <rect x="26" y="78" width="44" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="26" y="88" width="30" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="128" y="48" width="44" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="128" y="58" width="38" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="128" y="68" width="34" height="4" rx="2" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
-            <rect x="128" y="78" width="46" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="128" y="88" width="26" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <path d="M84 70h14M102 70h14" stroke-width="2" stroke-dasharray="3 4" style="stroke:var(--crimson, #e2574f)"/>
-            <circle cx="100" cy="70" r="16" stroke-width="2" style="fill:var(--ink, #0a0d14);stroke:var(--crimson, #e2574f)"/>
-            <path d="M100 62v9" stroke-width="2.4" stroke-linecap="round" style="stroke:var(--crimson, #e2574f)"/>
-            <circle cx="100" cy="77" r="1.6" style="fill:var(--crimson, #e2574f)"/>
-            <rect x="46" y="128" width="108" height="6" rx="3" style="fill:var(--line-soft, #1d2535)"/>
-            <rect x="46" y="128" width="62" height="6" rx="3" style="fill:var(--crimson, #e2574f)"/>
-          </svg>
+
+
+        <label
+          class="dropzone"
+          id="dropzone">
+
+          <input
+            type="file"
+            id="file-input"
+            multiple
+            hidden
+            accept=".txt,.md,.pdf">
+
+          <div class="dropzone-inner">
+
+            <span class="dropzone-glyph">＋</span>
+
+            <div>
+
+              <strong>
+                Add evidence
+              </strong>
+
+              <div class="muted">
+                .txt, .md or .pdf · max 15MB ·
+                drop files or click to browse
+              </div>
+
+            </div>
+
+          </div>
+
+        </label>
+
+
+        <div id="upload-status"></div>
+
+        <div id="processing-pipeline"></div>
+
+
+        <div class="chart-grid two vault-type-chart">
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Evidence mix</h3>
+                <p class="sub">
+                  Documents grouped by type.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="vault-total-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="vault-type-bars"></div>
+
+          </div>
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Upload cadence</h3>
+                <p class="sub">
+                  Evidence added to the case.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="vault-cadence-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="vault-cadence-chart"></div>
+
+          </div>
+
         </div>
+
+
+        <div class="vault-controls">
+
+          <input
+            type="text"
+            id="vault-search"
+            placeholder="Search evidence…">
+
+          <select id="vault-filter">
+            <option>All</option>
+          </select>
+
+        </div>
+
+
+        <div
+          class="exhibit-grid"
+          id="doc-list"></div>
+
+      </section>
+
+
+      <!-- DOCUMENT MODAL -->
+      <div
+        class="modal-backdrop"
+        id="doc-modal">
+
+        <div class="modal-card wide">
+
+          <div id="doc-modal-body"></div>
+
+          <div class="modal-actions">
+
+            <button
+              class="ghost-btn"
+              id="doc-modal-close">
+              Close
+            </button>
+
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="contra-summary" id="contra-summary"></div>
 
-      <div class="chart-grid two">
-        <div class="chart-card">
+      <!-- =====================================================
+           INTELLIGENCE
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-intelligence">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-sparkle"/>
+              </svg>
+              CASE INTELLIGENCE
+            </div>
+
+            <h1>Intelligence</h1>
+
+            <p class="sub">
+              Evidence-grounded summaries, argument analysis and case chat.
+              Outputs are tied to the case record and do not replace human
+              judgment.
+            </p>
+
+          </div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <circle
+                cx="100"
+                cy="76"
+                r="50"
+                fill="none"
+                stroke-dasharray="3 6"
+                style="stroke:var(--line)"/>
+
+              <circle
+                cx="100"
+                cy="76"
+                r="33"
+                style="fill:var(--panel);stroke:var(--brass)"/>
+
+              <path
+                d="M88 62a8 8 0 0 1 12 0 8 8 0 0 1 12 0
+                   M88 90a8 8 0 0 0 12 0 8 8 0 0 0 12 0
+                   M100 62v28"
+                fill="none"
+                stroke-width="2.2"
+                style="stroke:var(--brass)"/>
+
+              <circle cx="100" cy="26" r="6"
+                      style="fill:var(--brass)"/>
+
+              <circle cx="150" cy="76" r="6"
+                      style="fill:var(--steel)"/>
+
+              <circle cx="100" cy="126" r="6"
+                      style="fill:var(--verdigris)"/>
+
+              <circle cx="50" cy="76" r="6"
+                      style="fill:var(--brass)"/>
+
+            </svg>
+
+          </div>
+
+        </div>
+
+
+        <nav
+          class="intel-subtabs"
+          id="intel-subtabs">
+
+          <button
+            class="subtab-btn active"
+            data-subtab="summary">
+
+            <svg class="subtab-icon">
+              <use href="#icon-doc-check"/>
+            </svg>
+
+            Summary
+
+          </button>
+
+
+          <button
+            class="subtab-btn"
+            data-subtab="arguments">
+
+            <svg class="subtab-icon">
+              <use href="#icon-scale"/>
+            </svg>
+
+            Argument Intel
+
+          </button>
+
+
+          <button
+            class="subtab-btn"
+            data-subtab="chat">
+
+            <svg class="subtab-icon">
+              <use href="#icon-brain"/>
+            </svg>
+
+            Case Chat
+
+          </button>
+
+        </nav>
+
+
+        <!-- SUMMARY -->
+        <div
+          class="intel-subpanel active"
+          id="intel-summary">
+
+          <div
+            class="card prose"
+            id="summary-body">
+
+            <div class="empty-state">
+
+              <svg viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor">
+                <use href="#icon-sparkle"/>
+              </svg>
+
+              <div class="empty-state-title">
+                No summary yet
+              </div>
+
+              <div class="empty-state-sub">
+                Upload at least one case document to generate an
+                evidence-grounded case summary.
+              </div>
+
+              <button
+                class="ghost-btn"
+                data-goto="documents"
+                style="width:auto;margin-top:14px">
+                Go to Evidence
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ARGUMENTS -->
+        <div
+          class="intel-subpanel"
+          id="intel-arguments">
+
+          <div id="arguments-body">
+
+            <div class="empty-state">
+
+              <svg viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor">
+                <use href="#icon-scale"/>
+              </svg>
+
+              <div class="empty-state-title">
+                No analysis yet
+              </div>
+
+              <div class="empty-state-sub">
+                Evidence-grounded potential arguments and counterarguments
+                for internal case-building.
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- CHAT -->
+        <div
+          class="intel-subpanel"
+          id="intel-chat">
+
+          <div class="chat-controls">
+
+            <div
+              class="chat-modes"
+              id="chat-modes">
+
+              <button
+                class="mode-btn active"
+                data-mode="case">
+                Case
+              </button>
+
+              <button
+                class="mode-btn"
+                data-mode="evidence">
+                Evidence
+              </button>
+
+              <button
+                class="mode-btn"
+                data-mode="legal">
+                Legal Knowledge
+              </button>
+
+            </div>
+
+
+            <select id="chat-lang">
+
+              <option value="en">
+                English
+              </option>
+
+              <option value="hi">
+                हिंदी (Hindi)
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div
+            class="chat-window"
+            id="chat-window"></div>
+
+
+          <form
+            id="chat-form"
+            class="chat-form">
+
+            <button
+              type="button"
+              id="mic-btn"
+              title="Hold to speak">
+              🎤
+            </button>
+
+            <input
+              type="text"
+              id="chat-input"
+              placeholder="Ask about this case…"
+              autocomplete="off">
+
+            <button type="submit">
+              Ask
+            </button>
+
+          </form>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           CONTRADICTIONS
+      ====================================================== -->
+      <section
+        class="panel contra-page"
+        id="panel-contradictions">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-alert"/>
+              </svg>
+              VERIFICATION
+            </div>
+
+            <h1>Contradictions</h1>
+
+            <p class="sub">
+              Conflicting claims found across the case file. Findings are
+              prompts for human verification and are never treated as
+              automatically resolved facts.
+            </p>
+
+
+            <div class="page-hero-actions">
+
+              <button
+                class="ghost-btn"
+                id="recheck-contradictions-btn">
+
+                <svg width="14"
+                     height="14"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor">
+                  <use href="#icon-search"/>
+                </svg>
+
+                Re-run check
+
+              </button>
+
+
+              <button
+                class="ghost-btn"
+                id="export-contradictions-btn">
+
+                <svg width="14"
+                     height="14"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor">
+                  <use href="#icon-download"/>
+                </svg>
+
+                Export findings
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <rect x="14" y="34"
+                    width="70"
+                    height="82"
+                    rx="8"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <rect x="116" y="34"
+                    width="70"
+                    height="82"
+                    rx="8"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <path
+                d="M84 70h14M102 70h14"
+                stroke-width="2"
+                stroke-dasharray="3 4"
+                style="stroke:var(--crimson)"/>
+
+              <circle
+                cx="100"
+                cy="70"
+                r="16"
+                style="fill:var(--ink);stroke:var(--crimson)"/>
+
+              <path
+                d="M100 62v9"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                style="stroke:var(--crimson)"/>
+
+              <circle
+                cx="100"
+                cy="77"
+                r="1.6"
+                style="fill:var(--crimson)"/>
+
+            </svg>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="contra-summary"
+          id="contra-summary"></div>
+
+
+        <div class="chart-grid two">
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Severity breakdown</h3>
+                <p class="sub">
+                  Confidence-weighted findings.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge alert"
+                id="contra-severity-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="contra-severity-chart"></div>
+
+          </div>
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Conflict types</h3>
+                <p class="sub">
+                  Categories of disagreement.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="contra-type-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="contra-type-chart"></div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="chart-card"
+          style="margin-bottom:22px">
+
           <div class="chart-card-head">
-            <div><h3>Severity breakdown</h3><p class="sub">Confidence-weighted, highest first.</p></div>
-            <span class="chart-badge alert" id="contra-severity-badge">—</span>
+
+            <div>
+              <h3>Documents in conflict</h3>
+              <p class="sub">
+                Exhibits appearing most often in conflicting findings.
+              </p>
+            </div>
+
+            <span
+              class="chart-badge"
+              id="contra-doc-badge">
+              —
+            </span>
+
           </div>
-          <div id="contra-severity-chart"></div>
+
+          <div id="contra-doc-chart"></div>
+
         </div>
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <div><h3>Conflict types</h3><p class="sub">What kind of disagreement was found.</p></div>
-            <span class="chart-badge" id="contra-type-badge">—</span>
+
+
+        <div class="contra-toolbar">
+
+          <div
+            class="contra-filters"
+            id="contra-filters">
+
+            <button
+              class="contra-chip active"
+              data-sev="all">
+              All findings
+            </button>
+
+            <button
+              class="contra-chip"
+              data-sev="high">
+              High severity
+            </button>
+
+            <button
+              class="contra-chip"
+              data-sev="med">
+              Medium
+            </button>
+
+            <button
+              class="contra-chip"
+              data-sev="low">
+              Low
+            </button>
+
           </div>
-          <div id="contra-type-chart"></div>
-        </div>
-      </div>
 
-      <div class="chart-card" style="margin-bottom:22px">
-        <div class="chart-card-head">
-          <div><h3>Documents most often in conflict</h3><p class="sub">Which exhibits keep turning up on one side of a disagreement.</p></div>
-          <span class="chart-badge" id="contra-doc-badge">—</span>
-        </div>
-        <div id="contra-doc-chart"></div>
-      </div>
+          <span
+            class="contra-count-hint"
+            id="contra-count-hint"></span>
 
-      <div class="contra-toolbar">
-        <div class="contra-filters" id="contra-filters">
-          <button class="contra-chip active" data-sev="all">All findings</button>
-          <button class="contra-chip" data-sev="high">High severity</button>
-          <button class="contra-chip" data-sev="med">Medium</button>
-          <button class="contra-chip" data-sev="low">Low</button>
         </div>
-        <span class="contra-count-hint" id="contra-count-hint"></span>
-      </div>
 
-      <div id="contradiction-body">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-alert"/></svg>
-          <div class="empty-state-title">No contradictions checked yet</div>
-          <div class="empty-state-sub">Once documents are uploaded, conflicting claims across them are surfaced here with a conflict type and confidence score — always flagged for human review, never auto-resolved.</div>
-          <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
-        </div>
-      </div>
-    </section>
 
-    <!-- TIMELINE -->
-    <section class="panel" id="panel-timeline">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-clock"/></svg>Chronology</div>
-          <h1>Investigation Timeline</h1>
-          <p class="sub">Dated events extracted from every document, arranged chronologically and linked back to the exhibit they came from — with automatic gap detection across 30+ day silences.</p>
-          <div class="page-hero-actions">
-            <button class="ghost-btn" id="export-timeline-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export Timeline</button>
-          </div>
-        </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <path d="M40 22v106" stroke-width="2" style="stroke:var(--line, #2a3346)"/>
-            <circle cx="40" cy="38" r="7" stroke-width="2.4" style="fill:var(--ink, #0a0d14);stroke:var(--brass, #d9a441)"/>
-            <circle cx="40" cy="70" r="7" stroke-width="2.4" style="fill:var(--ink, #0a0d14);stroke:var(--steel, #6f93c4)"/>
-            <circle cx="40" cy="102" r="7" stroke-width="2.4" style="fill:var(--ink, #0a0d14);stroke:var(--verdigris, #46a97f)"/>
-            <rect x="58" y="26" width="118" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="58" y="58" width="118" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="58" y="90" width="118" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="68" y="34" width="46" height="4" rx="2" style="fill:var(--brass, #d9a441)"/>
-            <rect x="68" y="42" width="78" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="68" y="66" width="38" height="4" rx="2" style="fill:var(--steel, #6f93c4)"/>
-            <rect x="68" y="74" width="86" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="68" y="98" width="52" height="4" rx="2" style="fill:var(--verdigris, #46a97f)"/>
-            <rect x="68" y="106" width="70" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-          </svg>
-        </div>
-      </div>
+        <div id="contradiction-body">
 
-      <div class="chart-card" style="margin-bottom:18px">
-        <div class="chart-card-head">
-          <div><h3>Event density</h3><p class="sub">Where activity clusters — and where the file goes quiet.</p></div>
-          <span class="chart-badge" id="timeline-density-badge">—</span>
-        </div>
-        <div id="timeline-density"></div>
-      </div>
-      <div class="timeline-toolbar">
-        <div class="timeline-filters">
-          <select id="timeline-filter-type" class="timeline-select"><option value="all">All Events</option></select>
-          <select id="timeline-filter-time" class="timeline-select"><option value="all">All Time</option></select>
-        </div>
-        <div class="timeline-toolbar-right">
-          <span class="timeline-hint" id="timeline-count"></span>
-          <div class="view-toggle">
-            <button class="view-toggle-btn active" data-timeline-view="timeline"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-clock"/></svg> Timeline View</button>
-            <button class="view-toggle-btn" data-timeline-view="list"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-rows"/></svg> List View</button>
-          </div>
-        </div>
-      </div>
-      <div id="timeline-body">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-clock"/></svg>
-          <div class="empty-state-title">No timeline yet</div>
-          <div class="empty-state-sub">Dated events are extracted from every uploaded document and arranged chronologically here, with automatic gap detection across 30+ day silences.</div>
-        </div>
-      </div>
-      <button class="ghost-btn full" id="timeline-load-more" style="display:none;margin-top:16px">Load more events</button>
-    </section>
-
-    <!-- GRAPH -->
-    <section class="panel" id="panel-graph">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-network"/></svg>Entity Map</div>
-          <h1>Connections</h1>
-          <p class="sub">People, organizations and locations mapped from the case evidence. Click any connection to see the document line that supports it.</p>
-          <div class="page-hero-actions">
-            <button class="ghost-btn" id="export-graph-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-download"/></svg> Export Graph</button>
-          </div>
-        </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <path d="M62 44L100 76M138 40L100 76M100 76L66 112M100 76L142 108M62 44L138 40" stroke-width="1.8" style="stroke:var(--line, #2a3346)"/>
-            <circle cx="100" cy="76" r="17" stroke-width="2.4" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
-            <circle cx="100" cy="71" r="5" style="fill:var(--brass, #d9a441)"/>
-            <path d="M91 86c0-5 4-8 9-8s9 3 9 8" style="fill:var(--brass, #d9a441)"/>
-            <circle cx="62" cy="44" r="12" stroke-width="2.2" style="fill:var(--panel-raised, #18202d);stroke:var(--steel, #6f93c4)"/>
-            <circle cx="138" cy="40" r="12" stroke-width="2.2" style="fill:var(--panel-raised, #18202d);stroke:var(--verdigris, #46a97f)"/>
-            <circle cx="66" cy="112" r="12" stroke-width="2.2" stroke-opacity="0.7" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
-            <circle cx="142" cy="108" r="12" stroke-width="2.2" stroke-opacity="0.7" style="fill:var(--panel-raised, #18202d);stroke:var(--steel, #6f93c4)"/>
-          </svg>
-        </div>
-      </div>
-      <div class="graph-toolbar">
-        <div class="timeline-filters">
-          <select id="graph-filter-type" class="timeline-select"><option value="all">All Entities</option></select>
-          <select id="graph-filter-relation" class="timeline-select"><option value="all">All Relationship Types</option></select>
-          <label class="graph-toggle"><input type="checkbox" id="graph-show-isolated"> Show unconnected entities</label>
-        </div>
-        <div class="view-toggle">
-          <button class="view-toggle-btn active" data-graph-view="graph"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-network"/></svg> Graph View</button>
-          <button class="view-toggle-btn" data-graph-view="table"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-rows"/></svg> Table View</button>
-        </div>
-      </div>
-      <div class="graph-hint">Scroll to zoom · drag to pan · drag a dot to reposition it</div>
-      <div class="graph-layout">
-        <div id="graph-canvas" class="graph-canvas"></div>
-        <div id="graph-table-wrap" class="card" style="display:none"></div>
-        <aside class="graph-detail" id="graph-detail">
           <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-network"/></svg>
-            <div class="empty-state-title">Nothing selected</div>
-            <div class="empty-state-sub">Click any entity in the graph to see its details, relationships and the evidence behind each connection.</div>
-          </div>
-        </aside>
-      </div>
-      <div id="graph-legend" class="graph-legend"></div>
 
-      <div class="graph-side-charts">
-        <div class="chart-card">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-alert"/>
+            </svg>
+
+            <div class="empty-state-title">
+              No contradictions checked yet
+            </div>
+
+            <div class="empty-state-sub">
+              Conflicting claims across uploaded evidence will appear here
+              for human review.
+            </div>
+
+            <button
+              class="ghost-btn"
+              data-goto="documents"
+              style="width:auto;margin-top:14px">
+              Go to Evidence
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           TIMELINE
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-timeline">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-clock"/>
+              </svg>
+              CHRONOLOGY
+            </div>
+
+            <h1>Investigation Timeline</h1>
+
+            <p class="sub">
+              Events extracted from case evidence, arranged chronologically
+              and linked to their source documents.
+            </p>
+
+
+            <div class="page-hero-actions">
+
+              <button
+                class="ghost-btn"
+                id="export-timeline-btn">
+
+                <svg width="14"
+                     height="14"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor">
+                  <use href="#icon-download"/>
+                </svg>
+
+                Export Timeline
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <path
+                d="M40 22v106"
+                stroke-width="2"
+                style="stroke:var(--line)"/>
+
+              <circle
+                cx="40"
+                cy="38"
+                r="7"
+                style="fill:var(--ink);stroke:var(--brass)"/>
+
+              <circle
+                cx="40"
+                cy="70"
+                r="7"
+                style="fill:var(--ink);stroke:var(--steel)"/>
+
+              <circle
+                cx="40"
+                cy="102"
+                r="7"
+                style="fill:var(--ink);stroke:var(--verdigris)"/>
+
+              <rect x="58" y="26"
+                    width="118"
+                    height="26"
+                    rx="7"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <rect x="58" y="58"
+                    width="118"
+                    height="26"
+                    rx="7"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <rect x="58" y="90"
+                    width="118"
+                    height="26"
+                    rx="7"
+                    style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+            </svg>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="chart-card"
+          style="margin-bottom:18px">
+
           <div class="chart-card-head">
-            <div><h3>Most connected entities</h3><p class="sub">Ranked by number of relationships in the case.</p></div>
-            <span class="chart-badge" id="graph-central-badge">—</span>
+
+            <div>
+              <h3>Event density</h3>
+              <p class="sub">
+                Activity clusters and quiet periods.
+              </p>
+            </div>
+
+            <span
+              class="chart-badge"
+              id="timeline-density-badge">
+              —
+            </span>
+
           </div>
-          <div id="graph-central-chart"></div>
+
+          <div id="timeline-density"></div>
+
         </div>
-        <div class="chart-card">
+
+
+        <div class="timeline-toolbar">
+
+          <div class="timeline-filters">
+
+            <select
+              id="timeline-filter-type"
+              class="timeline-select">
+
+              <option value="all">
+                All Events
+              </option>
+
+            </select>
+
+
+            <select
+              id="timeline-filter-time"
+              class="timeline-select">
+
+              <option value="all">
+                All Time
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="timeline-toolbar-right">
+
+            <span
+              class="timeline-hint"
+              id="timeline-count"></span>
+
+            <div class="view-toggle">
+
+              <button
+                class="view-toggle-btn active"
+                data-timeline-view="timeline">
+
+                <svg width="13"
+                     height="13"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor">
+                  <use href="#icon-clock"/>
+                </svg>
+
+                Timeline
+
+              </button>
+
+
+              <button
+                class="view-toggle-btn"
+                data-timeline-view="list">
+
+                <svg width="13"
+                     height="13"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor">
+                  <use href="#icon-rows"/>
+                </svg>
+
+                List
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div id="timeline-body">
+
+          <div class="empty-state">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-clock"/>
+            </svg>
+
+            <div class="empty-state-title">
+              No timeline yet
+            </div>
+
+            <div class="empty-state-sub">
+              Dated events from uploaded evidence will appear here.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <button
+          class="ghost-btn full"
+          id="timeline-load-more"
+          style="display:none;margin-top:16px">
+          Load more events
+        </button>
+
+      </section>
+
+
+      <!-- =====================================================
+           CONNECTIONS
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-graph">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-network"/>
+              </svg>
+              ENTITY MAP
+            </div>
+
+            <h1>Connections</h1>
+
+            <p class="sub">
+              People, organisations and locations mapped from the case
+              evidence, with supporting relationships available for review.
+            </p>
+
+
+            <div class="page-hero-actions">
+
+              <button
+                class="ghost-btn"
+                id="export-graph-btn">
+
+                <svg width="14"
+                     height="14"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor">
+                  <use href="#icon-download"/>
+                </svg>
+
+                Export Graph
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <path
+                d="M62 44L100 76M138 40L100 76
+                   M100 76L66 112M100 76L142 108
+                   M62 44L138 40"
+                stroke-width="1.8"
+                style="stroke:var(--line)"/>
+
+              <circle
+                cx="100"
+                cy="76"
+                r="17"
+                style="fill:var(--panel-raised);stroke:var(--brass)"/>
+
+              <circle
+                cx="62"
+                cy="44"
+                r="12"
+                style="fill:var(--panel-raised);stroke:var(--steel)"/>
+
+              <circle
+                cx="138"
+                cy="40"
+                r="12"
+                style="fill:var(--panel-raised);stroke:var(--verdigris)"/>
+
+              <circle
+                cx="66"
+                cy="112"
+                r="12"
+                style="fill:var(--panel-raised);stroke:var(--brass)"/>
+
+              <circle
+                cx="142"
+                cy="108"
+                r="12"
+                style="fill:var(--panel-raised);stroke:var(--steel)"/>
+
+            </svg>
+
+          </div>
+
+        </div>
+
+
+        <div class="graph-toolbar">
+
+          <div class="timeline-filters">
+
+            <select
+              id="graph-filter-type"
+              class="timeline-select">
+
+              <option value="all">
+                All Entities
+              </option>
+
+            </select>
+
+
+            <select
+              id="graph-filter-relation"
+              class="timeline-select">
+
+              <option value="all">
+                All Relationship Types
+              </option>
+
+            </select>
+
+
+            <label class="graph-toggle">
+
+              <input
+                type="checkbox"
+                id="graph-show-isolated">
+
+              Show unconnected entities
+
+            </label>
+
+          </div>
+
+
+          <div class="view-toggle">
+
+            <button
+              class="view-toggle-btn active"
+              data-graph-view="graph">
+
+              <svg width="13"
+                   height="13"
+                   viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor">
+                <use href="#icon-network"/>
+              </svg>
+
+              Graph
+
+            </button>
+
+
+            <button
+              class="view-toggle-btn"
+              data-graph-view="table">
+
+              <svg width="13"
+                   height="13"
+                   viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor">
+                <use href="#icon-rows"/>
+              </svg>
+
+              Table
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="graph-hint">
+          Scroll to zoom · drag to pan · drag a dot to reposition it
+        </div>
+
+
+        <div class="graph-layout">
+
+          <div
+            id="graph-canvas"
+            class="graph-canvas"></div>
+
+          <div
+            id="graph-table-wrap"
+            class="card"
+            style="display:none"></div>
+
+          <aside
+            class="graph-detail"
+            id="graph-detail">
+
+            <div class="empty-state">
+
+              <svg viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor">
+                <use href="#icon-network"/>
+              </svg>
+
+              <div class="empty-state-title">
+                Nothing selected
+              </div>
+
+              <div class="empty-state-sub">
+                Select an entity to inspect its relationships and evidence.
+              </div>
+
+            </div>
+
+          </aside>
+
+        </div>
+
+
+        <div
+          id="graph-legend"
+          class="graph-legend"></div>
+
+
+        <div class="graph-side-charts">
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Most connected entities</h3>
+                <p class="sub">
+                  Relationships within the case.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="graph-central-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="graph-central-chart"></div>
+
+          </div>
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Entity composition</h3>
+                <p class="sub">
+                  People, organisations and locations.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="graph-mix-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="graph-mix-chart"></div>
+
+          </div>
+
+        </div>
+
+
+        <div class="perspectives-section">
+
+          <h3 class="section-label">
+            Alternative Investigative Angles
+          </h3>
+
+          <p
+            class="sub"
+            style="margin-bottom:14px">
+
+            Hypotheses to test against the evidence — not conclusions.
+
+          </p>
+
+          <div id="perspectives-body">
+
+            <button
+              class="ghost-btn"
+              id="generate-perspectives-btn">
+
+              <svg width="14"
+                   height="14"
+                   viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor">
+                <use href="#icon-sparkle"/>
+              </svg>
+
+              Generate Alternative Angles
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           SIMILAR CASES
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-similar">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-layers"/>
+              </svg>
+              REFERENCE LIBRARY
+            </div>
+
+            <h1>Similar Cases</h1>
+
+            <p class="sub">
+              Factual and legal pattern matches against a reference case
+              library, presented as similarity rather than outcome prediction.
+            </p>
+
+          </div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <path
+                d="M100 30l58 26-58 26-58-26 58-26z"
+                style="fill:var(--panel-raised);stroke:var(--brass)"/>
+
+              <path
+                d="M42 74l58 26 58-26"
+                fill="none"
+                style="stroke:var(--steel)"/>
+
+              <path
+                d="M42 94l58 26 58-26"
+                fill="none"
+                style="stroke:var(--verdigris)"/>
+
+            </svg>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="chart-card"
+          id="similar-chart-card"
+          style="display:none;margin-bottom:20px">
+
           <div class="chart-card-head">
-            <div><h3>Entity composition</h3><p class="sub">People, organizations and locations on file.</p></div>
-            <span class="chart-badge" id="graph-mix-badge">—</span>
+
+            <div>
+              <h3>Match strength</h3>
+              <p class="sub">
+                Similarity to reference cases.
+              </p>
+            </div>
+
+            <span
+              class="chart-badge"
+              id="similar-badge">
+              —
+            </span>
+
           </div>
-          <div id="graph-mix-chart"></div>
-        </div>
-      </div>
 
-      <div class="perspectives-section">
-        <h3 class="section-label">Alternative Investigative Angles</h3>
-        <p class="sub" style="margin-bottom:14px">AI-generated hypotheses to test against the evidence — not conclusions, and never an accusation.</p>
-        <div id="perspectives-body">
-          <button class="ghost-btn" id="generate-perspectives-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#icon-sparkle"/></svg> Generate Alternative Angles</button>
-        </div>
-      </div>
-    </section>
+          <div id="similar-chart"></div>
 
-    <!-- SIMILAR CASES -->
-    <section class="panel" id="panel-similar">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-layers"/></svg>Precedent Library</div>
-          <h1>Similar Cases</h1>
-          <p class="sub">Factual and legal pattern matches against a reference case library, scored for similarity — <em class="hl">not an outcome prediction</em> and never a sentencing signal.</p>
         </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100 30l58 26-58 26-58-26 58-26z" stroke-width="2" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
-            <path d="M42 74l58 26 58-26" fill="none" stroke-width="2" style="stroke:var(--steel, #6f93c4)"/>
-            <path d="M42 94l58 26 58-26" fill="none" stroke-width="2" style="stroke:var(--verdigris, #46a97f)"/>
-            <circle cx="100" cy="56" r="4" style="fill:var(--brass, #d9a441)"/>
-          </svg>
-        </div>
-      </div>
 
-      <div class="chart-card" id="similar-chart-card" style="display:none;margin-bottom:20px">
-        <div class="chart-card-head">
-          <div><h3>Match strength</h3><p class="sub">How closely each precedent's pattern resembles this case.</p></div>
-          <span class="chart-badge" id="similar-badge">—</span>
-        </div>
-        <div id="similar-chart"></div>
-      </div>
-      <div id="similar-body">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-layers"/></svg>
-          <div class="empty-state-title">No analysis yet</div>
-          <div class="empty-state-sub">Once documents are uploaded, this case is matched against a small reference case library for factual and legal pattern similarity — never an outcome prediction.</div>
-        </div>
-      </div>
-    </section>
 
-    <!-- REPORT -->
-    <section class="panel" id="panel-report">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-doc-check"/></svg>Deliverable</div>
-          <h1>AI Case Report</h1>
-          <p class="sub">A structured, exportable 12-section summary of the entire case — synthesized from every document, timeline event and flagged contradiction on file.</p>
-        </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <rect x="52" y="16" width="96" height="118" rx="9" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="52" y="16" width="96" height="16" rx="9" opacity="0.22" style="fill:var(--brass, #d9a441)"/>
-            <rect x="52" y="26" width="96" height="6" opacity="0.22" style="fill:var(--brass, #d9a441)"/>
-            <rect x="66" y="44" width="52" height="5" rx="2.5" style="fill:var(--brass, #d9a441)"/>
-            <rect x="66" y="58" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="66" y="68" width="62" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="66" y="78" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="66" y="92" width="34" height="4" rx="2" style="fill:var(--steel, #6f93c4)"/>
-            <rect x="66" y="102" width="68" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <rect x="66" y="112" width="48" height="4" rx="2" style="fill:var(--line, #2a3346)"/>
-            <circle cx="148" cy="118" r="18" stroke-width="2" style="fill:var(--ink, #0a0d14);stroke:var(--verdigris, #46a97f)"/>
-            <path d="M140 118l6 6 11-12" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--verdigris, #46a97f)"/>
-          </svg>
-        </div>
-      </div>
-      <div class="report-actions">
-        <button id="generate-report-btn" class="primary-btn">Generate report</button>
-        <button id="download-report-btn" class="ghost-btn" disabled>Download .md</button>
-      </div>
-      <div class="card prose" id="report-body">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg>
-          <div class="empty-state-title">Not generated yet</div>
-          <div class="empty-state-sub">Click "Generate report" above for a structured 12-section Markdown case report — synthesized from every document, timeline event and flagged contradiction on file.</div>
-        </div>
-      </div>
-    </section>
+        <div id="similar-body">
 
-    <!-- AUDIT TRAIL -->
-    <section class="panel" id="panel-audit">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-shield"/></svg>Accountability</div>
-          <h1>Audit Trail</h1>
-          <p class="sub">Who did what, and when — every sensitive action on this case, written at the moment it happened and never editable after the fact.</p>
-        </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100 18l42 17v30c0 26-18 44-42 54-24-10-42-28-42-54V35l42-17z" stroke-width="2" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
-            <path d="M84 74l11 11 22-24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--verdigris, #46a97f)"/>
-          </svg>
-        </div>
-      </div>
+          <div class="empty-state">
 
-      <div class="audit-charts">
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <div><h3>Actions by type</h3><p class="sub">What has been done on this case so far.</p></div>
-            <span class="chart-badge" id="audit-action-badge">—</span>
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-layers"/>
+            </svg>
+
+            <div class="empty-state-title">
+              No analysis yet
+            </div>
+
+            <div class="empty-state-sub">
+              Upload case documents to compare the file against the reference
+              library.
+            </div>
+
           </div>
-          <div id="audit-action-chart"></div>
+
         </div>
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <div><h3>Activity by user</h3><p class="sub">Who has touched the case file.</p></div>
-            <span class="chart-badge" id="audit-user-badge">—</span>
+
+      </section>
+
+
+      <!-- =====================================================
+           REPORT
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-report">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-doc-check"/>
+              </svg>
+              CASE DELIVERABLE
+            </div>
+
+            <h1>Case Report</h1>
+
+            <p class="sub">
+              A structured report generated from the documents, timeline
+              events and review findings stored in the case.
+            </p>
+
           </div>
-          <div id="audit-user-chart"></div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <rect
+                x="52"
+                y="16"
+                width="96"
+                height="118"
+                rx="9"
+                style="fill:var(--panel-raised);stroke:var(--line)"/>
+
+              <rect
+                x="66"
+                y="44"
+                width="52"
+                height="5"
+                rx="2.5"
+                style="fill:var(--brass)"/>
+
+              <rect
+                x="66"
+                y="58"
+                width="68"
+                height="4"
+                rx="2"
+                style="fill:var(--line)"/>
+
+              <rect
+                x="66"
+                y="68"
+                width="62"
+                height="4"
+                rx="2"
+                style="fill:var(--line)"/>
+
+              <rect
+                x="66"
+                y="78"
+                width="68"
+                height="4"
+                rx="2"
+                style="fill:var(--line)"/>
+
+              <circle
+                cx="148"
+                cy="118"
+                r="18"
+                style="fill:var(--ink);stroke:var(--verdigris)"/>
+
+              <path
+                d="M140 118l6 6 11-12"
+                fill="none"
+                stroke-width="2.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="stroke:var(--verdigris)"/>
+
+            </svg>
+
+          </div>
+
         </div>
-      </div>
 
-      <h3 class="section-label">Full log</h3>
-      <div id="audit-body"><p class="placeholder">No activity yet.</p></div>
-    </section>
 
-  </main>
+        <div class="report-actions">
+
+          <button
+            id="generate-report-btn"
+            class="primary-btn">
+            Generate report
+          </button>
+
+          <button
+            id="download-report-btn"
+            class="ghost-btn"
+            disabled>
+            Download .md
+          </button>
+
+        </div>
+
+
+        <div
+          class="card prose"
+          id="report-body">
+
+          <div class="empty-state">
+
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor">
+              <use href="#icon-doc-check"/>
+            </svg>
+
+            <div class="empty-state-title">
+              Not generated yet
+            </div>
+
+            <div class="empty-state-sub">
+              Generate the structured case report from the current evidence
+              and investigation record.
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           AUDIT
+      ====================================================== -->
+      <section
+        class="panel"
+        id="panel-audit">
+
+
+        <div class="page-hero">
+
+          <div class="page-hero-copy">
+
+            <div class="page-hero-kicker">
+              <svg>
+                <use href="#icon-shield"/>
+              </svg>
+              ACCOUNTABILITY
+            </div>
+
+            <h1>Audit Trail</h1>
+
+            <p class="sub">
+              A chronological record of sensitive actions performed on the
+              case, including who acted and when.
+            </p>
+
+          </div>
+
+
+          <div
+            class="page-hero-art"
+            aria-hidden="true">
+
+            <svg viewBox="0 0 200 150">
+
+              <path
+                d="M100 18l42 17v30c0 26-18 44-42 54
+                   -24-10-42-28-42-54V35l42-17z"
+                style="fill:var(--panel-raised);stroke:var(--brass)"/>
+
+              <path
+                d="M84 74l11 11 22-24"
+                fill="none"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="stroke:var(--verdigris)"/>
+
+            </svg>
+
+          </div>
+
+        </div>
+
+
+        <div class="audit-charts">
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Actions by type</h3>
+                <p class="sub">
+                  Activity performed on this case.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="audit-action-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="audit-action-chart"></div>
+
+          </div>
+
+
+          <div class="chart-card">
+
+            <div class="chart-card-head">
+
+              <div>
+                <h3>Activity by user</h3>
+                <p class="sub">
+                  Users who interacted with the case.
+                </p>
+              </div>
+
+              <span
+                class="chart-badge"
+                id="audit-user-badge">
+                —
+              </span>
+
+            </div>
+
+            <div id="audit-user-chart"></div>
+
+          </div>
+
+        </div>
+
+
+        <h3 class="section-label">
+          Full log
+        </h3>
+
+        <div id="audit-body">
+          <p class="placeholder">
+            No activity yet.
+          </p>
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </div>
+
 </div>
-</div>
 
-<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
-<script src="app.js?v=3"></script>
+
+<!-- =========================================================
+     VIS NETWORK
+========================================================= -->
+<script
+  src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js">
+</script>
+
+
+<!-- =========================================================
+     APPLICATION
+========================================================= -->
+<script src="app.js?v=4"></script>
+
 </body>
 </html>

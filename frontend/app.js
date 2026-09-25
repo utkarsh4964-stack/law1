@@ -469,11 +469,11 @@ function renderCaseContextBar(caseObj, counts) {
 // ---------------------------------------------------------------------------
 
 const RELATIONSHIP_CATEGORIES = [
-  { label: "Works at", color: "#5678ab", match: /\b(works? at|employ|joined|hired)/i },
-  { label: "Communicated with", color: "#9b6fc9", match: /\b(email|communicat|repl|wrote|message)/i },
-  { label: "Vendor of", color: "#1f9d64", match: /\b(vendor|supplie[rd]|contract)/i },
-  { label: "Asked to process", color: "#e2574f", match: /\b(asked|instructed|requested)/i },
-  { label: "Payment to", color: "#f0b429", match: /\b(payment|paid|invoice|transfer)/i },
+  { label: "Works at", color: "#777777", match: /\b(works? at|employ|joined|hired)/i },
+  { label: "Communicated with", color: "#999999", match: /\b(email|communicat|repl|wrote|message)/i },
+  { label: "Vendor of", color: "#555555", match: /\b(vendor|supplie[rd]|contract)/i },
+  { label: "Asked to process", color: "#101010", match: /\b(asked|instructed|requested)/i },
+  { label: "Payment to", color: "#333333", match: /\b(payment|paid|invoice|transfer)/i },
 ];
 function classifyRelation(text) {
   const found = RELATIONSHIP_CATEGORIES.find(c => c.match.test(text || ""));
@@ -487,7 +487,7 @@ function classifyRelation(text) {
 // chart is plain SVG/DOM so it inherits the theme tokens and needs no network.
 // ---------------------------------------------------------------------------
 
-const SERIES = ["#f0b429", "#5678ab", "#1f9d64", "#9b6fc9", "#e2574f", "#8a8677"];
+const SERIES = ["#333333", "#777777", "#555555", "#999999", "#101010", "#bbbbbb"];
 
 /** Horizontal bar chart. rows = [{label, value, color?}] */
 function barChartHTML(rows, opts = {}) {
@@ -518,7 +518,7 @@ function colChartHTML(items, opts = {}) {
 }
 
 /** Radial score ring. */
-function ringHTML(pct, label, note, color = "var(--brass, #f0b429)") {
+function ringHTML(pct, label, note, color = "var(--brass, #333333)") {
   const r = 44, c = 2 * Math.PI * r;
   const dash = (Math.max(0, Math.min(100, pct)) / 100) * c;
   return `<div class="ring-wrap">
@@ -679,7 +679,7 @@ function renderRelationshipList(edges) {
   const counts = {};
   edges.forEach(e => { const label = classifyRelation(e.relation); counts[label] = (counts[label] || 0) + 1; });
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const colorFor = label => (RELATIONSHIP_CATEGORIES.find(c => c.label === label) || { color: "#8a8677" }).color;
+  const colorFor = label => (RELATIONSHIP_CATEGORIES.find(c => c.label === label) || { color: "#bbbbbb" }).color;
   el.innerHTML = rows.map(([label, count]) => `
     <div class="relationship-row">
       <span class="rel-bar" style="background:${colorFor(label)}"></span>
@@ -698,8 +698,8 @@ function renderGauge(score) {
       : "Many connections lack cited evidence — review before relying on this graph.";
   el.innerHTML = `
     <svg viewBox="0 0 200 118" class="gauge-svg">
-      <path d="M20,100 A80,80 0 0 1 180,100" style="fill:none;stroke:var(--line, #e6e0d1)" stroke-width="14" stroke-linecap="round"/>
-      <path d="M20,100 A80,80 0 0 1 180,100" style="fill:none;stroke:var(--verdigris, #1f9d64)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="${score} 100"/>
+      <path d="M20,100 A80,80 0 0 1 180,100" style="fill:none;stroke:var(--line, #d9d9d9)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M20,100 A80,80 0 0 1 180,100" style="fill:none;stroke:var(--verdigris, #555555)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="${score} 100"/>
     </svg>
     <div class="gauge-label"><strong>${score}%</strong><span>${level}</span></div>
     <div class="gauge-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-shield"/></svg>${note}</div>`;
@@ -731,7 +731,7 @@ function renderActivityChart(docs) {
   const linePath = points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
   const areaPath = `${linePath} L${points[points.length - 1][0].toFixed(1)},${H - PAD} L${points[0][0].toFixed(1)},${H - PAD} Z`;
   const dots = points.map(([x, y], i) => `
-    <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" style="fill:var(--brass, #f0b429)">
+    <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" style="fill:var(--brass, #333333)">
       <title>${escapeHtml(sorted[i].filename)} — ${fmtTime(sorted[i].uploaded_at)}</title>
     </circle>`).join("");
 
@@ -739,13 +739,13 @@ function renderActivityChart(docs) {
     <svg viewBox="0 0 ${W} ${H}" class="activity-svg">
       <defs>
         <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" style="stop-color:var(--brass, #f0b429);stop-opacity:0.28"/>
-          <stop offset="100%" style="stop-color:var(--brass, #f0b429);stop-opacity:0"/>
+          <stop offset="0%" style="stop-color:var(--brass, #333333);stop-opacity:0.28"/>
+          <stop offset="100%" style="stop-color:var(--brass, #333333);stop-opacity:0"/>
         </linearGradient>
       </defs>
-      <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" style="stroke:var(--line, #e6e0d1)" stroke-width="1"/>
+      <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" style="stroke:var(--line, #d9d9d9)" stroke-width="1"/>
       <path d="${areaPath}" fill="url(#activityFill)"/>
-      <path d="${linePath}" style="fill:none;stroke:var(--brass, #f0b429)" stroke-width="2"/>
+      <path d="${linePath}" style="fill:none;stroke:var(--brass, #333333)" stroke-width="2"/>
       ${dots}
     </svg>
     <div class="activity-axis">
@@ -958,17 +958,17 @@ async function loadSummary() {
 // ---------------------------------------------------------------------------
 
 const TIMELINE_CATEGORIES = [
-  { key: "employment", label: "Employment", icon: "icon-briefcase", color: "#5678ab", match: /\b(began working|joined|hired|appointed|resigned|terminated|employ)/i },
-  { key: "vendor", label: "Vendor / Org", icon: "icon-bank", color: "#1f9d64", match: /\b(vendor|approved|contract|agreement|registered|onboard)/i },
-  { key: "communication", label: "Communication", icon: "icon-mail", color: "#9b6fc9", match: /\b(emailed|e-mailed|wrote to|message|contacted)/i },
-  { key: "reply", label: "Reply / Statement", icon: "icon-person", color: "#f0b429", match: /\b(replied|responded|stated|acknowledg|confirmed)/i },
-  { key: "delivery", label: "Delivery", icon: "icon-truck", color: "#9b6fc9", match: /\b(deliver|shipment|warehouse|dispatch|received goods)/i },
-  { key: "financial", label: "Financial", icon: "icon-invoice", color: "#e2574f", match: /\b(invoice|payment|paid|transfer|amount|inr|₹|rs\.)/i },
-  { key: "task", label: "Task / Instruction", icon: "icon-doc-check", color: "#8a8677", match: /\b(asked|requested|instructed|process|task)/i },
+  { key: "employment", label: "Employment", icon: "icon-briefcase", color: "#777777", match: /\b(began working|joined|hired|appointed|resigned|terminated|employ)/i },
+  { key: "vendor", label: "Vendor / Org", icon: "icon-bank", color: "#555555", match: /\b(vendor|approved|contract|agreement|registered|onboard)/i },
+  { key: "communication", label: "Communication", icon: "icon-mail", color: "#999999", match: /\b(emailed|e-mailed|wrote to|message|contacted)/i },
+  { key: "reply", label: "Reply / Statement", icon: "icon-person", color: "#333333", match: /\b(replied|responded|stated|acknowledg|confirmed)/i },
+  { key: "delivery", label: "Delivery", icon: "icon-truck", color: "#999999", match: /\b(deliver|shipment|warehouse|dispatch|received goods)/i },
+  { key: "financial", label: "Financial", icon: "icon-invoice", color: "#101010", match: /\b(invoice|payment|paid|transfer|amount|inr|₹|rs\.)/i },
+  { key: "task", label: "Task / Instruction", icon: "icon-doc-check", color: "#bbbbbb", match: /\b(asked|requested|instructed|process|task)/i },
 ];
 function classifyEvent(description) {
   const found = TIMELINE_CATEGORIES.find(c => c.match.test(description || ""));
-  return found || { key: "other", label: "Other", icon: "icon-clock", color: "#8a8677" };
+  return found || { key: "other", label: "Other", icon: "icon-clock", color: "#bbbbbb" };
 }
 
 let TIMELINE_DATA = null;
@@ -1138,16 +1138,16 @@ document.getElementById("export-timeline-btn").addEventListener("click", () => {
 
 // Muted, desaturated accents so entity types stay distinguishable at a
 // glance without fighting the app's otherwise beige/navy/red theme.
-const typeColors = { person: "#f0b429", organization: "#1f9d64", location: "#9b6fc9", other: "#8a8677" };
+const typeColors = { person: "#333333", organization: "#555555", location: "#999999", other: "#bbbbbb" };
 const EDGE_CATEGORIES = [
-  { key: "employment", label: "Employment", color: "#1f9d64", match: /\b(works? at|employ|joined|hired)/i },
-  { key: "business", label: "Business", color: "#5678ab", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
-  { key: "communication", label: "Communication", color: "#e2574f", match: /\b(email|communicat|repl(y|ied)|wrote|message|requested|asked)/i },
-  { key: "consultation", label: "Consultation", color: "#9b6fc9", match: /\b(consult|advis|shared info)/i },
+  { key: "employment", label: "Employment", color: "#555555", match: /\b(works? at|employ|joined|hired)/i },
+  { key: "business", label: "Business", color: "#777777", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
+  { key: "communication", label: "Communication", color: "#101010", match: /\b(email|communicat|repl(y|ied)|wrote|message|requested|asked)/i },
+  { key: "consultation", label: "Consultation", color: "#999999", match: /\b(consult|advis|shared info)/i },
 ];
 function classifyEdge(relation) {
   const found = EDGE_CATEGORIES.find(c => c.match.test(relation || ""));
-  return found || { key: "other", label: "Other", color: "#8a8677" };
+  return found || { key: "other", label: "Other", color: "#bbbbbb" };
 }
 
 let GRAPH_DATA = null;
@@ -1163,7 +1163,7 @@ const typeGlyphs = {
   // Icon body is drawn dark-on-color (matches the black-on-amber convention
   // used throughout the light theme) rather than white-on-color — brass is
   // light enough that a white glyph nearly disappeared against it.
-  person: '<circle cx="30" cy="23" r="9"/><path d="M12 50c2-11 9-17 18-17s16 6 18 17" fill="none" stroke="#1a1408" stroke-width="4.5" stroke-linecap="round"/>',
+  person: '<circle cx="30" cy="23" r="9"/><path d="M12 50c2-11 9-17 18-17s16 6 18 17" fill="none" stroke="#111111" stroke-width="4.5" stroke-linecap="round"/>',
   organization: '<rect x="16" y="12" width="28" height="34" rx="2"/><rect x="21" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="21" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="26" y="38" width="8" height="8" fill="TYPECOLOR"/>',
   location: '<path d="M30 12c-7.7 0-14 6.1-14 13.6C16 35.5 30 50 30 50s14-14.5 14-24.4C44 18.1 37.7 12 30 12z"/><circle cx="30" cy="25" r="5.5" fill="TYPECOLOR"/>',
   other: '<circle cx="30" cy="30" r="8"/><circle cx="30" cy="14" r="3.2"/><circle cx="30" cy="46" r="3.2"/><circle cx="14" cy="30" r="3.2"/><circle cx="46" cy="30" r="3.2"/>',
@@ -1171,7 +1171,7 @@ const typeGlyphs = {
 function nodeIcon(type) {
   const color = typeColors[type] || typeColors.other;
   const glyph = (typeGlyphs[type] || typeGlyphs.other).replaceAll("TYPECOLOR", color);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="${color}" stroke="#ffffff" stroke-width="2"/><g fill="#1a1408">${glyph}</g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="${color}" stroke="#ffffff" stroke-width="2"/><g fill="#111111">${glyph}</g></svg>`;
   return "data:image/svg+xml;base64," + btoa(svg);
 }
 
@@ -1187,7 +1187,7 @@ async function loadGraph() {
 
   GRAPH_DATA = data;
   GRAPH_DOCS = docs;
-  legend.innerHTML = EDGE_CATEGORIES.concat([{ key: "other", label: "Other", color: "#8a8677" }])
+  legend.innerHTML = EDGE_CATEGORIES.concat([{ key: "other", label: "Other", color: "#bbbbbb" }])
     .map(c => `<span><span class="legend-line" style="background:${c.color}"></span>${c.label}</span>`).join("");
   populateGraphFilters(data);
   renderGraphCharts(data);
@@ -1269,13 +1269,13 @@ function renderGraph() {
   const nodes = new vis.DataSet(visibleNodes.map(n => ({
     id: n.id, label: n.label,
     shape: "image", image: nodeIcon(n.type), size: 26,
-    font: { color: "#1a1408", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#ffffff", vadjust: -30 },
+    font: { color: "#111111", face: "Inter", size: 13, weight: 700, strokeWidth: 4, strokeColor: "#ffffff", vadjust: -30 },
   })));
   const edges = new vis.DataSet(visibleEdges.map((e, i) => {
     const cat = classifyEdge(e.relation);
     return {
       id: i, from: e.source, to: e.target, title: e.relation, relation: e.relation, evidence: e.evidence,
-      color: { color: cat.color, highlight: "#1a1408", hover: cat.color }, opacity: 0.85,
+      color: { color: cat.color, highlight: "#111111", hover: cat.color }, opacity: 0.85,
       width: 2, arrows: "to", smooth: { type: "continuous", roundness: 0.35 },
     };
   }));
@@ -1450,10 +1450,10 @@ let contraSeverityFilter = "all";
  *  never claims more certainty than the analysis actually reported. */
 function contraSeverity(c) {
   const conf = Number(c.confidence);
-  if (!Number.isFinite(conf)) return { key: "low", label: "Low", color: "var(--steel, #5678ab)" };
-  if (conf >= 75) return { key: "high", label: "High", color: "var(--crimson, #e2574f)" };
-  if (conf >= 45) return { key: "med", label: "Medium", color: "var(--brass, #f0b429)" };
-  return { key: "low", label: "Low", color: "var(--steel, #5678ab)" };
+  if (!Number.isFinite(conf)) return { key: "low", label: "Low", color: "var(--steel, #777777)" };
+  if (conf >= 75) return { key: "high", label: "High", color: "var(--crimson, #101010)" };
+  if (conf >= 45) return { key: "med", label: "Medium", color: "var(--brass, #333333)" };
+  return { key: "low", label: "Low", color: "var(--steel, #777777)" };
 }
 
 async function loadContradictions(force = false) {
@@ -1500,11 +1500,11 @@ function renderContradictionCharts() {
         sevCounts.high
           ? `${sevCounts.high} finding${sevCounts.high === 1 ? "" : "s"} scored high enough to verify first.`
           : "Nothing scored high — treat these as leads, not findings.",
-        sevCounts.high ? "var(--crimson, #e2574f)" : "var(--brass, #f0b429)")
+        sevCounts.high ? "var(--crimson, #101010)" : "var(--brass, #333333)")
       + barChartHTML([
-          { label: "High", value: sevCounts.high, color: "var(--crimson, #e2574f)" },
-          { label: "Medium", value: sevCounts.med, color: "var(--brass, #f0b429)" },
-          { label: "Low", value: sevCounts.low, color: "var(--steel, #5678ab)" },
+          { label: "High", value: sevCounts.high, color: "var(--crimson, #101010)" },
+          { label: "Medium", value: sevCounts.med, color: "var(--brass, #333333)" },
+          { label: "Low", value: sevCounts.low, color: "var(--steel, #777777)" },
         ])
     : '<p class="placeholder" style="margin:0">No conflicts to score.</p>';
   setBadge("contra-severity-badge", list.length ? `${list.length} flagged` : "clear",
@@ -1528,7 +1528,7 @@ function renderContradictionCharts() {
     });
   });
   const docRows = Object.entries(docCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
-    .map(([label, value]) => ({ label, value, color: "var(--crimson, #e2574f)" }));
+    .map(([label, value]) => ({ label, value, color: "var(--crimson, #101010)" }));
   docChart.innerHTML = barChartHTML(docRows, { suffix: "×" });
   setBadge("contra-doc-badge", `${docRows.length} document${docRows.length === 1 ? "" : "s"}`);
 }
@@ -1657,7 +1657,7 @@ async function loadSimilar() {
         data.matches.slice().sort((a, b) => b.similarity - a.similarity).map(m => ({
           label: m.title || m.precedent_id,
           value: m.similarity,
-          color: m.similarity >= 75 ? "var(--brass, #f0b429)" : m.similarity >= 50 ? "var(--steel, #5678ab)" : "var(--text-faint, #636d82)",
+          color: m.similarity >= 75 ? "var(--brass, #333333)" : m.similarity >= 50 ? "var(--steel, #777777)" : "var(--text-faint, #999999)",
         })), { suffix: "%" });
       setBadge("similar-badge", `${data.matches.length} precedent${data.matches.length === 1 ? "" : "s"}`);
     }

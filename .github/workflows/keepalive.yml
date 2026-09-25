@@ -1,0 +1,14 @@
+name: Keep Render Awake
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping law1.onrender.com
+        run: |
+          curl -sf -o /dev/null -w "Status: %{http_code}, Time: %{time_total}s\n" https://law1.onrender.com/ || echo "Ping failed (service may be waking up)"

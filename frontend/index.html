@@ -436,96 +436,73 @@
 
     <!-- DASHBOARD -->
     <section class="panel active" id="panel-dashboard">
-      <div class="page-hero">
-        <div class="page-hero-copy">
-          <div class="page-hero-kicker"><svg><use href="#icon-grid"/></svg>Case Overview</div>
-          <h1 id="dash-title">Case Overview</h1>
-          <p class="sub" id="dash-sub"></p>
-          <div class="page-hero-actions">
-            <button class="ghost-btn" data-goto="report"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-doc-check"/></svg> View Full Report</button>
-            <button class="ghost-btn" data-goto="contradictions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-alert"/></svg> Review Contradictions</button>
+      <header class="law-case-header">
+        <div class="law-case-copy">
+          <div class="law-kicker"><span></span>CASE OVERVIEW</div>
+          <div class="law-title-line">
+            <h1 id="dash-title">Case Overview</h1>
+            <span class="law-pill status">Active</span>
+            <span class="law-pill priority">High priority</span>
           </div>
+          <p id="dash-sub" class="law-case-sub"></p>
+          <div class="law-case-meta"><span>LAW1</span><span>•</span><span>Secure investigation workspace</span></div>
         </div>
-        <div class="page-hero-art" aria-hidden="true">
-          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <rect x="8" y="14" width="184" height="122" rx="10" style="fill:var(--ink, #0a0d14);stroke:var(--line, #2a3346)"/>
-            <rect x="22" y="30" width="48" height="34" rx="6" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="78" y="30" width="48" height="34" rx="6" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="134" y="30" width="44" height="34" rx="6" style="fill:var(--panel-raised, #18202d);stroke:var(--line, #2a3346)"/>
-            <rect x="30" y="40" width="20" height="4" rx="2" style="fill:var(--brass, #d9a441)"/>
-            <rect x="86" y="40" width="26" height="4" rx="2" style="fill:var(--steel, #6f93c4)"/>
-            <rect x="142" y="40" width="16" height="4" rx="2" style="fill:var(--crimson, #e2574f)"/>
-            <rect x="30" y="50" width="30" height="6" rx="3" style="fill:var(--line, #2a3346)"/>
-            <rect x="86" y="50" width="24" height="6" rx="3" style="fill:var(--line, #2a3346)"/>
-            <rect x="142" y="50" width="28" height="6" rx="3" style="fill:var(--line, #2a3346)"/>
-            <circle cx="52" cy="102" r="20" fill="none" stroke-width="9" style="stroke:var(--line-soft, #1d2535)"/>
-            <circle cx="52" cy="102" r="20" fill="none" stroke-width="9" stroke-dasharray="58 126" transform="rotate(-90 52 102)" stroke-linecap="round" style="stroke:var(--brass, #d9a441)"/>
-            <rect x="92" y="112" width="13" height="14" rx="3" opacity="0.9" style="fill:var(--brass, #d9a441)"/>
-            <rect x="110" y="100" width="13" height="26" rx="3" opacity="0.75" style="fill:var(--brass, #d9a441)"/>
-            <rect x="128" y="92" width="13" height="34" rx="3" opacity="0.9" style="fill:var(--brass, #d9a441)"/>
-            <rect x="146" y="104" width="13" height="22" rx="3" opacity="0.85" style="fill:var(--crimson, #e2574f)"/>
-            <rect x="164" y="84" width="13" height="42" rx="3" style="fill:var(--brass, #d9a441)"/>
-          </svg>
+        <div class="law-header-actions">
+          <button class="law-btn" data-goto="contradictions"><svg viewBox="0 0 24 24"><use href="#icon-alert"/></svg>Review conflicts</button>
+          <button class="law-btn primary" data-goto="documents"><svg viewBox="0 0 24 24"><use href="#icon-folder"/></svg>Add evidence</button>
         </div>
-      </div>
+      </header>
 
       <div class="stat-grid" id="stat-grid"></div>
 
-      <div class="dash-filters">
-        <select class="timeline-select" id="dash-filter-docs"><option>All Documents</option></select>
-        <select class="timeline-select" id="dash-filter-entities"><option>All Entities</option></select>
-        <select class="timeline-select" id="dash-filter-relationships"><option>All Relationships</option></select>
-        <select class="timeline-select" id="dash-filter-time"><option>All Time</option></select>
-        <button class="ghost-btn dash-custom-report" data-goto="report"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#icon-doc-check"/></svg> Custom Report</button>
+      <div class="law-dashboard-grid">
+        <div class="law-dashboard-main">
+          <section class="law-card">
+            <div class="law-card-head">
+              <div><span class="law-section-label">CASE ACTIVITY</span><h2>Recent activity</h2><p>Latest evidence and investigation actions.</p></div>
+              <button class="law-link" data-goto="audit">Audit trail →</button>
+            </div>
+            <div id="dash-activity" class="law-activity-list"></div>
+          </section>
+
+          <section class="law-ai-summary">
+            <div class="law-ai-mark"><svg viewBox="0 0 24 24"><use href="#icon-sparkle"/></svg></div>
+            <div class="law-ai-copy"><span>CASE INTELLIGENCE</span><strong>Evidence-grounded summary</strong><p id="dash-ai-summary">Open Case Intelligence to generate a summary of this case.</p></div>
+            <button class="law-btn" data-goto="intelligence">Open intelligence →</button>
+          </section>
+        </div>
+
+        <aside class="law-dashboard-side">
+          <section class="law-card">
+            <div class="law-card-head compact"><div><span class="law-section-label">ACTIONS</span><h2>Case tools</h2></div></div>
+            <button class="law-action" data-goto="documents"><span class="law-action-icon green"><svg viewBox="0 0 24 24"><use href="#icon-folder"/></svg></span><span><b>Upload evidence</b><small>Add documents to the vault</small></span><em>→</em></button>
+            <button class="law-action" data-goto="contradictions"><span class="law-action-icon amber"><svg viewBox="0 0 24 24"><use href="#icon-alert"/></svg></span><span><b>Review conflicts</b><small>Check inconsistent claims</small></span><em>→</em></button>
+            <button class="law-action" data-goto="report"><span class="law-action-icon blue"><svg viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg></span><span><b>Generate report</b><small>Create the case report</small></span><em>→</em></button>
+          </section>
+
+          <section class="law-card law-insights">
+            <div class="law-card-head compact"><div><span class="law-section-label">INVESTIGATION</span><h2>Evidence insights</h2></div><button class="law-link" data-goto="graph">Explore →</button></div>
+            <div id="dash-donut-row" class="donut-row"></div>
+            <div class="law-divider"></div>
+            <div class="law-rel-title">Relationship types</div>
+            <div id="dash-relationship-list" class="relationship-list"></div>
+          </section>
+        </aside>
       </div>
 
-      <div class="insight-grid">
-        <div class="insight-card">
-          <h3>Investigation Insights</h3>
-          <p class="sub">Visual breakdown of key information.</p>
-          <div class="donut-row" id="dash-donut-row"></div>
-          <button class="ghost-btn full" data-goto="graph">View All Entities</button>
-        </div>
-        <div class="insight-card">
-          <h3>Relationship Types</h3>
-          <p class="sub">Breakdown of connections found.</p>
-          <div id="dash-relationship-list" class="relationship-list"></div>
-          <button class="ghost-btn full" data-goto="graph">Explore Graph</button>
-        </div>
-        <div class="insight-card">
-          <h3>Evidence Reliability</h3>
-          <p class="sub">Confidence level of extracted information.</p>
-          <div id="dash-gauge" class="gauge-wrap"></div>
-          <button class="ghost-btn full" data-goto="documents">View Evidence Details</button>
-        </div>
-        <div class="insight-card">
-          <h3>Case Activity</h3>
-          <p class="sub">Documents added to the vault over time.</p>
-          <div id="dash-activity-chart" class="activity-chart-wrap"></div>
-          <button class="ghost-btn full" data-goto="documents">View Document Vault</button>
-        </div>
+      <div class="law-lower-grid">
+        <section class="law-card"><div class="law-card-head compact"><div><span class="law-section-label">RELIABILITY</span><h2>Evidence integrity</h2></div><button class="law-link" data-goto="documents">Details →</button></div><div id="dash-gauge" class="gauge-wrap"></div></section>
+        <section class="law-card"><div class="law-card-head compact"><div><span class="law-section-label">DOCUMENT ACTIVITY</span><h2>Evidence added</h2></div><button class="law-link" data-goto="documents">Vault →</button></div><div id="dash-activity-chart" class="activity-chart-wrap"></div></section>
       </div>
 
-      <div class="ai-summary-bar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#icon-sparkle"/></svg>
-        <div class="ai-summary-text">
-          <strong>AI Summary</strong>
-          <p id="dash-ai-summary">Open Case Intelligence to generate a summary of this case.</p>
-        </div>
-        <button class="primary-btn" data-goto="intelligence">Generate Full Summary</button>
+      <!-- Existing dashboard controls are retained for app.js compatibility. -->
+      <div class="law-legacy-dashboard-controls" aria-hidden="true">
+        <select id="dash-filter-docs"><option>All Documents</option></select>
+        <select id="dash-filter-entities"><option>All Entities</option></select>
+        <select id="dash-filter-relationships"><option>All Relationships</option></select>
+        <select id="dash-filter-time"><option>All Time</option></select>
+        <button class="dash-custom-report" data-goto="report">Custom Report</button>
       </div>
-
-      <h3 class="section-label">Quick Actions</h3>
-      <div class="quick-actions">
-        <button class="quick-action" data-goto="documents"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-folder"/></svg><span>Upload a document</span></button>
-        <button class="quick-action" data-goto="intelligence"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-brain"/></svg><span>Ask Case Chat</span></button>
-        <button class="quick-action" data-goto="timeline"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-clock"/></svg><span>View timeline</span></button>
-        <button class="quick-action" data-goto="graph"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-network"/></svg><span>Explore connections</span></button>
-        <button class="quick-action" data-goto="report"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg><span>Generate report</span></button>
-      </div>
-
-      <h3 class="section-label">Recent Activity</h3>
-      <div id="dash-activity"></div>
     </section>
 
     <!-- DOCUMENTS / VAULT -->

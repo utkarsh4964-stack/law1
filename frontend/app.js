@@ -320,7 +320,7 @@ document.getElementById("new-case-form").addEventListener("submit", async e => {
 document.getElementById("demo-case-btn").addEventListener("click", async e => {
   const btn = e.currentTarget;
   btn.disabled = true;
-  btn.textContent = "Loading demo case…";
+  btn.textContent = "Adding demo case…";
   try {
     const res = await apiFetch("/cases/demo", { method: "POST" });
     const data = await res.json();
@@ -328,13 +328,13 @@ document.getElementById("demo-case-btn").addEventListener("click", async e => {
       showToast(data.detail || "Could not load the demo case.", "error");
       return;
     }
-    showToast("Demo case loaded — fully analyzed, nothing to upload.", "success");
+    showToast("Demo case added — fully analyzed, nothing to upload.", "success");
     openCase(data.case_id);
   } catch (err) {
     showToast(err.message === "SERVER_UNREACHABLE" ? "Could not reach the server — try again in a moment." : "Something went wrong. Please try again.", "error");
   } finally {
     btn.disabled = false;
-    btn.textContent = "✨ Load Demo Case";
+    btn.textContent = "✨ Add Demo Case";
   }
 });
 

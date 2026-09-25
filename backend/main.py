@@ -503,23 +503,617 @@ DEMO_ARGUMENTS = [
 ]
 
 
-@app.post("/api/cases/demo")
-def create_demo_case(user: dict = Depends(get_current_user)):
-    from datetime import datetime, timedelta, timezone
+# ---------------------------------------------------------------------------
+# demo case 2 — cybercrime / insider data breach
+# ---------------------------------------------------------------------------
 
-    case = store.create_case({
+DEMO_DOCUMENTS_CYBER = [
+    {
+        "filename": "incident_log_horizon.txt",
+        "doc_type": "incident log",
+        "text": (
+            "Horizon EduTech — Security Incident Log\n\n"
+            "On 14 April 2026, at 02:17 AM IST, the admin account 'ops_admin' was used "
+            "to export the full student records table (41,208 rows) from the production "
+            "database. The export originated from IP 103.22.18.94, which does not match "
+            "any office or VPN range registered to Horizon EduTech."
+        ),
+        "summary": "Horizon EduTech's incident log shows the shared 'ops_admin' account "
+                    "used to export 41,208 student records at 2:17 AM on 14 April, from "
+                    "an IP address outside the company's registered ranges.",
+        "entities": [
+            {"name": "Horizon EduTech", "type": "organization"},
+            {"name": "ops_admin account", "type": "identifier"},
+        ],
+        "events": [
+            {"date": "2026-04-14", "description": "Unauthorized bulk export of 41,208 "
+                                                    "student records using the ops_admin "
+                                                    "account from an unregistered IP."},
+        ],
+        "claims": [
+            {"statement": "The ops_admin credential was used at 02:17 AM on 14 April from "
+                          "IP 103.22.18.94, an address not on Horizon's registered office "
+                          "or VPN ranges.",
+             "about": "access time and origin"},
+        ],
+        "key_identifiers": [
+            {"type": "ip_address", "value": "103.22.18.94"},
+            {"type": "account", "value": "ops_admin"},
+        ],
+    },
+    {
+        "filename": "exit_interview_note_mehta.txt",
+        "doc_type": "HR note",
+        "text": (
+            "HR Exit Interview Note — Employee: Arjun Mehta, DevOps Engineer.\n"
+            "Last working day: 10 April 2026. IT confirmed all of Mehta's individual "
+            "credentials were revoked on 10 April at 6:00 PM per standard offboarding "
+            "checklist. Mehta stated during the exit interview that he had 'occasionally' "
+            "used the shared ops_admin account for deployment tasks, which several "
+            "engineers had access to."
+        ),
+        "summary": "HR's exit note records Mehta's individual access as revoked on 10 "
+                    "April, and his own admission that he had occasionally used the "
+                    "shared ops_admin account, which several engineers could access.",
+        "entities": [
+            {"name": "Arjun Mehta", "type": "person"},
+            {"name": "Horizon EduTech", "type": "organization"},
+        ],
+        "events": [
+            {"date": "2026-04-10", "description": "Arjun Mehta's individual credentials "
+                                                    "revoked on his last working day; he "
+                                                    "admits prior use of the shared "
+                                                    "ops_admin account."},
+        ],
+        "claims": [
+            {"statement": "Mehta's personal account access ended 10 April 2026, four days "
+                          "before the breach.",
+             "about": "Mehta's access timeline"},
+            {"statement": "Mehta had previously used the shared ops_admin account for "
+                          "deployment tasks.",
+             "about": "ops_admin usage"},
+        ],
+        "key_identifiers": [],
+    },
+    {
+        "filename": "vpn_access_roster.txt",
+        "doc_type": "access roster",
+        "text": (
+            "Horizon EduTech — Registered VPN & Office IP Ranges (as of April 2026)\n"
+            "Office: 45.112.8.0/24\n"
+            "VPN pool: 172.98.44.0/23\n"
+            "No entries for any 103.22.x.x range. All ops_admin logins are required by "
+            "policy to originate from these ranges; none have been recorded outside them "
+            "since account creation in 2024 until 14 April 2026."
+        ),
+        "summary": "Horizon's access roster confirms the 14 April login was the first "
+                    "ops_admin login ever recorded outside the registered office/VPN "
+                    "ranges since the account's creation in 2024.",
+        "entities": [
+            {"name": "Horizon EduTech", "type": "organization"},
+        ],
+        "events": [],
+        "claims": [
+            {"statement": "No ops_admin login had originated outside the registered "
+                          "office/VPN ranges before 14 April 2026.",
+             "about": "historical access pattern"},
+        ],
+        "key_identifiers": [
+            {"type": "ip_range", "value": "45.112.8.0/24 (office)"},
+            {"type": "ip_range", "value": "172.98.44.0/23 (VPN)"},
+        ],
+    },
+    {
+        "filename": "mehta_statement.txt",
+        "doc_type": "witness statement",
+        "text": (
+            "Statement of Arjun Mehta, recorded 16 April 2026.\n"
+            "I have not accessed any Horizon system since my last day, 10 April. I was "
+            "traveling to Pune from 12 to 15 April and did not have my laptop with me. I "
+            "do not know who else had the ops_admin password besides myself and two other "
+            "engineers on the platform team."
+        ),
+        "summary": "Mehta states he accessed no Horizon system after 10 April, was "
+                    "traveling without his laptop from 12-15 April, and names two other "
+                    "platform-team engineers who also knew the ops_admin password.",
+        "entities": [
+            {"name": "Arjun Mehta", "type": "person"},
+        ],
+        "events": [
+            {"date": "2026-04-12", "description": "Mehta states he began traveling to "
+                                                    "Pune without his laptop, through 15 "
+                                                    "April."},
+        ],
+        "claims": [
+            {"statement": "Mehta did not access any Horizon system after his last working "
+                          "day of 10 April.",
+             "about": "Mehta's access after departure"},
+            {"statement": "Two other platform-team engineers also knew the ops_admin "
+                          "password.",
+             "about": "credential sharing scope"},
+        ],
+        "key_identifiers": [],
+    },
+]
+
+DEMO_CASE_SUMMARY_CYBER = (
+    "Horizon EduTech's incident log shows its shared 'ops_admin' account exporting "
+    "41,208 student records at 2:17 AM on 14 April 2026, from an IP address that had "
+    "never been used to access the account before — the access roster confirms every "
+    "prior ops_admin login came from the registered office or VPN ranges.\n\n"
+    "Arjun Mehta, a DevOps engineer, left the company four days earlier, on 10 April; "
+    "IT confirms his individual credentials were revoked that day, but his own exit "
+    "interview notes that he had occasionally used the shared ops_admin account, which "
+    "'several engineers' could also access. In a follow-up statement, Mehta denies "
+    "accessing any Horizon system after his departure, says he was traveling without "
+    "his laptop from 12-15 April, and names two other named platform-team engineers who "
+    "also knew the password.\n\n"
+    "No document yet confirms who actually typed the 14 April credential, verifies "
+    "Mehta's travel independently, or accounts for every person who held the shared "
+    "password. The core open question is whether the breach traces to Mehta, one of the "
+    "other engineers he names, or a leak of the shared credential beyond that group."
+)
+
+DEMO_GRAPH_CYBER = {
+    "nodes": [
+        {"id": "mehta", "label": "Arjun Mehta", "type": "person"},
+        {"id": "horizon", "label": "Horizon EduTech", "type": "organization"},
+        {"id": "ops_admin", "label": "ops_admin account", "type": "identifier"},
+        {"id": "breach_ip", "label": "IP 103.22.18.94 (14 Apr login)", "type": "identifier"},
+    ],
+    "edges": [
+        {"source": "mehta", "target": "horizon", "relation": "Former DevOps engineer of",
+         "evidence": "exit_interview_note_mehta.txt"},
+        {"source": "mehta", "target": "ops_admin", "relation": "Admits prior use of",
+         "evidence": "exit_interview_note_mehta.txt"},
+        {"source": "ops_admin", "target": "horizon", "relation": "Shared admin account belonging to",
+         "evidence": "vpn_access_roster.txt"},
+        {"source": "breach_ip", "target": "ops_admin", "relation": "Used to log in as (14 Apr breach)",
+         "evidence": "incident_log_horizon.txt"},
+    ],
+}
+
+DEMO_CONTRADICTIONS_CYBER = [
+    {
+        "claim_a": "Mehta did not access any Horizon system after his last working day of "
+                   "10 April, and was traveling without his laptop from 12-15 April.",
+        "source_a": "mehta_statement.txt",
+        "claim_b": "Mehta had previously used the shared ops_admin account for deployment "
+                   "tasks, which several engineers had access to.",
+        "source_b": "exit_interview_note_mehta.txt",
+        "conflict_type": "access",
+        "confidence": 60,
+        "explanation": "Mehta denies any device or system access during the breach "
+                       "window and says he lacked his laptop, yet the breach used a "
+                       "shared credential he has confirmed knowing. This does not "
+                       "identify Mehta as the actor, but his travel and the credential's "
+                       "actual usage both require independent verification.",
+    },
+    {
+        "claim_a": "Mehta had previously used the shared ops_admin account for "
+                   "deployment tasks, which several engineers had access to.",
+        "source_a": "exit_interview_note_mehta.txt",
+        "claim_b": "Two other platform-team engineers also knew the ops_admin password.",
+        "source_b": "mehta_statement.txt",
+        "conflict_type": "scope",
+        "confidence": 42,
+        "explanation": "HR's note describes 'several' engineers holding the credential, "
+                       "while Mehta's own statement narrows it to two named colleagues "
+                       "besides himself. The exact headcount of who held the password "
+                       "isn't settled and should be confirmed before the suspect pool is "
+                       "treated as closed.",
+    },
+]
+
+DEMO_SIMILAR_CASES_CYBER = [
+    {
+        "precedent_id": "PREC-3305",
+        "title": "TechNova BPO — Offboarding Credential Misuse",
+        "summary": "A departing employee's shared admin credential was used for an "
+                   "unauthorized data export after their offboarding, discovered "
+                   "through an IP/geolocation mismatch on the login.",
+        "outcome": "Traced to a colleague who had retained the password after the "
+                   "employee's exit; charged under IT Act unauthorized-access provisions.",
+        "similarity": 74,
+        "key_similarities": ["shared admin credential retained after offboarding",
+                              "IP/geolocation mismatch flagged the breach"],
+        "note": "Both cases involve a shared credential surviving an employee's exit and "
+                "a login origin that broke an established access pattern.",
+    },
+    {
+        "precedent_id": "PREC-1188",
+        "title": "Regional College Portal — Bulk Data Export Incident",
+        "summary": "An alumni database was exported in bulk overnight by a compromised "
+                   "service account, initially suspected as an insider job, later traced "
+                   "to credential stuffing from an unrelated third-party breach.",
+        "outcome": "No insider involvement found; root cause was password reuse across a "
+                   "separate, earlier data breach.",
+        "similarity": 58,
+        "key_similarities": ["bulk overnight export via a shared/service account",
+                              "initial insider suspicion later reframed by access-origin evidence"],
+        "note": "A reminder that a shared-credential breach doesn't automatically point "
+                "to the most obvious insider suspect.",
+    },
+]
+
+DEMO_ARGUMENTS_CYBER = [
+    {
+        "argument": "The breach used the shared ops_admin credential from an IP never "
+                    "before associated with the account, in the window shortly after "
+                    "Mehta's admitted use of it and his offboarding — pointing toward "
+                    "either Mehta or someone who obtained the password from him or "
+                    "another credential holder.",
+        "supporting_evidence": ["incident_log_horizon.txt", "exit_interview_note_mehta.txt",
+                                 "vpn_access_roster.txt"],
+        "counterargument": "Mehta's stated travel and lack of a laptop, if independently "
+                           "corroborated through travel bookings or device logs, would "
+                           "rule him out directly — and the same credential was known to "
+                           "at least two other engineers with equal opportunity.",
+        "related_precedent_ids": ["PREC-3305"],
+    },
+    {
+        "argument": "The gap between 'several engineers' holding ops_admin access and "
+                    "Mehta's narrower count of two others suggests the credential's "
+                    "sharing scope was never fully documented internally, which weakens "
+                    "any single-suspect theory until every past holder is identified.",
+        "supporting_evidence": ["exit_interview_note_mehta.txt", "mehta_statement.txt"],
+        "counterargument": "The HR note's 'several' may just be imprecise phrasing rather "
+                           "than a materially different headcount, and could still be "
+                           "consistent with Mehta's 'two others' if the note's author was "
+                           "rounding loosely.",
+        "related_precedent_ids": [],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# demo case 3 — physical burglary with a possible inside angle
+# ---------------------------------------------------------------------------
+
+DEMO_DOCUMENTS_BURGLARY = [
+    {
+        "filename": "fir_copy_sector62.txt",
+        "doc_type": "FIR / police report",
+        "text": (
+            "First Information Report — Sector 62 Electronics Mart, Noida.\n"
+            "Filed by: Store Manager Vikram Chauhan, 09 June 2026, 07:45 AM.\n"
+            "Overnight entry between 09-June 01:00 AM and 05:30 AM. No forced entry to "
+            "the main shutter or door locks; the store alarm system shows a valid "
+            "disarm code entry at 01:42 AM. Missing stock: 14 smartphones, 3 laptops, "
+            "estimated value Rs. 9,80,000."
+        ),
+        "summary": "The FIR records no forced entry, a valid alarm disarm code used at "
+                    "1:42 AM, and missing stock worth roughly ₹9,80,000.",
+        "entities": [
+            {"name": "Vikram Chauhan", "type": "person"},
+            {"name": "Sector 62 Electronics Mart", "type": "location"},
+        ],
+        "events": [
+            {"date": "2026-06-09", "description": "Store found burgled overnight; alarm "
+                                                    "log shows a valid disarm code "
+                                                    "entered at 1:42 AM, no signs of "
+                                                    "forced entry."},
+        ],
+        "claims": [
+            {"statement": "The alarm was disarmed using a valid code at 1:42 AM, not "
+                          "bypassed or forced.",
+             "about": "method of entry"},
+            {"statement": "14 smartphones and 3 laptops worth roughly ₹9,80,000 are "
+                          "missing.",
+             "about": "stolen inventory value"},
+        ],
+        "key_identifiers": [
+            {"type": "money", "value": "₹9,80,000"},
+        ],
+    },
+    {
+        "filename": "alarm_code_holders.txt",
+        "doc_type": "internal memo",
+        "text": (
+            "Sector 62 Electronics Mart — Alarm Code Access List (internal, restricted).\n"
+            "Only four people hold the current disarm code, rotated monthly: Vikram "
+            "Chauhan (Manager), Sunita Rawat (Assistant Manager), Deepak Yadav (Security "
+            "Lead), and the code is also logged with the alarm vendor, SecureGuard "
+            "Systems, for maintenance purposes."
+        ),
+        "summary": "An internal memo names the four holders of the current disarm code, "
+                    "including maintenance vendor SecureGuard Systems.",
+        "entities": [
+            {"name": "Vikram Chauhan", "type": "person"},
+            {"name": "Sunita Rawat", "type": "person"},
+            {"name": "Deepak Yadav", "type": "person"},
+            {"name": "SecureGuard Systems", "type": "organization"},
+        ],
+        "events": [],
+        "claims": [
+            {"statement": "Only Chauhan, Rawat, Yadav, and vendor SecureGuard Systems "
+                          "held the current month's disarm code.",
+             "about": "code access scope"},
+        ],
+        "key_identifiers": [],
+    },
+    {
+        "filename": "cctv_log_summary.txt",
+        "doc_type": "CCTV log",
+        "text": (
+            "CCTV Review Summary — Sector 62 Electronics Mart, night of 8-9 June 2026.\n"
+            "Exterior camera (rear service lane) captured a single individual in a "
+            "security-guard uniform entering through the rear door at 01:38 AM, "
+            "remaining inside for approximately 22 minutes, exiting at 02:01 AM carrying "
+            "two bags. Face not clearly visible; uniform matches the mall's standard "
+            "contract-guard issue."
+        ),
+        "summary": "CCTV shows a person in a security-guard uniform entering the rear "
+                    "door at 1:38 AM and exiting at 2:01 AM carrying two bags, face not "
+                    "clearly visible.",
+        "entities": [
+            {"name": "Sector 62 Electronics Mart", "type": "location"},
+        ],
+        "events": [
+            {"date": "2026-06-09", "description": "CCTV shows a person in security-guard "
+                                                    "uniform entering the rear door at "
+                                                    "1:38 AM and exiting at 2:01 AM with "
+                                                    "two bags."},
+        ],
+        "claims": [
+            {"statement": "The individual seen on CCTV wore a security-guard uniform "
+                          "matching the mall's standard contract-guard issue.",
+             "about": "CCTV subject appearance"},
+        ],
+        "key_identifiers": [
+            {"type": "time_window", "value": "1:38 AM – 2:01 AM"},
+        ],
+    },
+    {
+        "filename": "yadav_duty_roster.txt",
+        "doc_type": "duty roster",
+        "text": (
+            "Security Duty Roster — Sector 62 Electronics Mart, 8-9 June 2026.\n"
+            "Deepak Yadav (Security Lead): scheduled OFF DUTY for the night shift of 8-9 "
+            "June, per approved leave request dated 2 June. Night shift covered by "
+            "contract agency guard Ramesh Bhadauria."
+        ),
+        "summary": "The duty roster shows Yadav off duty for the night of the burglary, "
+                    "with contract guard Ramesh Bhadauria covering his shift.",
+        "entities": [
+            {"name": "Deepak Yadav", "type": "person"},
+            {"name": "Ramesh Bhadauria", "type": "person"},
+        ],
+        "events": [
+            {"date": "2026-06-09", "description": "Duty roster shows Deepak Yadav off "
+                                                    "duty for the night shift; Ramesh "
+                                                    "Bhadauria covering as contract "
+                                                    "guard."},
+        ],
+        "claims": [
+            {"statement": "Deepak Yadav was off duty and not scheduled to be on site "
+                          "during the night of the burglary.",
+             "about": "Yadav's duty status"},
+        ],
+        "key_identifiers": [],
+    },
+    {
+        "filename": "yadav_statement.txt",
+        "doc_type": "witness statement",
+        "text": (
+            "Statement of Deepak Yadav, recorded 10 June 2026.\n"
+            "I was at home the entire night of 8-9 June, I was not on shift. I did not "
+            "give my alarm code to anyone. I don't know why the disarm log shows a valid "
+            "code entry."
+        ),
+        "summary": "Yadav states he was home all night and did not share his alarm code "
+                    "with anyone, and cannot explain the valid disarm log entry.",
+        "entities": [
+            {"name": "Deepak Yadav", "type": "person"},
+        ],
+        "events": [],
+        "claims": [
+            {"statement": "Yadav states he was at home all night on 8-9 June and did not "
+                          "share his alarm code with anyone.",
+             "about": "Yadav's alibi and code-sharing"},
+        ],
+        "key_identifiers": [],
+    },
+]
+
+DEMO_CASE_SUMMARY_BURGLARY = (
+    "Sector 62 Electronics Mart was burgled overnight on 8-9 June 2026 with no forced "
+    "entry: the FIR records a valid alarm disarm code entered at 1:42 AM, and roughly "
+    "₹9,80,000 in smartphones and laptops missing. An internal memo names only four "
+    "people as holders of the current month's disarm code — the manager, assistant "
+    "manager, security lead Deepak Yadav, and the alarm vendor SecureGuard Systems.\n\n"
+    "CCTV footage shows a single individual in a standard-issue security-guard uniform "
+    "entering the rear door at 1:38 AM and leaving at 2:01 AM with two bags, face not "
+    "clearly visible. The duty roster, however, shows Yadav — the one named code-holder "
+    "who is also security staff — scheduled off duty that night, with contract guard "
+    "Ramesh Bhadauria covering his shift. Yadav himself states he was home all night and "
+    "denies sharing his code with anyone.\n\n"
+    "No document yet confirms who was actually behind the code entry or identifies the "
+    "uniformed figure on camera. The open questions are whether the code reached "
+    "Bhadauria through Yadav (knowingly or not), whether the vendor's retained copy was "
+    "used, or whether the CCTV figure is someone else entirely."
+)
+
+DEMO_GRAPH_BURGLARY = {
+    "nodes": [
+        {"id": "chauhan", "label": "Vikram Chauhan", "type": "person"},
+        {"id": "rawat", "label": "Sunita Rawat", "type": "person"},
+        {"id": "yadav", "label": "Deepak Yadav", "type": "person"},
+        {"id": "bhadauria", "label": "Ramesh Bhadauria", "type": "person"},
+        {"id": "secureguard", "label": "SecureGuard Systems", "type": "organization"},
+        {"id": "mart", "label": "Sector 62 Electronics Mart", "type": "location"},
+    ],
+    "edges": [
+        {"source": "yadav", "target": "mart", "relation": "Holds alarm disarm code for",
+         "evidence": "alarm_code_holders.txt"},
+        {"source": "yadav", "target": "mart", "relation": "Scheduled off duty on the night of the burglary at",
+         "evidence": "yadav_duty_roster.txt"},
+        {"source": "bhadauria", "target": "mart", "relation": "Covered the night shift at",
+         "evidence": "yadav_duty_roster.txt"},
+        {"source": "secureguard", "target": "mart", "relation": "Also holds the alarm code for maintenance of",
+         "evidence": "alarm_code_holders.txt"},
+        {"source": "chauhan", "target": "mart", "relation": "Filed the FIR for",
+         "evidence": "fir_copy_sector62.txt"},
+    ],
+}
+
+DEMO_CONTRADICTIONS_BURGLARY = [
+    {
+        "claim_a": "Deepak Yadav was off duty and not scheduled to be on site during the "
+                   "night of the burglary.",
+        "source_a": "yadav_duty_roster.txt",
+        "claim_b": "Only Chauhan, Rawat, Yadav, and vendor SecureGuard Systems held the "
+                   "current month's disarm code.",
+        "source_b": "alarm_code_holders.txt",
+        "conflict_type": "access",
+        "confidence": 68,
+        "explanation": "The valid disarm code entry at 1:42 AM came from a short, named "
+                       "list of four holders, but the one security-lead holder on that "
+                       "list, Yadav, was off duty and denies sharing the code — meaning "
+                       "either an off-duty holder was present, the code leaked, or the "
+                       "vendor's copy was used. Human verification required.",
+    },
+    {
+        "claim_a": "The individual seen on CCTV wore a security-guard uniform matching "
+                   "the mall's standard contract-guard issue.",
+        "source_a": "cctv_log_summary.txt",
+        "claim_b": "Yadav states he was at home all night on 8-9 June and did not share "
+                   "his alarm code with anyone.",
+        "source_b": "yadav_statement.txt",
+        "conflict_type": "identity",
+        "confidence": 50,
+        "explanation": "The uniformed figure on CCTV matches guard attire generally, not "
+                       "a specific individual — it doesn't by itself implicate or clear "
+                       "Yadav, but combined with his denial and off-duty status, the "
+                       "figure's identity remains the central unresolved question.",
+    },
+]
+
+DEMO_SIMILAR_CASES_BURGLARY = [
+    {
+        "precedent_id": "PREC-2749",
+        "title": "Lajpat Nagar Jewellery Store — No-Forced-Entry Burglary",
+        "summary": "A jewellery store burglary with no signs of forced entry and a valid "
+                   "alarm disarm code, initially pointing at the sole night guard before "
+                   "the code was traced to a maintenance vendor's retained copy.",
+        "outcome": "A vendor technician was charged after phone records placed him near "
+                   "the store; the night guard was cleared.",
+        "similarity": 71,
+        "key_similarities": ["no forced entry, a valid code was used",
+                              "vendor held a retained copy of the code"],
+        "note": "Both cases raise the possibility that a maintenance vendor's retained "
+                "code copy, not the named staff holders, was the actual point of leak.",
+    },
+    {
+        "precedent_id": "PREC-5561",
+        "title": "Warehouse Loading-Bay Theft, Ghaziabad",
+        "summary": "Missing inventory was traced through duty-roster cross-referencing "
+                   "that revealed a contract worker covering for an absent regular "
+                   "employee had unsupervised access.",
+        "outcome": "The contract worker was convicted after the missing inventory was "
+                   "later found at a local resale shop linked to him.",
+        "similarity": 63,
+        "key_similarities": ["contract/cover staff had unsupervised opportunity",
+                              "duty-roster cross-reference was decisive"],
+        "note": "Both cases turn on whether the person covering a shift, rather than the "
+                "regular staff member, had the real opportunity.",
+    },
+]
+
+DEMO_ARGUMENTS_BURGLARY = [
+    {
+        "argument": "Because only four people held the disarm code and Yadav — one of "
+                    "the four — was off duty with a contract guard covering, the "
+                    "strongest working theory is that the code reached Bhadauria "
+                    "(directly or indirectly) or that the vendor's retained copy was "
+                    "used, rather than a stranger bypassing the alarm outright.",
+        "supporting_evidence": ["alarm_code_holders.txt", "yadav_duty_roster.txt",
+                                 "fir_copy_sector62.txt"],
+        "counterargument": "This remains circumstantial: nothing yet directly ties "
+                           "Bhadauria or SecureGuard Systems to the code's use that "
+                           "night, and Yadav's denial of sharing the code hasn't been "
+                           "tested against his phone or physical whereabouts.",
+        "related_precedent_ids": ["PREC-2749"],
+    },
+    {
+        "argument": "The CCTV figure's guard uniform and the tight timing around the "
+                    "1:42 AM disarm (entry at 1:38 AM, exit at 2:01 AM) suggest the "
+                    "person on camera is very likely who used the code, narrowing the "
+                    "inquiry to identifying that individual rather than treating "
+                    "code-access and physical entry as separate threads.",
+        "supporting_evidence": ["cctv_log_summary.txt", "fir_copy_sector62.txt"],
+        "counterargument": "A guard uniform is not a unique identifier — contract "
+                           "agencies often issue similar uniforms to multiple staff, so "
+                           "the footage alone can't narrow the suspect pool without a "
+                           "clearer facial capture or the agency's staffing records for "
+                           "that night.",
+        "related_precedent_ids": ["PREC-5561"],
+    },
+]
+
+DEMO_CASE_TEMPLATES = [
+    {
         "title": "Rangoli Textiles — Vendor Payment Diversion",
         "case_type": "Financial Fraud",
         "description": "Suspected diversion of a vendor payment through an unapproved "
                         "intermediary account, alongside a disputed on-site meeting.",
-        "investigating_officer": user["name"],
-        "status": "Active",
         "priority": "High",
-    }, user["username"])
+        "documents": DEMO_DOCUMENTS,
+        "case_summary": DEMO_CASE_SUMMARY,
+        "graph": DEMO_GRAPH,
+        "contradictions": DEMO_CONTRADICTIONS,
+        "similar_cases": DEMO_SIMILAR_CASES,
+        "arguments": DEMO_ARGUMENTS,
+    },
+    {
+        "title": "Horizon EduTech — Admin Credential Leak",
+        "case_type": "Cybercrime / Data Breach",
+        "description": "Suspected misuse of a shared admin credential by or around a "
+                        "recently departed employee, preceding an unauthorized bulk "
+                        "export of student data.",
+        "priority": "High",
+        "documents": DEMO_DOCUMENTS_CYBER,
+        "case_summary": DEMO_CASE_SUMMARY_CYBER,
+        "graph": DEMO_GRAPH_CYBER,
+        "contradictions": DEMO_CONTRADICTIONS_CYBER,
+        "similar_cases": DEMO_SIMILAR_CASES_CYBER,
+        "arguments": DEMO_ARGUMENTS_CYBER,
+    },
+    {
+        "title": "Sector 62 Electronics Mart — Burglary",
+        "case_type": "Burglary / Theft",
+        "description": "Overnight burglary of a Noida electronics showroom; the alarm "
+                        "log and duty roster suggest possible inside knowledge of the "
+                        "disarm code.",
+        "priority": "Medium",
+        "documents": DEMO_DOCUMENTS_BURGLARY,
+        "case_summary": DEMO_CASE_SUMMARY_BURGLARY,
+        "graph": DEMO_GRAPH_BURGLARY,
+        "contradictions": DEMO_CONTRADICTIONS_BURGLARY,
+        "similar_cases": DEMO_SIMILAR_CASES_BURGLARY,
+        "arguments": DEMO_ARGUMENTS_BURGLARY,
+    },
+]
+
+
+def _seed_case_from_template(template: dict, username: str, display_name: str) -> str:
+    """Build one fully-analyzed demo case (documents, hashes, audit trail,
+    and every cached AI view) from a template dict, attributed to the given
+    user. Shared by the on-demand '/api/cases/demo' endpoint and the
+    startup seeder below."""
+    from datetime import datetime, timedelta, timezone
+
+    case = store.create_case({
+        "title": template["title"],
+        "case_type": template["case_type"],
+        "description": template["description"],
+        "investigating_officer": display_name,
+        "status": "Active",
+        "priority": template["priority"],
+    }, username)
     case_id = case["id"]
 
     base_time = datetime.now(timezone.utc) - timedelta(days=6)
-    for i, tmpl in enumerate(DEMO_DOCUMENTS):
+    for i, tmpl in enumerate(template["documents"]):
         doc_id = f"demo{i + 1}"
         uploaded_at = (base_time + timedelta(days=i * 1.6, hours=i)).isoformat()
         doc = {
@@ -532,7 +1126,7 @@ def create_demo_case(user: dict = Depends(get_current_user)):
             "hash": hashlib.sha256(tmpl["text"].encode("utf-8")).hexdigest(),
             "version": "1.0",
             "confidentiality": "Standard",
-            "uploaded_by": user["username"],
+            "uploaded_by": username,
             "uploaded_at": uploaded_at,
             "status": "processed",
             "processing_steps": PROCESSING_STEPS,
@@ -544,20 +1138,53 @@ def create_demo_case(user: dict = Depends(get_current_user)):
             "key_identifiers": tmpl["key_identifiers"],
         }
         store.add_document(case_id, doc)
-        store.append_audit(case_id, user["username"], "document_uploaded", f"Uploaded {doc['filename']}", doc_id)
-        store.append_audit(case_id, user["username"], "integrity_hash_generated", f"SHA-256 generated for {doc['filename']}", doc_id)
-        store.append_audit(case_id, user["username"], "ai_analysis_completed", f"AI extraction completed for {doc['filename']}", doc_id)
+        store.append_audit(case_id, username, "document_uploaded", f"Uploaded {doc['filename']}", doc_id)
+        store.append_audit(case_id, username, "integrity_hash_generated", f"SHA-256 generated for {doc['filename']}", doc_id)
+        store.append_audit(case_id, username, "ai_analysis_completed", f"AI extraction completed for {doc['filename']}", doc_id)
 
     # Pre-populate every cached AI view so opening the case shows a fully
     # analyzed workspace instantly — no LLM call, no Groq quota spent.
-    store.set_cache(case_id, "case_summary", DEMO_CASE_SUMMARY)
-    store.set_cache(case_id, "graph", DEMO_GRAPH)
-    store.set_cache(case_id, "contradictions", DEMO_CONTRADICTIONS)
-    store.set_cache(case_id, "similar_cases", DEMO_SIMILAR_CASES)
-    store.set_cache(case_id, "arguments", DEMO_ARGUMENTS)
-    store.append_audit(case_id, user["username"], "report_generated", "Demo case seeded for screening walkthrough")
+    store.set_cache(case_id, "case_summary", template["case_summary"])
+    store.set_cache(case_id, "graph", template["graph"])
+    store.set_cache(case_id, "contradictions", template["contradictions"])
+    store.set_cache(case_id, "similar_cases", template["similar_cases"])
+    store.set_cache(case_id, "arguments", template["arguments"])
+    store.append_audit(case_id, username, "report_generated", "Demo case seeded for screening walkthrough")
 
+    return case_id
+
+
+@app.post("/api/cases/demo")
+def create_demo_case(user: dict = Depends(get_current_user)):
+    # Prefer a template that isn't already on the board (by title); once
+    # every template has been used at least once, just add another copy of
+    # a random one rather than refusing the click.
+    import random
+    existing_titles = {c["title"] for c in store.list_cases()}
+    template = next((t for t in DEMO_CASE_TEMPLATES if t["title"] not in existing_titles), None)
+    if template is None:
+        template = random.choice(DEMO_CASE_TEMPLATES)
+    case_id = _seed_case_from_template(template, user["username"], user["name"])
     return {"case_id": case_id}
+
+
+@app.on_event("startup")
+def seed_demo_cases_on_startup():
+    """Seed every demo-case template once, on server boot, so 'My Cases'
+    already shows a handful of fully-analyzed sample investigations on the
+    very first load instead of an empty grid that only fills up after
+    someone clicks 'Load Demo Case'. Idempotent: skips any template whose
+    title already exists, so this is safe to run on every restart."""
+    try:
+        existing_titles = {c["title"] for c in store.list_cases()}
+        admin = store.get_user("admin")
+        if not admin:
+            return
+        for template in DEMO_CASE_TEMPLATES:
+            if template["title"] not in existing_titles:
+                _seed_case_from_template(template, admin["username"], admin["display_name"])
+    except Exception:
+        logger.exception("Demo case seeding on startup failed; continuing without it.")
 
 
 @app.get("/api/cases/{case_id}")

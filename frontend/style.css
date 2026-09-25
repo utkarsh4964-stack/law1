@@ -1063,7 +1063,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border: 1px solid var(--line); border-radius: 16px;
   padding: 22px 26px; margin-bottom: 22px; overflow: hidden;
   background:
-    radial-gradient(circle at 88% 20%, var(--hero-glow, var(--brass-glow)), transparent 62%),
+    radial-gradient(circle at 88% 20%, rgba(0, 0, 0, 0.04), transparent 62%),
     linear-gradient(135deg, var(--panel-raised) 0%, var(--panel) 62%);
 }
 .page-hero::before {

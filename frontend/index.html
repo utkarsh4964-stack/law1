@@ -969,4 +969,249 @@
       </div>
     </section>
 
-    <!-- AUDIT TRAIL -->
+        <!-- ============================================================
+         AUDIT TRAIL
+         ============================================================ -->
+
+    <section class="panel" id="panel-audit">
+
+      <div class="page-hero">
+
+        <div class="page-hero-copy">
+
+          <div class="page-hero-kicker">
+            <svg>
+              <use href="#icon-shield"></use>
+            </svg>
+            Security
+          </div>
+
+          <h1>Audit Trail</h1>
+
+          <p class="sub">
+            A chronological record of uploads, deletions, analysis runs
+            and other actions performed on this case.
+          </p>
+
+        </div>
+
+        <div class="page-hero-art" aria-hidden="true">
+
+          <svg
+            viewBox="0 0 200 150"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+
+            <rect
+              x="42"
+              y="18"
+              width="116"
+              height="114"
+              rx="10"
+              style="
+                fill:var(--panel-raised,#18202d);
+                stroke:var(--line,#2a3346)
+              "
+            />
+
+            <rect
+              x="58"
+              y="38"
+              width="84"
+              height="6"
+              rx="3"
+              style="fill:var(--brass,#d9a441)"
+            />
+
+            <rect
+              x="58"
+              y="56"
+              width="62"
+              height="5"
+              rx="2.5"
+              style="fill:var(--line,#2a3346)"
+            />
+
+            <rect
+              x="58"
+              y="68"
+              width="76"
+              height="5"
+              rx="2.5"
+              style="fill:var(--line,#2a3346)"
+            />
+
+            <rect
+              x="58"
+              y="80"
+              width="52"
+              height="5"
+              rx="2.5"
+              style="fill:var(--steel,#6f93c4)"
+            />
+
+            <rect
+              x="58"
+              y="92"
+              width="68"
+              height="5"
+              rx="2.5"
+              style="fill:var(--line,#2a3346)"
+            />
+
+            <circle
+              cx="137"
+              cy="108"
+              r="13"
+              style="
+                fill:var(--ink,#0a0d14);
+                stroke:var(--verdigris,#46a97f)
+              "
+              stroke-width="2"
+            />
+
+            <path
+              d="M131 108l4 4 8-9"
+              fill="none"
+              style="stroke:var(--verdigris,#46a97f)"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+
+          </svg>
+
+        </div>
+
+      </div>
+
+
+      <!-- ==========================================================
+           AUDIT CHARTS
+           ========================================================== -->
+
+      <div class="chart-grid two">
+
+        <div class="chart-card">
+
+          <div class="chart-card-head">
+
+            <div>
+              <h3>Actions</h3>
+              <p class="sub">
+                What happened across this case.
+              </p>
+            </div>
+
+            <span
+              class="chart-badge"
+              id="audit-action-badge"
+            >—</span>
+
+          </div>
+
+          <div id="audit-action-chart"></div>
+
+        </div>
+
+
+        <div class="chart-card">
+
+          <div class="chart-card-head">
+
+            <div>
+              <h3>Users</h3>
+              <p class="sub">
+                Who performed recorded actions.
+              </p>
+            </div>
+
+            <span
+              class="chart-badge"
+              id="audit-user-badge"
+            >—</span>
+
+          </div>
+
+          <div id="audit-user-chart"></div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ==========================================================
+           AUDIT LOG
+           ========================================================== -->
+
+      <div
+        class="card"
+        style="margin-top:18px;overflow:hidden"
+      >
+
+        <div class="card-head">
+
+          <div>
+
+            <h3>Case activity log</h3>
+
+            <p class="sub">
+              Append-only activity associated with the current case.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div id="audit-body">
+
+          <div class="empty-state">
+
+            <svg viewBox="0 0 24 24">
+
+              <use href="#icon-list"></use>
+
+            </svg>
+
+            <div class="empty-state-title">
+              No activity yet
+            </div>
+
+            <div class="empty-state-sub">
+              Every upload, deletion and analysis on this case
+              will show up here.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+</div>
+</div>
+
+
+<!-- ============================================================
+     EXTERNAL LIBRARIES
+     ============================================================ -->
+
+<script
+  src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js">
+</script>
+
+
+<!-- ============================================================
+     APPLICATION JAVASCRIPT
+     ============================================================ -->
+
+<script src="app.js?v=4"></script>
+
+</body>
+</html>

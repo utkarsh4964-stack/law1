@@ -1,12 +1,14 @@
 :root {
   /* ==================================================================
-     THEME — "Monochrome" (black & white)
-     Pure grayscale: white page, white/near-white cards, near-black as
-     the primary accent, true black reserved for contradictions/alerts,
-     with mid-tone grays carrying every other role (success, neutral,
-     chart series) purely through lightness rather than hue.
-     Token names are unchanged from the earlier color themes, so every
-     component below repaints without needing per-rule changes.
+     THEME — "Ink & Brass" (light)
+     Archival paper rather than a black terminal: warm ivory page,
+     crisp white cards, brass/gold as the primary accent (court brass,
+     scales, evidence tags), crimson reserved almost exclusively for
+     contradictions and alerts, verdigris for verified/OK, steel blue
+     for neutral secondary categories.
+     Swapped from the earlier dark "ink-charcoal" version on request —
+     same token names throughout, so every component below repaints
+     without needing per-rule changes.
      ================================================================== */
 
   /* ---- surfaces: page a warm ivory, cards white and brighter ---- */
@@ -30,9 +32,9 @@
   --brass: #333333;
   --brass-dim: #555555;
   --brass-deep: #1a1a1a;
-  --brass-glow: rgba(0, 0, 0, 0.08));
+  --brass-glow: rgba(0, 0, 0, 0.08);
   --crimson: #101010;
-  --crimson-glow: rgba(0, 0, 0, 0.10));
+  --crimson-glow: rgba(0, 0, 0, 0.10);
   --verdigris: #555555;
   --steel: #777777;
   --on-accent: #ffffff;
@@ -57,9 +59,9 @@
   --radius: 12px;
   --radius-sm: 5px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06));
-  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.08));
-  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.12));
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.12);
 
   --display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -72,9 +74,9 @@ body {
   margin: 0;
   background: var(--ink);
   background-image:
-    radial-gradient(circle at 12% -10%, rgba(0, 0, 0, 0.04)), transparent 44%),
-    radial-gradient(circle at 92% 6%, rgba(0, 0, 0, 0.03)), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4)) 0%, transparent 30%);
+    radial-gradient(circle at 12% -10%, rgba(0, 0, 0, 0.04), transparent 44%),
+    radial-gradient(circle at 92% 6%, rgba(0, 0, 0, 0.03), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 30%);
   color: var(--text);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -139,8 +141,8 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.01em;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.primary-btn { background: linear-gradient(180deg, var(--brass-dim), var(--brass)); color: var(--on-accent); border: 1px solid var(--brass-dim); box-shadow: 0 1px 2px rgba(0,0,0,0.3)), 0 6px 18px rgba(0,0,0,0.20); }
-.primary-btn:hover { background: linear-gradient(180deg, #777777, var(--brass-dim)); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.32)), 0 12px 26px rgba(0,0,0,0.28); }
+.primary-btn { background: linear-gradient(180deg, var(--brass-dim), var(--brass)); color: var(--on-accent); border: 1px solid var(--brass-dim); box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 18px rgba(0,0,0,0.20); }
+.primary-btn:hover { background: linear-gradient(180deg, #777777, var(--brass-dim)); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.32), 0 12px 26px rgba(0,0,0,0.28); }
 .primary-btn:active { transform: translateY(0) scale(0.98); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 .primary-btn.full { width: 100%; margin-top: 6px; }
@@ -197,7 +199,7 @@ img { max-width: 100%; display: block; }
   border-radius: 18px; overflow: hidden;
   background-color: var(--panel);
   background-image:
-    linear-gradient(160deg, rgba(0,0,0,0.88)) 10%, rgba(0,0,0,0.55)) 55%, rgba(0,0,0,0.85)) 100%),
+    linear-gradient(160deg, rgba(0,0,0,0.88) 10%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.85) 100%),
     url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=70");
   background-size: cover; background-position: center; filter: grayscale(1) contrast(1.15) brightness(0.85);
 }
@@ -272,7 +274,7 @@ img { max-width: 100%; display: block; }
   min-height: 190px; display: flex; align-items: flex-end;
   background-color: var(--panel);
   background-image:
-    linear-gradient(0deg, rgba(0,0,0,0.92)) 0%, rgba(0,0,0,0.35)) 55%, rgba(0,0,0,0.08)) 100%),
+    linear-gradient(0deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.08) 100%),
     url("https://images.unsplash.com/photo-1758873268745-dd2cf0d677b5?auto=format&fit=crop&w=1600&q=70");
   background-size: cover; background-position: center; filter: grayscale(1) contrast(1.15) brightness(0.85);
 }
@@ -288,7 +290,7 @@ img { max-width: 100%; display: block; }
 .landing-cta-band {
   background-color: var(--panel);
   background-image:
-    linear-gradient(135deg, rgba(0,0,0,0.93)) 0%, rgba(0,0,0,0.82)) 55%, rgba(0,0,0,0.93)) 100%),
+    linear-gradient(135deg, rgba(0,0,0,0.93) 0%, rgba(0,0,0,0.82) 55%, rgba(0,0,0,0.93) 100%),
     url("https://images.unsplash.com/photo-1589994965851-a8f479c573a9?auto=format&fit=crop&w=1600&q=70");
   background-size: cover; background-position: center; filter: grayscale(1) contrast(1.15) brightness(0.85);
   border-top: 1px solid var(--line-soft);
@@ -363,8 +365,8 @@ img { max-width: 100%; display: block; }
   box-shadow:
     0 3px 8px rgba(0,0,0,0.35),
     0 10px 22px rgba(0,0,0,0.28),
-    inset 0 1px 1px rgba(255,255,255,0.28)),
-    inset 0 -3px 6px rgba(0,0,0,0.25));
+    inset 0 1px 1px rgba(255,255,255,0.28),
+    inset 0 -3px 6px rgba(0,0,0,0.25);
 }
 .login-card h1 { font-family: var(--display); font-size: 23px; font-weight: 600; margin: 0 0 4px; }
 .login-card .sub { color: var(--text-muted); font-size: 13px; margin-bottom: 26px; }
@@ -431,7 +433,7 @@ img { max-width: 100%; display: block; }
 /* ---------------- modal ---------------- */
 
 .modal-backdrop {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.74));
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.74);
   align-items: center; justify-content: center; z-index: 100;
 }
 .modal-backdrop.active { display: flex; animation: modal-fade 0.18s ease; }
@@ -512,7 +514,7 @@ img { max-width: 100%; display: block; }
   width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle at 30% 26%, var(--brass-dim) 0%, var(--brass) 54%, var(--brass-deep) 100%);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.25)), inset 0 -2px 4px rgba(0,0,0,0.22));
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.25), inset 0 -2px 4px rgba(0,0,0,0.22);
 }
 .case-mark-title { font-size: 11px; letter-spacing: 0.12em; color: var(--text-muted); font-weight: 600; }
 .case-mark-id { font-family: var(--mono); font-size: 12px; color: var(--text-faint); margin-top: 2px; }
@@ -818,7 +820,7 @@ img { max-width: 100%; display: block; }
 .timeline-marker {
   position: absolute; left: -46px; top: 14px; width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.25));
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.25);
 }
 .timeline-marker svg { width: 16px; height: 16px; color: #ffffff; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .timeline-row { display: flex; align-items: flex-start; gap: 16px; }
@@ -1061,7 +1063,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border: 1px solid var(--line); border-radius: 16px;
   padding: 22px 26px; margin-bottom: 22px; overflow: hidden;
   background:
-    radial-gradient(circle at 88% 20%, rgba(0, 0, 0, 0.04)), transparent 62%),
+    radial-gradient(circle at 88% 20%, rgba(0, 0, 0, 0.04), transparent 62%),
     linear-gradient(135deg, var(--panel-raised) 0%, var(--panel) 62%);
 }
 .page-hero::before {

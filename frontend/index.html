@@ -84,6 +84,17 @@
         <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-lock"/></svg>SHA-256 document hashing</div>
         <div class="landing-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-list"/></svg>Full audit trail</div>
       </div>
+      <div class="landing-process" aria-label="Investigation workflow">
+        <span class="lp-step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-lock"/></svg>Secure</span>
+        <span class="lp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-arrow-right"/></svg></span>
+        <span class="lp-step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-brain"/></svg>Analyze</span>
+        <span class="lp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-arrow-right"/></svg></span>
+        <span class="lp-step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-network"/></svg>Connect</span>
+        <span class="lp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-arrow-right"/></svg></span>
+        <span class="lp-step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-shield"/></svg>Verify</span>
+        <span class="lp-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-arrow-right"/></svg></span>
+        <span class="lp-step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-doc-check"/></svg>Report</span>
+      </div>
     </div>
 
     <div class="evidence-board" aria-hidden="true">
@@ -480,6 +491,13 @@
       </div>
 
       <div class="insight-grid">
+        <div class="insight-card security-card">
+          <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><use href="#icon-shield"/></svg>Case Security</h3>
+          <p class="sub">Hash integrity, custody coverage &amp; ledger status for this case.</p>
+          <div id="dash-security-metrics" class="sec-metrics"></div>
+          <div id="dash-ledger-status" class="ledger-status-badge">Checking ledger…</div>
+          <button class="ghost-btn full" data-goto="audit">View Audit Trail</button>
+        </div>
         <div class="insight-card">
           <h3>Investigation Insights</h3>
           <p class="sub">Visual breakdown of key information.</p>

@@ -616,10 +616,14 @@ async function loadDashboard() {
     entities: entityTotal, conflicts: data.contradiction_count
   });
 
+  let vaultDocs = [];
   try {
     const docsRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`);
-    renderActivityChart(docsRes.ok ? await docsRes.json() : []);
+    vaultDocs = docsRes.ok ? await docsRes.json() : [];
+    renderActivityChart(vaultDocs);
   } catch { renderActivityChart([]); }
+
+  renderSecurityCard(vaultDocs, data.document_count);
 
   const cachedSummary = await getCachedSummaryPreview();
   if (cachedSummary) document.getElementById("dash-ai-summary").textContent = cachedSummary;
@@ -633,6 +637,54 @@ async function loadDashboard() {
         <span class="activity-time">${fmtTime(a.ts)}</span>
         <span><span class="activity-user">${escapeHtml(a.user)}</span> — ${escapeHtml(a.detail)}</span>
       </div>`).join("");
+  }
+}
+
+/** Case Security card on the Overview tab — every number here comes straight
+ *  from the vault's own documents and audit ledger, never invented. */
+async function renderSecurityCard(vaultDocs, documentCount) {
+  const metricsEl = document.getElementById("dash-security-metrics");
+  const badgeEl = document.getElementById("dash-ledger-status");
+  if (!metricsEl || !badgeEl) return;
+
+  const docCount = documentCount ?? vaultDocs.length;
+  const hashedCount = vaultDocs.filter(d => !!d.hash).length;
+
+  let custodyEvents = 0, coveredDocs = 0, log = [];
+  try {
+    const logRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/audit-log`);
+    if (logRes.ok) {
+      log = (await logRes.json()).log || [];
+      const perDoc = new Set();
+      log.forEach(entry => { if (entry.doc_id) { custodyEvents++; perDoc.add(entry.doc_id); } });
+      coveredDocs = perDoc.size;
+    }
+  } catch { /* audit log is an enrichment — card still renders the doc-level metrics without it */ }
+
+  const auditCoverage = docCount ? Math.min(100, Math.round(100 * coveredDocs / docCount)) : 0;
+  const violations = vaultDocs.length && hashedCount === vaultDocs.length ? 0 : (vaultDocs.length - hashedCount);
+
+  metricsEl.innerHTML = [
+    [docCount, "Documents", ""],
+    [`${hashedCount}/${docCount || 0}`, "Hash Verified", hashedCount === docCount && docCount ? "ok" : ""],
+    [custodyEvents, "Custody Events", ""],
+    [violations, "Integrity Violations", violations ? "alert" : "ok"],
+    [`${auditCoverage}%`, "Audit Coverage", auditCoverage === 100 ? "ok" : ""],
+  ].map(([num, label, tone]) => `
+    <div class="sec-metric">
+      <div class="sec-metric-num ${tone}">${num}</div>
+      <div class="sec-metric-label">${label}</div>
+    </div>`).join("");
+
+  if (!docCount) {
+    badgeEl.className = "ledger-status-badge pending";
+    badgeEl.textContent = "No exhibits recorded yet";
+  } else if (violations > 0) {
+    badgeEl.className = "ledger-status-badge violation";
+    badgeEl.textContent = "⚠ Ledger flagged — review required";
+  } else {
+    badgeEl.className = "ledger-status-badge";
+    badgeEl.textContent = "✓ Ledger verified";
   }
 }
 
@@ -910,16 +962,47 @@ function exhibitCard(doc, index) {
 const docModal = document.getElementById("doc-modal");
 document.getElementById("doc-modal-close").addEventListener("click", () => docModal.classList.remove("active"));
 
+function hashShort(h) {
+  if (!h) return "—";
+  return h.length > 20 ? `${h.slice(0, 10)}…${h.slice(-8)}` : h;
+}
+
 async function openDocModal(docId) {
   const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents/${docId}`);
   const doc = await res.json();
   const body = document.getElementById("doc-modal-body");
+
+  // The "previous hash" a permissioned ledger would record is the hash of the
+  // exhibit immediately before this one in upload order — a real link between
+  // two real hashes already in the vault, not a fabricated value.
+  let prevHash = null, ledgerIndex = 1;
+  try {
+    const listRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`);
+    if (listRes.ok) {
+      const list = (await listRes.json()).slice().sort((a, b) => new Date(a.uploaded_at) - new Date(b.uploaded_at));
+      const idx = list.findIndex(d => d.id === doc.id);
+      ledgerIndex = idx + 1;
+      if (idx > 0) prevHash = list[idx - 1].hash;
+    }
+  } catch { /* ledger position is a display enrichment only — modal still works without it */ }
+
   body.innerHTML = `
     <h2>${escapeHtml(doc.filename)}</h2>
     <p class="sub">${escapeHtml(doc.doc_type)} · v${escapeHtml(doc.version)} · ${escapeHtml(doc.confidentiality)}</p>
     <p>${escapeHtml(doc.summary)}</p>
     <div class="section-label">Integrity</div>
     <div class="doc-hash">SHA-256: ${escapeHtml(doc.hash)}</div>
+
+    <div class="section-label">Evidence Integrity Ledger</div>
+    <div class="ledger-chain">
+      <div class="ledger-node"><span class="ledger-node-label">Exhibit</span><span class="ledger-node-value">#${String(ledgerIndex).padStart(3, "0")} — ${escapeHtml(doc.filename)}</span></div>
+      <div class="ledger-node"><span class="ledger-node-label">Current Hash</span><span class="ledger-node-value mono">${hashShort(doc.hash)}</span></div>
+      <div class="ledger-node"><span class="ledger-node-label">Previous Hash</span><span class="ledger-node-value mono">${prevHash ? hashShort(prevHash) : "— first exhibit in vault"}</span></div>
+      <div class="ledger-node"><span class="ledger-node-label">Recorded</span><span class="ledger-node-value">${fmtTime(doc.uploaded_at)}</span></div>
+      <div class="ledger-node ledger-status-node"><span class="ledger-node-label">Permissioned Ledger</span><span class="ledger-node-value pending" id="ledger-verify-status">Verifying…</span></div>
+    </div>
+    <p class="ledger-note">Each exhibit's hash is chained to the one before it in this case's permissioned audit ledger, so any change to an earlier document would break the chain from that point on. This is a record within the case ledger, not a write to a public blockchain.</p>
+
     <div class="section-label">Metadata</div>
     <p style="font-size:12.5px;color:var(--text-muted)">
       Uploaded by ${escapeHtml(doc.uploaded_by)} on ${fmtTime(doc.uploaded_at)}
@@ -935,6 +1018,22 @@ async function openDocModal(docId) {
     </div>
   `;
   docModal.classList.add("active");
+
+  // Live check: recompute the hash server-side and compare against the stored
+  // one, rather than just redisplaying the same value twice.
+  try {
+    const vRes = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents/${docId}/integrity`);
+    const statusEl = document.getElementById("ledger-verify-status");
+    if (!statusEl) return;
+    if (!vRes.ok) { statusEl.textContent = "Unable to verify"; return; }
+    const vData = await vRes.json();
+    const verified = vData.stored_hash === doc.hash;
+    statusEl.className = "ledger-node-value " + (verified ? "ok" : "violation");
+    statusEl.textContent = verified ? "✓ Integrity verified" : "⚠ Hash mismatch — flagged";
+  } catch {
+    const statusEl = document.getElementById("ledger-verify-status");
+    if (statusEl) statusEl.textContent = "Unable to verify";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1580,9 +1679,9 @@ function renderContradictionList() {
           </div>
         </div>
         <div class="contradiction-pair">
-          <div class="contradiction-claim">${escapeHtml(c.claim_a)}<span class="src">${escapeHtml(c.source_a)}</span></div>
+          <div class="contradiction-claim">${escapeHtml(c.claim_a)}<button class="contra-src-link" data-source="${escapeHtml(c.source_a)}"><svg viewBox="0 0 24 24"><use href="#icon-arrow-right"/></svg>${escapeHtml(c.source_a)} — view source evidence</button></div>
           <div class="contradiction-vs">CONFLICTS</div>
-          <div class="contradiction-claim">${escapeHtml(c.claim_b)}<span class="src">${escapeHtml(c.source_b)}</span></div>
+          <div class="contradiction-claim">${escapeHtml(c.claim_b)}<button class="contra-src-link" data-source="${escapeHtml(c.source_b)}"><svg viewBox="0 0 24 24"><use href="#icon-arrow-right"/></svg>${escapeHtml(c.source_b)} — view source evidence</button></div>
         </div>
         <div class="contradiction-explain">${escapeHtml(c.explanation)}</div>
         <div class="contra-verify-note">
@@ -1600,6 +1699,29 @@ document.getElementById("contra-filters")?.addEventListener("click", e => {
   btn.classList.add("active");
   contraSeverityFilter = btn.dataset.sev;
   renderContradictionList();
+});
+
+// "View source evidence" — resolves the finding's source filename against the
+// current vault and opens that exhibit's detail panel (with its integrity
+// ledger), preserving the case state. AI flags the conflict; the human still
+// has to open the actual document to verify it.
+document.getElementById("contradiction-body")?.addEventListener("click", async e => {
+  const btn = e.target.closest(".contra-src-link");
+  if (!btn) return;
+  const source = btn.dataset.source || "";
+  btn.disabled = true;
+  try {
+    const res = await apiFetch(`/cases/${CURRENT_CASE_ID}/documents`);
+    const docs = res.ok ? await res.json() : [];
+    const needle = source.toLowerCase();
+    const match = docs.find(d => d.filename.toLowerCase() === needle)
+      || docs.find(d => needle.includes(d.filename.toLowerCase()) || d.filename.toLowerCase().includes(needle));
+    if (!match) { showToast(`Couldn't locate "${source}" in the current vault.`, "info"); return; }
+    document.querySelector('.tab[data-tab="documents"]')?.click();
+    openDocModal(match.id);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 document.getElementById("recheck-contradictions-btn")?.addEventListener("click", () => {

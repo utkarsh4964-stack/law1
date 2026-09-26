@@ -42,6 +42,8 @@
   --crimson-glow: rgba(226, 87, 79, 0.18);
   --verdigris: #18a862;
   --steel: #3b82f6;
+  --amber: #b7791f;
+  --amber-glow: rgba(183, 121, 31, 0.14);
   --on-accent: #ffffff;
 
   /* ---- chart series (used by both CSS and app.js) ---- */
@@ -668,16 +670,41 @@ img { max-width: 100%; display: block; }
 .relationship-row .rel-label { flex: 1; }
 .relationship-row .rel-count { font-family: var(--mono); color: var(--text); font-weight: 600; }
 
-.security-card { border-color: var(--line); }
-.sec-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
-.sec-metric {
-  border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 10px 12px;
-  background: var(--panel);
+/* Case Security is the security foundation of the case — given the full
+   width of the row so it reads as a header strip above the other insight
+   cards, not just one card among equals. */
+.security-card {
+  grid-column: 1 / -1; border-color: var(--line);
+  flex-direction: row; align-items: center; flex-wrap: wrap; gap: 22px;
 }
-.sec-metric-num { font-family: var(--display); font-size: 19px; font-weight: 700; color: var(--text); line-height: 1.1; }
-.sec-metric-num.ok { color: var(--ok); }
-.sec-metric-num.alert { color: var(--crimson); }
-.sec-metric-label { font-size: 10.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; }
+.security-card .sec-head { flex: 0 0 230px; }
+.security-card .sec-head h3 { margin-bottom: 4px; }
+.security-card .sec-head .sub { margin-bottom: 0; }
+.security-card .sec-body { flex: 1 1 420px; min-width: 260px; display: flex; flex-direction: column; gap: 12px; }
+.security-card-foot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.security-card-foot .ledger-status-badge { margin-bottom: 0; }
+.security-card-foot .ghost-btn { width: auto; margin-top: 0; }
+@media (max-width: 720px) {
+  .security-card { flex-direction: column; align-items: stretch; }
+  .security-card .sec-head { flex: none; }
+}
+
+/* Checklist replaces the old bare metric grid — each row states a check,
+   its real value, and a pass/attention/violation tone in one glance. */
+.sec-checklist { display: flex; flex-wrap: wrap; gap: 10px; }
+.sec-check {
+  display: flex; align-items: center; gap: 9px; flex: 1 1 165px; min-width: 165px;
+  border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 9px 12px;
+  background: var(--panel); color: var(--text-faint);
+}
+.sec-check-icon { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.sec-check.ok { color: var(--ok); }
+.sec-check.warn { color: var(--amber); }
+.sec-check.alert { color: var(--crimson); }
+.sec-check-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sec-check-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.sec-check-value { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--text); }
+
 .ledger-status-badge {
   display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
   padding: 9px 12px; border-radius: var(--radius-sm); margin-bottom: 12px;
@@ -765,8 +792,9 @@ img { max-width: 100%; display: block; }
 .stat-tile.tone-rose .stat-icon, .stat-tile.tone-rose .stat-num { color: var(--thread); }
 .stat-tile.tone-rose .stat-icon-box { background: var(--thread-glow); }
 .activity-row {
-  display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
+  display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
 }
+.activity-icon { width: 14px; height: 14px; flex-shrink: 0; color: var(--text-faint); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .activity-time { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); white-space: nowrap; min-width: 150px; }
 .activity-user { color: var(--teal); font-weight: 600; }
 
@@ -1299,7 +1327,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .contradiction-claim .src { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line); }
 .contra-src-link {
   display: flex; align-items: center; gap: 5px; width: 100%; text-align: left;
-  background: none; border: none; border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 7px;
+  background: none; border: none; margin-top: 4px;
   font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); cursor: pointer;
 }
 .contra-src-link:hover { color: var(--teal); }
@@ -1312,9 +1340,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-radius: 20px; padding: 5px 9px; white-space: nowrap;
 }
 .contradiction-explain { font-size: 13px; color: var(--text-muted); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+.contra-src-label {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint);
+  display: block; margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line);
+}
 .contra-verify-note {
-  display: flex; align-items: center; gap: 8px; margin-top: 12px;
-  font-size: 11.5px; color: var(--text-faint);
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 12px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--amber); background: var(--amber-glow); border: 1px solid color-mix(in srgb, var(--amber) 40%, transparent);
+  border-radius: 20px; padding: 6px 12px;
 }
 .contra-verify-note svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 

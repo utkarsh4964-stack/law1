@@ -406,12 +406,12 @@
       <button class="tab active" data-tab="dashboard"><svg class="tab-icon"><use href="#icon-grid"/></svg><span class="tab-num">00</span><span class="tab-text"><span class="tab-title">Overview</span><span class="tab-desc">Charts, counts &amp; quick actions</span></span></button>
       <button class="tab" data-tab="documents"><svg class="tab-icon"><use href="#icon-folder"/></svg><span class="tab-num">01</span><span class="tab-text"><span class="tab-title">Evidence</span><span class="tab-desc">Upload, hash, chain of custody</span></span></button>
       <button class="tab" data-tab="intelligence"><svg class="tab-icon"><use href="#icon-brain"/></svg><span class="tab-num">02</span><span class="tab-text"><span class="tab-title">Intelligence</span><span class="tab-desc">AI summary, arguments, chat</span></span></button>
-      <div class="nav-group-label">Verification</div>
+      <div class="nav-group-label">Verification &amp; Analysis</div>
       <button class="tab" data-tab="contradictions"><svg class="tab-icon"><use href="#icon-alert"/></svg><span class="tab-num">03</span><span class="tab-text"><span class="tab-title">Contradictions</span><span class="tab-desc">Conflicting claims, human-verified</span></span><span class="tab-count" id="tab-count-contradictions"></span></button>
-      <div class="nav-group-label">Analysis</div>
       <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">04</span><span class="tab-text"><span class="tab-title">Timeline</span><span class="tab-desc">Chronological, evidence-linked</span></span></button>
       <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">05</span><span class="tab-text"><span class="tab-title">Connections</span><span class="tab-desc">Entity relationship graph</span></span></button>
       <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
+      <div class="nav-group-label">Output</div>
       <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
       <div class="nav-group-label">Security</div>
       <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">08</span><span class="tab-text"><span class="tab-title">Audit Trail</span><span class="tab-desc">Who did what, and when</span></span></button>
@@ -492,11 +492,17 @@
 
       <div class="insight-grid">
         <div class="insight-card security-card">
-          <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><use href="#icon-shield"/></svg>Case Security</h3>
-          <p class="sub">Hash integrity, custody coverage &amp; ledger status for this case.</p>
-          <div id="dash-security-metrics" class="sec-metrics"></div>
-          <div id="dash-ledger-status" class="ledger-status-badge">Checking ledger…</div>
-          <button class="ghost-btn full" data-goto="audit">View Audit Trail</button>
+          <div class="sec-head">
+            <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><use href="#icon-shield"/></svg>Case Security</h3>
+            <p class="sub">Evidence integrity &amp; audit status for this case.</p>
+          </div>
+          <div class="sec-body">
+            <div id="dash-security-metrics" class="sec-checklist"></div>
+            <div class="security-card-foot">
+              <div id="dash-ledger-status" class="ledger-status-badge">Checking ledger…</div>
+              <button class="ghost-btn" data-goto="audit">View Audit Trail</button>
+            </div>
+          </div>
         </div>
         <div class="insight-card">
           <h3>Investigation Insights</h3>
@@ -535,11 +541,12 @@
 
       <h3 class="section-label">Quick Actions</h3>
       <div class="quick-actions">
-        <button class="quick-action" data-goto="documents"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-folder"/></svg><span>Upload a document</span></button>
-        <button class="quick-action" data-goto="intelligence"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-brain"/></svg><span>Ask Case Chat</span></button>
-        <button class="quick-action" data-goto="timeline"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-clock"/></svg><span>View timeline</span></button>
-        <button class="quick-action" data-goto="graph"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-network"/></svg><span>Explore connections</span></button>
-        <button class="quick-action" data-goto="report"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg><span>Generate report</span></button>
+        <button class="quick-action" data-goto="documents"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-folder"/></svg><span>Upload Evidence</span></button>
+        <button class="quick-action" data-goto="intelligence"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-brain"/></svg><span>Analyze Case</span></button>
+        <button class="quick-action" data-goto="contradictions"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-alert"/></svg><span>Review Contradictions</span></button>
+        <button class="quick-action" data-goto="timeline"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-clock"/></svg><span>View Timeline</span></button>
+        <button class="quick-action" data-goto="graph"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-network"/></svg><span>Explore Connections</span></button>
+        <button class="quick-action" data-goto="report"><svg class="qa-icon" width="16" height="16" viewBox="0 0 24 24"><use href="#icon-doc-check"/></svg><span>Generate Report</span></button>
       </div>
 
       <h3 class="section-label">Recent Activity</h3>
@@ -668,8 +675,9 @@
         <div id="arguments-body">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-scale"/></svg>
-            <div class="empty-state-title">No analysis yet</div>
+            <div class="empty-state-title">No argument analysis yet</div>
             <div class="empty-state-sub">Evidence-grounded potential arguments and fair counterarguments for internal case-building — not a courtroom simulator, and not a verdict.</div>
+            <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
           </div>
         </div>
       </div>
@@ -835,6 +843,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-clock"/></svg>
           <div class="empty-state-title">No timeline yet</div>
           <div class="empty-state-sub">Dated events are extracted from every uploaded document and arranged chronologically here, with automatic gap detection across 30+ day silences.</div>
+          <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Upload Evidence</button>
         </div>
       </div>
       <button class="ghost-btn full" id="timeline-load-more" style="display:none;margin-top:16px">Load more events</button>
@@ -943,8 +952,9 @@
       <div id="similar-body">
         <div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><use href="#icon-layers"/></svg>
-          <div class="empty-state-title">No analysis yet</div>
+          <div class="empty-state-title">No similar-case analysis yet</div>
           <div class="empty-state-sub">Once documents are uploaded, this case is matched against a small reference case library for factual and legal pattern similarity — never an outcome prediction.</div>
+          <button class="ghost-btn" data-goto="documents" style="width:auto;margin-top:14px">Go to Document Vault</button>
         </div>
       </div>
     </section>

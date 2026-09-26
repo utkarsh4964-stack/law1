@@ -653,7 +653,7 @@ function renderDonut(typeCounts, total) {
     el.innerHTML = '<p class="placeholder" style="margin:0">No entities extracted yet.</p>';
     return;
   }
-  const entries = [["person", "People"], ["organization", "Organizations"], ["location", "Locations"], ["other", "Other"]];
+  const entries = [["person", "People"], ["organization", "Organizations"], ["location", "Locations"], ["identifier", "Identifiers"], ["other", "Other"]];
   let cursor = 0;
   const stops = entries.map(([key]) => {
     const pct = (typeCounts[key] / total) * 100;
@@ -1138,7 +1138,7 @@ document.getElementById("export-timeline-btn").addEventListener("click", () => {
 
 // Bold, clearly-readable accents so entity types pop against the white
 // canvas instead of blending into a muted, low-contrast palette.
-const typeColors = { person: "#2c3e50", organization: "#18a862", location: "#8b5cf6", other: "#64748b" };
+const typeColors = { person: "#2c3e50", organization: "#18a862", location: "#8b5cf6", identifier: "#0e7490", other: "#64748b" };
 const EDGE_CATEGORIES = [
   { key: "employment", label: "Employment", color: "#18a862", match: /\b(works? at|employ|joined|hired)/i },
   { key: "business", label: "Business", color: "#3b82f6", match: /\b(vendor|supplie[rd]|contract|business|payment|invoice)/i },
@@ -1166,6 +1166,9 @@ const typeGlyphs = {
   person: '<circle cx="30" cy="23" r="9"/><path d="M12 50c2-11 9-17 18-17s16 6 18 17" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>',
   organization: '<rect x="16" y="12" width="28" height="34" rx="2"/><rect x="21" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="18" width="5" height="5" fill="TYPECOLOR"/><rect x="21" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="30" y="27" width="5" height="5" fill="TYPECOLOR"/><rect x="26" y="38" width="8" height="8" fill="TYPECOLOR"/>',
   location: '<path d="M30 12c-7.7 0-14 6.1-14 13.6C16 35.5 30 50 30 50s14-14.5 14-24.4C44 18.1 37.7 12 30 12z"/><circle cx="30" cy="25" r="5.5" fill="TYPECOLOR"/>',
+  // A key glyph — for accounts, credentials, IPs, hashes and other
+  // non-person/org/location identifiers pulled out of the evidence.
+  identifier: '<circle cx="21" cy="30" r="8.5"/><rect x="27" y="27" width="21" height="6" rx="1"/><rect x="41" y="33" width="4.5" height="6.5"/><rect x="33.5" y="33" width="4.5" height="6.5"/>',
   other: '<circle cx="30" cy="30" r="8"/><circle cx="30" cy="14" r="3.2"/><circle cx="30" cy="46" r="3.2"/><circle cx="14" cy="30" r="3.2"/><circle cx="46" cy="30" r="3.2"/>',
 };
 function nodeIcon(type) {
@@ -1214,7 +1217,7 @@ function renderGraphCharts(data) {
 
   const typeCounts = {};
   (data.nodes || []).forEach(n => { typeCounts[n.type] = (typeCounts[n.type] || 0) + 1; });
-  const labels = { person: "People", organization: "Organizations", location: "Locations", other: "Other" };
+  const labels = { person: "People", organization: "Organizations", location: "Locations", identifier: "Identifiers", other: "Other" };
   const mixRows = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
     .map(([key, value]) => ({ label: labels[key] || key, value, color: typeColors[key] || typeColors.other }));
   mix.innerHTML = barChartHTML(mixRows) + chipLegendHTML(mixRows.map(r => [r.label, r.color]));

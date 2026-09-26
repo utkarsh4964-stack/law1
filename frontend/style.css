@@ -1,15 +1,16 @@
 :root {
   /* ==================================================================
-     THEME — "Ink & Brass", black & white surfaces
+     THEME — "Ink & Slate", black & white surfaces
      Page/card backgrounds, borders and body text are strict grayscale
      (black on white) so the chrome of the app reads as a case file, not
-     a brand. Brass/gold, crimson, verdigris and steel blue are kept at
-     full color and reserved for meaning: brass for primary actions and
-     highlighted values, crimson for contradictions/alerts, verdigris for
-     verified/OK, steel for neutral secondary categories — plus the
-     chart series (--c1..--c6). Icons, badges, chips, stat tiles and
-     charts should keep using these accent tokens unchanged; only the
-     grayscale surface/text tokens above were touched.
+     a brand. A deep, deliberately muted navy-slate is the primary accent
+     (buttons, active states, highlighted values) instead of gold — kept
+     serious rather than celebratory. Crimson is reserved for
+     contradictions/alerts, verdigris for verified/OK, steel blue for
+     neutral secondary categories — plus the chart series (--c1..--c6).
+     Icons, badges, chips, stat tiles and charts should keep using these
+     accent tokens unchanged; only the grayscale surface/text tokens
+     above were touched.
      ================================================================== */
 
   /* ---- surfaces: pure black & white — page/card backgrounds and text
@@ -33,18 +34,18 @@
   --text-faint: #8a8a8a;
 
   /* ---- accents ---- */
-  --brass: #f0b429;
-  --brass-dim: #f6cf6e;
-  --brass-deep: #b9860a;
-  --brass-glow: rgba(240, 180, 41, 0.22);
+  --brass: #2c3e50;
+  --brass-dim: #44586c;
+  --brass-deep: #16212b;
+  --brass-glow: rgba(44, 62, 80, 0.16);
   --crimson: #e2574f;
   --crimson-glow: rgba(226, 87, 79, 0.18);
   --verdigris: #18a862;
   --steel: #3b82f6;
-  --on-accent: #1a1408;
+  --on-accent: #ffffff;
 
   /* ---- chart series (used by both CSS and app.js) ---- */
-  --c1: #f0b429;
+  --c1: #2c3e50;
   --c2: #3b82f6;
   --c3: #18a862;
   --c4: #8b5cf6;
@@ -145,8 +146,8 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.01em;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-.primary-btn { background: linear-gradient(180deg, var(--brass-dim), var(--brass)); color: var(--on-accent); border: 1px solid var(--brass-dim); box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 18px rgba(217,164,65,0.20); }
-.primary-btn:hover { background: linear-gradient(180deg, #f5d08b, var(--brass-dim)); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.32), 0 12px 26px rgba(217,164,65,0.28); }
+.primary-btn { background: linear-gradient(180deg, var(--brass-dim), var(--brass)); color: var(--on-accent); border: 1px solid var(--brass-dim); box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 18px rgba(44,62,80,0.28); }
+.primary-btn:hover { background: linear-gradient(180deg, #56728a, var(--brass-dim)); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.32), 0 12px 26px rgba(44,62,80,0.36); }
 .primary-btn:active { transform: translateY(0) scale(0.98); box-shadow: 0 1px 2px rgba(2,6,20,0.15); }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 .primary-btn.full { width: 100%; margin-top: 6px; }

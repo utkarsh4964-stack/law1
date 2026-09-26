@@ -634,10 +634,26 @@ async function loadDashboard() {
   } else {
     activity.innerHTML = data.recent_activity.map(a => `
       <div class="activity-row">
+        <svg class="activity-icon" viewBox="0 0 24 24"><use href="#${activityIcon(a.action)}"/></svg>
         <span class="activity-time">${fmtTime(a.ts)}</span>
         <span><span class="activity-user">${escapeHtml(a.user)}</span> — ${escapeHtml(a.detail)}</span>
       </div>`).join("");
   }
+}
+
+/** Maps the audit log's real action names to an existing icon — purely
+ *  presentational, no new data invented. */
+function activityIcon(action) {
+  const map = {
+    document_uploaded: "icon-upload",
+    integrity_hash_generated: "icon-shield",
+    ai_analysis_completed: "icon-sparkle",
+    document_viewed: "icon-folder",
+    document_deleted: "icon-alert",
+    chat_query: "icon-brain",
+    report_generated: "icon-doc-check",
+  };
+  return map[action] || "icon-list";
 }
 
 /** Case Security card on the Overview tab — every number here comes straight
@@ -663,17 +679,38 @@ async function renderSecurityCard(vaultDocs, documentCount) {
 
   const auditCoverage = docCount ? Math.min(100, Math.round(100 * coveredDocs / docCount)) : 0;
   const violations = vaultDocs.length && hashedCount === vaultDocs.length ? 0 : (vaultDocs.length - hashedCount);
+  const auditValid = log.length > 0;
 
-  metricsEl.innerHTML = [
-    [docCount, "Documents", ""],
-    [`${hashedCount}/${docCount || 0}`, "Hash Verified", hashedCount === docCount && docCount ? "ok" : ""],
-    [custodyEvents, "Custody Events", ""],
-    [violations, "Integrity Violations", violations ? "alert" : "ok"],
-    [`${auditCoverage}%`, "Audit Coverage", auditCoverage === 100 ? "ok" : ""],
-  ].map(([num, label, tone]) => `
-    <div class="sec-metric">
-      <div class="sec-metric-num ${tone}">${num}</div>
-      <div class="sec-metric-label">${label}</div>
+  const checks = [
+    {
+      label: "Hash Integrity",
+      value: docCount ? `${hashedCount} / ${docCount} verified` : "No exhibits yet",
+      tone: !docCount ? "" : hashedCount === docCount ? "ok" : "alert",
+    },
+    {
+      label: "Chain Of Custody",
+      value: docCount ? `${auditCoverage}% coverage` : "No exhibits yet",
+      tone: !docCount ? "" : auditCoverage === 100 ? "ok" : auditCoverage > 0 ? "warn" : "alert",
+    },
+    {
+      label: "Audit Trail",
+      value: auditValid ? "Valid" : "No entries yet",
+      tone: auditValid ? "ok" : "",
+    },
+    {
+      label: "Ledger Status",
+      value: !docCount ? "No exhibits recorded" : violations ? "Flagged — review" : "Recorded / verified",
+      tone: !docCount ? "" : violations ? "alert" : "ok",
+    },
+  ];
+
+  metricsEl.innerHTML = checks.map(c => `
+    <div class="sec-check ${c.tone}">
+      <svg class="sec-check-icon" viewBox="0 0 24 24"><use href="#${c.tone === "alert" ? "icon-alert" : "icon-check-circle"}"/></svg>
+      <div class="sec-check-text">
+        <span class="sec-check-label">${c.label}</span>
+        <span class="sec-check-value">${c.value}</span>
+      </div>
     </div>`).join("");
 
   if (!docCount) {
@@ -1679,14 +1716,14 @@ function renderContradictionList() {
           </div>
         </div>
         <div class="contradiction-pair">
-          <div class="contradiction-claim">${escapeHtml(c.claim_a)}<button class="contra-src-link" data-source="${escapeHtml(c.source_a)}"><svg viewBox="0 0 24 24"><use href="#icon-arrow-right"/></svg>${escapeHtml(c.source_a)} — view source evidence</button></div>
+          <div class="contradiction-claim">${escapeHtml(c.claim_a)}<span class="contra-src-label">Source evidence</span><button class="contra-src-link" data-source="${escapeHtml(c.source_a)}"><svg viewBox="0 0 24 24"><use href="#icon-arrow-right"/></svg>${escapeHtml(c.source_a)} — view exhibit</button></div>
           <div class="contradiction-vs">CONFLICTS</div>
-          <div class="contradiction-claim">${escapeHtml(c.claim_b)}<button class="contra-src-link" data-source="${escapeHtml(c.source_b)}"><svg viewBox="0 0 24 24"><use href="#icon-arrow-right"/></svg>${escapeHtml(c.source_b)} — view source evidence</button></div>
+          <div class="contradiction-claim">${escapeHtml(c.claim_b)}<span class="contra-src-label">Source evidence</span><button class="contra-src-link" data-source="${escapeHtml(c.source_b)}"><svg viewBox="0 0 24 24"><use href="#icon-arrow-right"/></svg>${escapeHtml(c.source_b)} — view exhibit</button></div>
         </div>
         <div class="contradiction-explain">${escapeHtml(c.explanation)}</div>
         <div class="contra-verify-note">
           <svg viewBox="0 0 24 24"><use href="#icon-shield"/></svg>
-          Flagged for human verification — this is not a finding of fact.
+          Requires human verification — not a finding of fact
         </div>
       </div>`;
     }).join("");

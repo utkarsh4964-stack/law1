@@ -410,11 +410,12 @@
       <button class="tab" data-tab="contradictions"><svg class="tab-icon"><use href="#icon-alert"/></svg><span class="tab-num">03</span><span class="tab-text"><span class="tab-title">Contradictions</span><span class="tab-desc">Conflicting claims, human-verified</span></span><span class="tab-count" id="tab-count-contradictions"></span></button>
       <button class="tab" data-tab="timeline"><svg class="tab-icon"><use href="#icon-clock"/></svg><span class="tab-num">04</span><span class="tab-text"><span class="tab-title">Timeline</span><span class="tab-desc">Chronological, evidence-linked</span></span></button>
       <button class="tab" data-tab="graph"><svg class="tab-icon"><use href="#icon-network"/></svg><span class="tab-num">05</span><span class="tab-text"><span class="tab-title">Connections</span><span class="tab-desc">Entity relationship graph</span></span></button>
-      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
+      <button class="tab" data-tab="perspectives"><svg class="tab-icon"><use href="#icon-split"/></svg><span class="tab-num">06</span><span class="tab-text"><span class="tab-title">Investigative Angles</span><span class="tab-desc">Alternative hypotheses, not conclusions</span></span></button>
+      <button class="tab" data-tab="similar"><svg class="tab-icon"><use href="#icon-layers"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Similar Cases</span><span class="tab-desc">Pattern match, not prediction</span></span></button>
       <div class="nav-group-label">Output</div>
-      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">07</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
+      <button class="tab" data-tab="report"><svg class="tab-icon"><use href="#icon-doc-check"/></svg><span class="tab-num">08</span><span class="tab-text"><span class="tab-title">Report</span><span class="tab-desc">Exportable 12-section report</span></span></button>
       <div class="nav-group-label">Security</div>
-      <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">08</span><span class="tab-text"><span class="tab-title">Audit Trail</span><span class="tab-desc">Who did what, and when</span></span></button>
+      <button class="tab" data-tab="audit"><svg class="tab-icon"><use href="#icon-list"/></svg><span class="tab-num">09</span><span class="tab-text"><span class="tab-title">Audit Trail</span><span class="tab-desc">Who did what, and when</span></span></button>
     </nav>
 
     <div class="nav-footer">
@@ -914,13 +915,28 @@
           <div id="graph-mix-chart"></div>
         </div>
       </div>
+    </section>
 
-      <div class="perspectives-section">
-        <h3 class="section-label">Alternative Investigative Angles</h3>
-        <p class="sub" style="margin-bottom:14px">AI-generated hypotheses to test against the evidence — not conclusions, and never an accusation.</p>
-        <div id="perspectives-body">
-          <button class="ghost-btn" id="generate-perspectives-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#icon-sparkle"/></svg> Generate Alternative Angles</button>
+    <!-- INVESTIGATIVE ANGLES -->
+    <section class="panel" id="panel-perspectives">
+      <div class="page-hero">
+        <div class="page-hero-copy">
+          <div class="page-hero-kicker"><svg><use href="#icon-sparkle"/></svg>Hypothesis Testing</div>
+          <h1>Alternative Investigative Angles</h1>
+          <p class="sub">AI-generated hypotheses to test against the evidence on file — every angle is a reading to verify, <em class="hl">never a conclusion or an accusation</em>.</p>
         </div>
+        <div class="page-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="38" cy="75" r="15" stroke-width="2.2" style="fill:var(--panel-raised, #18202d);stroke:var(--brass, #d9a441)"/>
+            <path d="M53 75h28M81 75l42-32M81 75l42 32M81 75h48" stroke-width="1.8" style="stroke:var(--line, #2a3346)"/>
+            <rect x="130" y="27" width="58" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--verdigris, #46a97f)"/>
+            <rect x="130" y="62" width="58" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--steel, #6f93c4)"/>
+            <rect x="130" y="97" width="58" height="26" rx="7" style="fill:var(--panel-raised, #18202d);stroke:var(--crimson, #e2574f)"/>
+          </svg>
+        </div>
+      </div>
+      <div id="perspectives-body">
+        <button class="ghost-btn" id="generate-perspectives-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><use href="#icon-sparkle"/></svg> Generate Alternative Angles</button>
       </div>
     </section>
 

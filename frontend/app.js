@@ -5,6 +5,15 @@ let ME = null;
 let CURRENT_CASE_ID = null;
 let chatMode = "case";
 
+// Fire-and-forget wake-up ping the moment the page loads. Render's free
+// tier can take 30-60s to spin back up from a cold start, and previously
+// that whole wait only began once the user clicked "Sign in" — this way
+// the server is already waking up while they're reading the landing page
+// or typing their username, so by the time they submit it's often warm.
+// Best-effort only: no UI, no retry-storm, failures are silently ignored
+// (the login form's own retry logic still covers a genuinely cold server).
+fetch("/health").catch(() => {});
+
 // ---------------------------------------------------------------------------
 // view switching
 // ---------------------------------------------------------------------------

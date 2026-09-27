@@ -24,7 +24,7 @@ import llm
 
 from openai import APIError as LLMAPIError, RateLimitError as LLMRateLimitError
 
-app = FastAPI(title="AI Case Report")
+app = FastAPI(title="NayaySetu")
 
 
 def call_llm(fn, *args, **kwargs):

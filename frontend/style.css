@@ -379,7 +379,7 @@ img { max-width: 100%; display: block; }
 }
 .case-mark-glyph.big {
   font-family: var(--display); font-size: 34px; font-weight: 700; color: var(--on-accent);
-  width: 62px; height: 62px; border-radius: 50%;
+  width: 62px; height: 62px; border-radius: 50%; padding: 15px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
   background: radial-gradient(circle at 30% 26%, var(--brass-dim) 0%, var(--brass) 54%, var(--brass-deep) 100%);
   box-shadow:
@@ -531,7 +531,7 @@ img { max-width: 100%; display: block; }
 .case-mark.clickable { cursor: pointer; }
 .case-mark-glyph {
   font-family: var(--display); font-size: 17px; font-weight: 700; color: var(--on-accent);
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; padding: 8px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle at 30% 26%, var(--brass-dim) 0%, var(--brass) 54%, var(--brass-deep) 100%);
   box-shadow: 0 2px 5px rgba(2,6,20,0.3), inset 0 1px 1px rgba(255,255,255,0.25), inset 0 -2px 4px rgba(0,0,0,0.22);

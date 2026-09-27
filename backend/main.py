@@ -27,6 +27,15 @@ from openai import APIError as LLMAPIError, RateLimitError as LLMRateLimitError
 app = FastAPI(title="NayaySetu")
 
 
+@app.get("/health")
+def health():
+    """Cheap liveness endpoint with no DB/LLM work — just proves the process
+    is up and responding. Dedicated ping target for the keep-alive workflow
+    and the frontend's pre-warm call, so we're not making Render (and, on a
+    cold connection, Mongo) do a full page render just to answer a ping."""
+    return {"status": "ok"}
+
+
 def call_llm(fn, *args, **kwargs):
     """Run an llm.* call and turn any failure into a clear HTTPException
     instead of an opaque 500. AI calls are the most likely thing to break in

@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI Case Report</title>
+<title>NayaySetu</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%230d1420'/%3E%3Cpath d='M6 24 Q20 8 34 24' fill='none' stroke='%23d9a441' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M10 24v8M30 24v8' stroke='%23d9a441' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 24h32' stroke='%23d9a441' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M20 13v7' stroke='%23d9a441' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M14 20h12' stroke='%23d9a441' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='14' cy='20' r='2.4' fill='none' stroke='%23d9a441' stroke-width='2'/%3E%3Ccircle cx='26' cy='20' r='2.4' fill='none' stroke='%23d9a441' stroke-width='2'/%3E%3C/svg%3E" />
 <meta name="description" content="Secure, multi-case investigation platform — document vault with chain of custody, AI-generated timelines, evidence graphs, contradiction detection and exportable case reports." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -46,6 +47,16 @@
   <symbol id="icon-bar-chart" viewBox="0 0 24 24"><path d="M4 21V10M10 21V4M16 21v-8M22 21H2"/></symbol>
   <symbol id="icon-split" viewBox="0 0 24 24"><path d="M3 6h4l5 6 5-6h4M3 18h4l5-6"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3"/></symbol>
   <symbol id="icon-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/><path d="M19 15l0.8 2.2L22 18l-2.2 0.8L19 21l-0.8-2.2L16 18l2.2-0.8L19 15z"/></symbol>
+  <!-- NayaySetu mark: a bridge (setu) resting over a set of scales (nyaya) -->
+  <symbol id="logo-nayaysetu" viewBox="0 0 40 40">
+    <path d="M6 24 Q20 8 34 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path d="M10 24v8M30 24v8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path d="M4 24h32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path d="M20 13v7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M14 20h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="14" cy="20" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="26" cy="20" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/>
+  </symbol>
 </svg>
 
 <!-- ==================== LANDING VIEW ==================== -->
@@ -53,9 +64,9 @@
 
   <nav class="landing-nav">
     <div class="case-mark">
-      <span class="case-mark-glyph">§</span>
+      <svg class="case-mark-glyph" viewBox="0 0 40 40"><use href="#logo-nayaysetu"/></svg>
       <div>
-        <div class="case-mark-title">AI CASE REPORT</div>
+        <div class="case-mark-title">NAYAYSETU</div>
       </div>
     </div>
     <div class="landing-nav-links">
@@ -266,7 +277,7 @@
   </div>
 
   <footer class="landing-footer">
-    <span>AI Case Report — Smart India Hackathon submission</span>
+    <span>NayaySetu — Smart India Hackathon submission</span>
     <span>Demo-scale prototype · see README for production notes</span>
   </footer>
 </div>
@@ -296,8 +307,8 @@
 
     <div class="login-panel">
       <div class="login-card">
-        <div class="case-mark-glyph big">§</div>
-        <h1>AI Case Report</h1>
+        <svg class="case-mark-glyph big" viewBox="0 0 40 40"><use href="#logo-nayaysetu"/></svg>
+        <h1>NayaySetu</h1>
         <p class="sub">Secure investigation case management</p>
         <form id="login-form">
           <label>Username<input type="text" id="login-username" autocomplete="username" required /></label>
@@ -325,9 +336,9 @@
 <div class="view" id="view-cases">
   <div class="cases-topbar">
     <div class="case-mark">
-      <span class="case-mark-glyph">§</span>
+      <svg class="case-mark-glyph" viewBox="0 0 40 40"><use href="#logo-nayaysetu"/></svg>
       <div>
-        <div class="case-mark-title">AI CASE REPORT</div>
+        <div class="case-mark-title">NAYAYSETU</div>
         <div class="case-mark-id" id="whoami">—</div>
       </div>
     </div>
@@ -394,7 +405,7 @@
 
   <aside class="folder-nav">
     <div class="case-mark clickable" id="back-to-cases">
-      <span class="case-mark-glyph">§</span>
+      <svg class="case-mark-glyph" viewBox="0 0 40 40"><use href="#logo-nayaysetu"/></svg>
       <div>
         <div class="case-mark-title">CASE FILE</div>
         <div class="case-mark-id" id="case-id">—</div>

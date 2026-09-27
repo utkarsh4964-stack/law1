@@ -2,13 +2,16 @@ name: Keep Render Awake
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    # Every 5 min. Render's free tier sleeps after ~15 min idle, and GitHub's
+    # scheduled-workflow cron is best-effort — it can slip by several minutes
+    # under load, so 10 min was cutting it close. 5 min leaves real margin.
+    - cron: '*/5 * * * *'
   workflow_dispatch: {}
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping law1.onrender.com
+      - name: Ping law1.onrender.com/health
         run: |
-          curl -sf -o /dev/null -w "Status: %{http_code}, Time: %{time_total}s\n" https://law1.onrender.com/ || echo "Ping failed (service may be waking up)"
+          curl -sf -o /dev/null -w "Status: %{http_code}, Time: %{time_total}s\n" https://law1.onrender.com/health || echo "Ping failed (service may be waking up)"

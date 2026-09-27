@@ -1,4 +1,4 @@
-# AI Case Report
+# NayaySetu
 
 **A secure, AI-powered multi-case investigation platform** — built for Smart India Hackathon (SIH).
 
